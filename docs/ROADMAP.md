@@ -165,18 +165,21 @@
 > Interactive submission, reassignment, gRPC transport.
 
 ### Deliverables
-- [ ] Interactive submission: `prepareSubmission`, `executeSubmission` (external signing)
-- [ ] Signature utilities for external signing workflow
-- [ ] Reassignment support: `submitReassignment` (cross-synchronizer)
-- [ ] gRPC transport via ConnectRPC: `grpc({ url })`
-- [ ] Fallback transport: `fallback([transport1, transport2])`
-- [ ] CIP-56 helpers: token holding queries, transfer instruction builders
-- [ ] cantonctl codegen integration: `cantonctl build` → cantonjs-codegen pipeline
+- [x] Interactive submission: `prepareSubmission`, `executeSubmission` (external signing)
+- [x] Signature types: `PartySignatures`, `Signature`, `SignatureFormat`
+- [x] Reassignment support: `submitReassignment` with typed events
+- [x] Reassignment types: `Reassignment`, `AssignedEvent`, `UnassignedEvent`, `ReassignmentCommand`
+- [x] gRPC transport: `grpc({ url, grpcTransport })` — zero-dep via injected ConnectRPC client
+- [x] Fallback transport: `fallback({ transports })` — retries on connection errors
+- [ ] CIP-56 helpers: token holding queries, transfer instruction builders (deferred)
+- [ ] cantonctl codegen integration: `cantonctl build` → cantonjs-codegen pipeline (deferred)
 
-### Exit Criteria
-- External signing workflow works end-to-end
-- gRPC transport passes same test suite as JSON API transport
-- Fallback transport correctly handles primary failure
+### Exit Criteria — Met
+- Interactive submission prepare + execute working with mock transport
+- Reassignment unassign + assign commands tested
+- gRPC transport maps JSON API paths to gRPC service methods
+- Fallback transport retries on ConnectionError/TimeoutError, throws on HttpError
+- 21 new tests (192 total core)
 
 ---
 

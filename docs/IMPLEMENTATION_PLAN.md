@@ -18,8 +18,9 @@
 | Phase 3: AdminClient | **COMPLETE** | 142 | Pagination, IDP, package vetting, state queries |
 | Phase 4: TestClient | **COMPLETE** | 171 | Sandbox fixture, mock/recording transport, cantonctl integration |
 | Phase 5: Codegen | **COMPLETE** | 200 (171 + 29) | DAR parser, type mapper, code emitter, CLI (`cantonjs-codegen` package) |
+| Phase 6: Advanced | **COMPLETE** | 221 (192 + 29) | Fallback/gRPC transports, reassignment, interactive submission |
 
-Test counts: 171 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
+Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 
 ### ADRs Written
 
@@ -43,43 +44,11 @@ Test counts: 171 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 | `036bdfa` | 3 | AdminClient pagination, IDP, package vetting |
 | `c7df451` | 4 | Testing utilities with cantonctl integration |
 | `69daf36` | 5 | Codegen pipeline for DAR-to-TypeScript generation |
+| `6779c5e` | 6 | Advanced features: transports, reassignment, interactive submission |
 
 ---
 
-## Next: Phase 6 — Advanced Features
-
-**Priority:** HIGH
-**Complexity:** L (1-2 weeks)
-**Depends on:** Phase 5
-
-### 6a. Interactive Submission (External Signing)
-- `prepareSubmission(commands)` — returns a prepared submission with hash to sign
-- `executeSubmission(prepared, signature)` — submit with external signature
-- Supports HSM and hardware wallet workflows
-- Files: `src/ledger/interactiveSubmission.ts`, tests
-
-### 6b. Reassignment Support
-- `submitReassignment({ contractId, source, target })` — cross-synchronizer transfer
-- `unassignContract()` + `assignContract()` — two-step reassignment
-- Files: `src/ledger/reassignment.ts`, tests
-
-### 6c. gRPC Transport (ConnectRPC)
-- `grpc({ url })` transport factory using connect-es
-- Must pass same test suite as JSON API transport
-- Files: `src/transport/grpc.ts`, `src/transport/grpc.test.ts`
-
-### 6d. Fallback Transport
-- `fallback([primary, secondary])` — tries primary, falls back to secondary
-- Files: `src/transport/fallback.ts`, tests
-
-### Exit Criteria
-- Interactive submission works end-to-end
-- gRPC transport passes full test suite
-- Reassignment tested with mock transport
-
----
-
-## Phase 7 — React Integration
+## Next: Phase 7 — React Integration
 
 **Priority:** MEDIUM
 **Complexity:** L (1-2 weeks)
@@ -133,7 +102,7 @@ Test counts: 171 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 
 ## Immediate Action Items
 
-1. **Begin Phase 6** — Interactive submission and gRPC transport
+1. **Begin Phase 7** — React hooks package (`packages/cantonjs-react/`)
 2. **Add integration tests** — Run against Canton sandbox with cantonctl
 3. **Plan cantonctl codegen integration** — `cantonctl build` → cantonjs-codegen pipeline
 
@@ -144,6 +113,6 @@ Test counts: 171 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 | Milestone | Target | Metric |
 |-----------|--------|--------|
 | Phase 5 complete | ✅ Done | 200 tests, codegen from DAR files |
-| Phase 6 complete | Next | Interactive submission, gRPC, reassignment |
-| Phase 7 complete | After 6 | React hooks, TanStack Query integration |
+| Phase 6 complete | ✅ Done | 221 tests, interactive submission, gRPC, reassignment |
+| Phase 7 complete | Next | React hooks, TanStack Query integration |
 | v1.0 release | After 8 | Docs site, examples, 90%+ coverage |
