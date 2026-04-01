@@ -1,15 +1,22 @@
 /**
  * Factory for creating a party-scoped Ledger API client.
  *
- * The LedgerClient provides contract operations: create, exercise, query, stream.
+ * The LedgerClient provides contract operations: create, exercise, query.
  * Each client is scoped to a party via its JWT token.
+ *
+ * Request/response shapes match the Canton JSON Ledger API V2 OpenAPI spec (3.4+).
  */
 
 import type { Transport, TransportRequest } from '../transport/types.js'
 import type { Party } from '../types/party.js'
-import type { TemplateId, ContractId, CreatedEvent, Contract } from '../types/contract.js'
-import type { Transaction, TransactionTree } from '../types/transaction.js'
-import type { LedgerOffset } from '../types/command.js'
+import type {
+  CreatedEvent,
+  TaggedEvent,
+  ActiveContract,
+  ContractEntry,
+} from '../types/contract.js'
+import type { JsTransaction } from '../types/transaction.js'
+import type { LedgerOffset, EventFormat, TransactionFormat } from '../types/command.js'
 
 export type LedgerClientConfig = {
   /** Transport to communicate with the Canton node. */
@@ -27,41 +34,35 @@ export type LedgerClient = {
   readonly readAs: readonly Party[]
 
   /** Create a new contract on the ledger. */
-  createContract: <TPayload extends Record<string, unknown>>(
-    templateId: TemplateId,
-    payload: TPayload,
+  createContract: (
+    templateId: string,
+    createArguments: Record<string, unknown>,
     options?: CommandOptions,
-  ) => Promise<CreatedEvent<TPayload>>
+  ) => Promise<CreatedEvent>
 
   /** Exercise a choice on an existing contract. */
   exerciseChoice: (
-    templateId: TemplateId,
-    contractId: ContractId,
+    templateId: string,
+    contractId: string,
     choice: string,
-    argument: Record<string, unknown>,
+    choiceArgument: Record<string, unknown>,
     options?: CommandOptions,
-  ) => Promise<Transaction>
+  ) => Promise<JsTransaction>
 
-  /** Query active contracts matching a template and optional filter. */
-  queryContracts: <TPayload extends Record<string, unknown>>(
-    templateId: TemplateId,
-    filter?: Record<string, unknown>,
+  /** Query active contracts matching a template. */
+  queryContracts: (
+    templateId: string,
     options?: QueryOptions,
-  ) => Promise<readonly Contract<TPayload>[]>
+  ) => Promise<readonly ActiveContract[]>
 
   /** Get a transaction by its update ID. */
-  getTransactionById: (updateId: string) => Promise<Transaction>
-
-  /** Get a transaction tree by its update ID. */
-  getTransactionTreeById: (updateId: string) => Promise<TransactionTree>
+  getTransactionById: (updateId: string) => Promise<JsTransaction>
 
   /** Get the current ledger end offset. */
   getLedgerEnd: () => Promise<LedgerOffset>
 
   /** Get events for a specific contract. */
-  getEventsByContractId: (
-    contractId: ContractId,
-  ) => Promise<{ created?: CreatedEvent; archived?: boolean }>
+  getEventsByContractId: (contractId: string) => Promise<unknown>
 }
 
 export type CommandOptions = {
@@ -72,135 +73,159 @@ export type CommandOptions = {
 
 export type QueryOptions = {
   readonly signal?: AbortSignal
+  /** Event format for filtering. Defaults to verbose wildcard filter for actAs party. */
+  readonly eventFormat?: EventFormat
+  /** Offset to snapshot at. 0 = empty ledger. Defaults to 0. */
+  readonly activeAtOffset?: LedgerOffset
 }
 
 export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
   const { transport, actAs, readAs = [] } = config
 
+  function defaultEventFormat(): EventFormat {
+    return {
+      filtersByParty: {
+        [actAs]: {
+          cumulative: [
+            {
+              identifierFilter: {
+                WildcardFilter: { value: { includeCreatedEventBlob: false } },
+              },
+            },
+          ],
+        },
+      },
+      verbose: true,
+    }
+  }
+
+  function templateEventFormat(templateId: string): EventFormat {
+    return {
+      filtersByParty: {
+        [actAs]: {
+          cumulative: [
+            {
+              identifierFilter: {
+                TemplateFilter: {
+                  value: { templateId, includeCreatedEventBlob: false },
+                },
+              },
+            },
+          ],
+        },
+      },
+      verbose: true,
+    }
+  }
+
+  function defaultTransactionFormat(): TransactionFormat {
+    return {
+      transactionShape: 'TRANSACTION_SHAPE_ACS_DELTA',
+      eventFormat: defaultEventFormat(),
+    }
+  }
+
   return {
     actAs,
     readAs,
 
-    async createContract(templateId, payload, options) {
+    async createContract(templateId, createArguments, options) {
       const request: TransportRequest = {
         method: 'POST',
         path: '/v2/commands/submit-and-wait-for-transaction',
         body: {
           commands: {
-            actAs: [actAs],
-            readAs,
+            commands: [{ CreateCommand: { templateId, createArguments } }],
             commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
-            commands: [
-              {
-                CreateCommand: {
-                  templateId: parseTemplateId(templateId),
-                  createArguments: payload,
-                },
-              },
-            ],
+            actAs: [actAs],
+            readAs: readAs.length > 0 ? readAs : undefined,
+            workflowId: options?.workflowId,
           },
+          transactionFormat: defaultTransactionFormat(),
         },
       }
       if (options?.signal) request.signal = options.signal
-      const response = await transport.request<{ transaction: Transaction }>(request)
 
-      const created = response.transaction.events.find(
-        (e): e is CreatedEvent => 'payload' in e && 'signatories' in e,
-      )
+      const response = await transport.request<{
+        transaction: JsTransaction
+      }>(request)
+
+      const created = extractCreatedEvent(response.transaction.events)
       if (created === undefined) {
         throw new Error('No created event in transaction response')
       }
-      return created as CreatedEvent<typeof payload>
+      return created
     },
 
-    async exerciseChoice(templateId, contractId, choice, argument, options) {
+    async exerciseChoice(templateId, contractId, choice, choiceArgument, options) {
       const request: TransportRequest = {
         method: 'POST',
         path: '/v2/commands/submit-and-wait-for-transaction',
         body: {
           commands: {
-            actAs: [actAs],
-            readAs,
-            commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
             commands: [
-              {
-                ExerciseCommand: {
-                  templateId: parseTemplateId(templateId),
-                  contractId,
-                  choice,
-                  choiceArgument: argument,
-                },
-              },
+              { ExerciseCommand: { templateId, contractId, choice, choiceArgument } },
             ],
+            commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+            actAs: [actAs],
+            readAs: readAs.length > 0 ? readAs : undefined,
+            workflowId: options?.workflowId,
           },
+          transactionFormat: defaultTransactionFormat(),
         },
       }
       if (options?.signal) request.signal = options.signal
-      const response = await transport.request<{ transaction: Transaction }>(request)
+
+      const response = await transport.request<{
+        transaction: JsTransaction
+      }>(request)
 
       return response.transaction
     },
 
-    async queryContracts<TPayload extends Record<string, unknown>>(templateId: TemplateId, _filter?: Record<string, unknown>, options?: QueryOptions) {
+    async queryContracts(templateId, options) {
       const request: TransportRequest = {
         method: 'POST',
         path: '/v2/state/active-contracts',
         body: {
-          filter: {
-            filtersByParty: {
-              [actAs]: {
-                filters: [
-                  {
-                    templateFilter: {
-                      templateId: parseTemplateId(templateId),
-                    },
-                  },
-                ],
-              },
-            },
-          },
-          activeAtOffset: '',
+          activeAtOffset: options?.activeAtOffset ?? 0,
+          eventFormat: options?.eventFormat ?? templateEventFormat(templateId),
         },
       }
       if (options?.signal) request.signal = options.signal
-      const response = await transport.request<{
-        activeContracts: readonly CreatedEvent[]
-      }>(request)
 
-      const contracts = (response.activeContracts ?? []).map((event) => ({
-        templateId: event.templateId,
-        contractId: event.contractId,
-        payload: event.payload,
-        signatories: event.signatories,
-        observers: event.observers,
-        createdAt: event.createdAt,
-      }))
-      return contracts as unknown as readonly Contract<TPayload>[]
+      const response = await transport.request<
+        readonly { contractEntry: ContractEntry }[]
+      >(request)
+
+      return response
+        .map((entry) => {
+          if ('JsActiveContract' in entry.contractEntry) {
+            return entry.contractEntry.JsActiveContract
+          }
+          return undefined
+        })
+        .filter((c): c is ActiveContract => c !== undefined)
     },
 
     async getTransactionById(updateId) {
-      return transport.request<Transaction>({
+      const response = await transport.request<{ transaction: JsTransaction }>({
         method: 'POST',
         path: '/v2/updates/transaction-by-id',
-        body: { updateId, requestingParties: [actAs, ...readAs] },
-      })
-    },
-
-    async getTransactionTreeById(updateId) {
-      const response = await transport.request<{ transaction: TransactionTree }>({
-        method: 'POST',
-        path: `/v2/updates/transaction-tree-by-id/${updateId}`,
-        body: { requestingParties: [actAs, ...readAs] },
+        body: {
+          updateId,
+          requestingParties: [actAs, ...readAs],
+        },
       })
       return response.transaction
     },
 
     async getLedgerEnd() {
-      const response = await transport.request<{ offset: string }>({
+      const response = await transport.request<{ offset: number }>({
         method: 'GET',
         path: '/v2/state/ledger-end',
       })
-      return response.offset as LedgerOffset
+      return response.offset
     },
 
     async getEventsByContractId(contractId) {
@@ -213,18 +238,12 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
   }
 }
 
-function parseTemplateId(templateId: TemplateId): {
-  packageId: string
-  moduleName: string
-  entityName: string
-} {
-  const parts = templateId.split(':')
-  if (parts.length !== 3 || parts[0] === undefined || parts[1] === undefined || parts[2] === undefined) {
-    throw new Error(`Invalid template ID: ${templateId}. Expected format: packageId:moduleName:entityName`)
+/** Extract the first CreatedEvent from a list of tagged events. */
+function extractCreatedEvent(events: readonly TaggedEvent[]): CreatedEvent | undefined {
+  for (const event of events) {
+    if ('CreatedEvent' in event) {
+      return event.CreatedEvent
+    }
   }
-  return {
-    packageId: parts[0],
-    moduleName: parts[1],
-    entityName: parts[2],
-  }
+  return undefined
 }

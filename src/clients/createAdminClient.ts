@@ -3,12 +3,13 @@
  *
  * The AdminClient provides party/user/package management operations.
  * Requires a privileged JWT token with admin rights.
+ *
+ * Request/response shapes match the Canton JSON Ledger API V2 OpenAPI spec (3.4+).
  */
 
 import type { Transport } from '../transport/types.js'
-import type { Party, PartyDetails, AllocatePartyRequest } from '../types/party.js'
-import type { User, UserRight, CreateUserRequest } from '../types/user.js'
-import type { PackageDetails } from '../types/package.js'
+import type { PartyDetails, AllocatePartyRequest } from '../types/party.js'
+import type { User, Right, CreateUserRequest } from '../types/user.js'
 
 export type AdminClientConfig = {
   readonly transport: Transport
@@ -22,7 +23,7 @@ export type AdminClient = {
   listParties: (filter?: string) => Promise<readonly PartyDetails[]>
 
   /** Get details for a specific party. */
-  getParty: (party: Party) => Promise<PartyDetails>
+  getParty: (party: string) => Promise<PartyDetails>
 
   /** Get the participant ID. */
   getParticipantId: () => Promise<string>
@@ -40,19 +41,16 @@ export type AdminClient = {
   deleteUser: (userId: string) => Promise<void>
 
   /** Grant rights to a user. */
-  grantRights: (userId: string, rights: readonly UserRight[]) => Promise<readonly UserRight[]>
+  grantRights: (userId: string, rights: readonly Right[]) => Promise<readonly Right[]>
 
   /** Revoke rights from a user. */
-  revokeRights: (userId: string, rights: readonly UserRight[]) => Promise<readonly UserRight[]>
+  revokeRights: (userId: string, rights: readonly Right[]) => Promise<readonly Right[]>
 
-  /** Upload a DAR file to the ledger. */
-  uploadDar: (darBytes: Uint8Array) => Promise<void>
+  /** Upload a DAR file to the ledger (raw binary). */
+  uploadDar: (darBytes: Uint8Array, options?: { vetAllPackages?: boolean }) => Promise<void>
 
-  /** List all known packages. */
+  /** List all known package IDs. */
   listPackages: () => Promise<readonly string[]>
-
-  /** Get package details. */
-  getPackageDetails: () => Promise<readonly PackageDetails[]>
 
   /** Validate a DAR file without uploading. */
   validateDar: (darBytes: Uint8Array) => Promise<void>
@@ -70,19 +68,26 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
         method: 'POST',
         path: '/v2/parties',
         body: {
-          identifierHint: request?.identifierHint,
-          displayName: request?.displayName,
+          partyIdHint: request?.partyIdHint,
+          localMetadata: request?.localMetadata,
           identityProviderId: request?.identityProviderId,
+          synchronizerId: request?.synchronizerId,
+          userId: request?.userId,
         },
       })
       return response.partyDetails
     },
 
     async listParties(filter) {
-      const params = filter !== undefined ? `?filter-party=${encodeURIComponent(filter)}` : ''
-      const response = await transport.request<{ partyDetails: readonly PartyDetails[] }>({
+      const params = new URLSearchParams()
+      if (filter !== undefined) params.set('filter-party', filter)
+      const qs = params.toString()
+      const response = await transport.request<{
+        partyDetails: readonly PartyDetails[]
+        nextPageToken?: string
+      }>({
         method: 'GET',
-        path: `/v2/parties${params}`,
+        path: `/v2/parties${qs ? `?${qs}` : ''}`,
       })
       return response.partyDetails ?? []
     },
@@ -107,7 +112,10 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
       const response = await transport.request<{ user: User }>({
         method: 'POST',
         path: '/v2/users',
-        body: { user: request, rights: request.rights },
+        body: {
+          user: request.user,
+          rights: request.rights,
+        },
       })
       return response.user
     },
@@ -121,7 +129,10 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
     },
 
     async listUsers() {
-      const response = await transport.request<{ users: readonly User[] }>({
+      const response = await transport.request<{
+        users: readonly User[]
+        nextPageToken?: string
+      }>({
         method: 'GET',
         path: '/v2/users',
       })
@@ -129,14 +140,16 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
     },
 
     async deleteUser(userId) {
-      await transport.request<void>({
+      await transport.request<Record<string, never>>({
         method: 'DELETE',
         path: `/v2/users/${encodeURIComponent(userId)}`,
       })
     },
 
     async grantRights(userId, rights) {
-      const response = await transport.request<{ newlyGrantedRights: readonly UserRight[] }>({
+      const response = await transport.request<{
+        newlyGrantedRights: readonly Right[]
+      }>({
         method: 'POST',
         path: `/v2/users/${encodeURIComponent(userId)}/rights`,
         body: { rights },
@@ -145,7 +158,9 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
     },
 
     async revokeRights(userId, rights) {
-      const response = await transport.request<{ newlyRevokedRights: readonly UserRight[] }>({
+      const response = await transport.request<{
+        newlyRevokedRights: readonly Right[]
+      }>({
         method: 'POST',
         path: `/v2/users/${encodeURIComponent(userId)}/rights`,
         body: { rights, revoke: true },
@@ -153,12 +168,18 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
       return response.newlyRevokedRights ?? []
     },
 
-    async uploadDar(darBytes) {
-      const base64 = globalThis.btoa(String.fromCharCode(...darBytes))
-      await transport.request<void>({
+    async uploadDar(darBytes, options) {
+      const params = new URLSearchParams()
+      if (options?.vetAllPackages !== undefined) {
+        params.set('vetAllPackages', String(options.vetAllPackages))
+      }
+      const qs = params.toString()
+
+      await transport.request<Record<string, never>>({
         method: 'POST',
-        path: '/v2/dars',
-        body: { darFile: base64 },
+        path: `/v2/dars${qs ? `?${qs}` : ''}`,
+        body: darBytes,
+        headers: { 'Content-Type': 'application/octet-stream' },
       })
     },
 
@@ -170,22 +191,12 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
       return response.packageIds ?? []
     },
 
-    async getPackageDetails() {
-      const response = await transport.request<{
-        packageDetails: readonly PackageDetails[]
-      }>({
-        method: 'POST',
-        path: '/v2/packages',
-      })
-      return response.packageDetails ?? []
-    },
-
     async validateDar(darBytes) {
-      const base64 = globalThis.btoa(String.fromCharCode(...darBytes))
-      await transport.request<void>({
+      await transport.request<Record<string, never>>({
         method: 'POST',
         path: '/v2/dars/validate',
-        body: { darFile: base64 },
+        body: darBytes,
+        headers: { 'Content-Type': 'application/octet-stream' },
       })
     },
 

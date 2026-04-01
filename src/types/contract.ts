@@ -3,56 +3,99 @@
  *
  * Canton uses a UTXO model: contracts are created and archived, never mutated.
  * Each contract is identified by a unique ContractId and belongs to a template.
+ *
+ * Events on the wire use tagged discriminated unions:
+ *   { "CreatedEvent": {...} } | { "ArchivedEvent": {...} } | { "ExercisedEvent": {...} }
  */
 
 /** Unique identifier for a contract instance on the ledger. */
 export type ContractId<T = unknown> = string & { readonly __contractId: T }
 
 /**
- * Fully qualified template identifier.
- * Format: `packageId:moduleName:entityName`
+ * Template identifier string.
+ * Supports two formats:
+ *   - `#package-name:Module:Entity` (preferred, package-name reference)
+ *   - `packageId:Module:Entity` (deprecated package-id reference)
  */
-export type TemplateId = `${string}:${string}:${string}`
+export type TemplateId = string & { readonly __templateId: true }
 
-/** A contract on the ledger with its payload and metadata. */
-export type Contract<TPayload = Record<string, unknown>> = {
-  readonly templateId: TemplateId
-  readonly contractId: ContractId<TPayload>
-  readonly payload: TPayload
+/** A created event from the ledger (wire format). */
+export type CreatedEvent = {
+  readonly offset: number
+  readonly nodeId: number
+  readonly contractId: string
+  readonly templateId: string
+  readonly packageName: string
+  readonly representativePackageId: string
+  readonly createArgument: Record<string, unknown>
   readonly signatories: readonly string[]
-  readonly observers: readonly string[]
+  readonly witnessParties: readonly string[]
+  readonly acsDelta: boolean
   readonly createdAt: string
+  readonly contractKey?: Record<string, unknown>
+  readonly createdEventBlob?: string
+  readonly interfaceViews?: readonly InterfaceView[]
+  readonly observers?: readonly string[]
 }
 
-/** A created event from the ledger. */
-export type CreatedEvent<TPayload = Record<string, unknown>> = {
-  readonly templateId: TemplateId
-  readonly contractId: ContractId<TPayload>
-  readonly payload: TPayload
-  readonly signatories: readonly string[]
-  readonly observers: readonly string[]
-  readonly createdAt: string
-  readonly contractKey?: unknown
-  readonly interfaceViews?: Record<string, unknown>
-}
-
-/** An archived event from the ledger. */
+/** An archived event from the ledger (wire format). */
 export type ArchivedEvent = {
-  readonly templateId: TemplateId
-  readonly contractId: ContractId
+  readonly offset: number
+  readonly nodeId: number
+  readonly contractId: string
+  readonly templateId: string
+  readonly packageName: string
+  readonly witnessParties: readonly string[]
+  readonly implementedInterfaces?: readonly string[]
 }
 
-/** An exercised event from a transaction tree. */
+/** An exercised event from a transaction tree (wire format). */
 export type ExercisedEvent = {
-  readonly templateId: TemplateId
-  readonly contractId: ContractId
+  readonly offset: number
+  readonly nodeId: number
+  readonly contractId: string
+  readonly templateId: string
   readonly choice: string
-  readonly argument: unknown
-  readonly result: unknown
+  readonly choiceArgument: Record<string, unknown>
   readonly consuming: boolean
-  readonly childEventIds: readonly string[]
+  readonly lastDescendantNodeId: number
+  readonly packageName: string
+  readonly acsDelta: boolean
   readonly actingParties: readonly string[]
+  readonly witnessParties: readonly string[]
+  readonly interfaceId?: string
+  readonly exerciseResult?: unknown
+  readonly implementedInterfaces?: readonly string[]
 }
 
-/** Union of ledger events. */
-export type Event = CreatedEvent | ArchivedEvent
+/** Interface view attached to a created event. */
+export type InterfaceView = {
+  readonly interfaceId: string
+  readonly viewValue: Record<string, unknown>
+}
+
+/**
+ * Tagged event union as it appears on the wire.
+ * Canton uses { "CreatedEvent": {...} } | { "ArchivedEvent": {...} } | ...
+ */
+export type TaggedEvent =
+  | { readonly CreatedEvent: CreatedEvent }
+  | { readonly ArchivedEvent: ArchivedEvent }
+  | { readonly ExercisedEvent: ExercisedEvent }
+
+/** A contract from the active contract set. */
+export type ActiveContract = {
+  readonly createdEvent: CreatedEvent
+  readonly synchronizerId: string
+  readonly reassignmentCounter: number
+}
+
+/**
+ * Tagged contract entry from active contracts query.
+ * { "JsActiveContract": ... } | { "JsEmpty": {} } | ...
+ */
+export type ContractEntry =
+  | { readonly JsActiveContract: ActiveContract }
+  | { readonly JsEmpty: Record<string, never> }
+  | { readonly JsIncompleteAssigned: unknown }
+  | { readonly JsIncompleteUnassigned: unknown }

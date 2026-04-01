@@ -68,7 +68,9 @@ export function createTestClient(config: TestClientConfig): TestClient {
 
     async allocateParties(hints) {
       return Promise.all(
-        hints.map((hint) => admin.allocateParty({ identifierHint: hint, displayName: hint })),
+        hints.map((hint) =>
+          admin.allocateParty({ partyIdHint: hint }),
+        ),
       )
     },
   }

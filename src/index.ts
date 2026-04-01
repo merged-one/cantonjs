@@ -3,6 +3,8 @@ export {
   createLedgerClient,
   type LedgerClient,
   type LedgerClientConfig,
+  type CommandOptions,
+  type QueryOptions,
 } from './clients/createLedgerClient.js'
 
 export {
@@ -43,33 +45,30 @@ export { localNet, devNet, testNet, mainNet, type CantonChain } from './chains/d
 export type {
   ContractId,
   TemplateId,
-  Contract,
   CreatedEvent,
   ArchivedEvent,
   ExercisedEvent,
-  Event,
+  TaggedEvent,
+  ActiveContract,
+  ContractEntry,
 } from './types/contract.js'
 
-export type { Party, PartyDetails, AllocatePartyRequest } from './types/party.js'
+export type { Party, ObjectMeta, PartyDetails, AllocatePartyRequest } from './types/party.js'
 
 export type {
-  Command,
-  CreateCommand,
-  ExerciseCommand,
-  ExerciseByKeyCommand,
-  SubmitOptions,
   LedgerOffset,
-  Completion,
-  CompletionStatus,
+  TaggedCommand,
+  JsCommands,
+  TransactionShape,
+  EventFormat,
+  TransactionFormat,
 } from './types/command.js'
 
 export type {
-  Transaction,
-  TransactionTree,
-  Reassignment,
-  Update,
-  TransactionShape,
+  JsTransaction,
+  TaggedUpdate,
+  UpdateFormat,
 } from './types/transaction.js'
 
-export type { User, UserRight, CreateUserRequest } from './types/user.js'
+export type { User, Right, RightKind, CreateUserRequest } from './types/user.js'
 export type { PackageStatus, PackageDetails } from './types/package.js'

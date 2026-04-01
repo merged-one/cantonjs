@@ -9,28 +9,25 @@ export {
 export type {
   ContractId,
   TemplateId,
-  Contract,
   CreatedEvent,
   ArchivedEvent,
   ExercisedEvent,
-  Event,
+  TaggedEvent,
+  ActiveContract,
+  ContractEntry,
 } from '../types/contract.js'
 
 export type {
-  Transaction,
-  TransactionTree,
-  Reassignment,
-  Update,
-  TransactionShape,
+  JsTransaction,
+  TaggedUpdate,
+  UpdateFormat,
 } from '../types/transaction.js'
 
 export type {
-  Command,
-  CreateCommand,
-  ExerciseCommand,
-  ExerciseByKeyCommand,
-  SubmitOptions,
   LedgerOffset,
-  Completion,
-  CompletionStatus,
+  TaggedCommand,
+  JsCommands,
+  TransactionShape,
+  EventFormat,
+  TransactionFormat,
 } from '../types/command.js'

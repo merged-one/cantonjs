@@ -2,34 +2,40 @@
  * Canton user management types.
  *
  * Users are the identity layer above parties. A user can act as multiple parties
- * and have different rights (read, write, admin).
+ * and have different rights.
+ *
+ * Rights on the wire use deeply nested tagged unions:
+ *   { "kind": { "CanActAs": { "value": { "party": "..." } } } }
  */
 
-import type { Party } from './party.js'
+import type { ObjectMeta } from './party.js'
 
-/** A user in the Canton user management system. */
+/** A user in the Canton user management system (wire format). */
 export type User = {
   readonly id: string
-  readonly primaryParty?: Party
-  readonly isDeactivated: boolean
-  readonly identityProviderId: string
-  readonly metadata?: {
-    readonly resourceVersion: string
-    readonly annotations: Record<string, string>
-  }
+  readonly primaryParty?: string
+  readonly isDeactivated?: boolean
+  readonly metadata?: ObjectMeta
+  readonly identityProviderId?: string
 }
 
-/** Rights that can be granted to a user. */
-export type UserRight =
-  | { readonly type: 'canActAs'; readonly party: Party }
-  | { readonly type: 'canReadAs'; readonly party: Party }
-  | { readonly type: 'participantAdmin' }
-  | { readonly type: 'identityProviderAdmin' }
+/** A right on the wire (tagged union). */
+export type Right = {
+  readonly kind: RightKind
+}
+
+/** Right kind (tagged discriminated union). */
+export type RightKind =
+  | { readonly CanActAs: { readonly value: { readonly party: string } } }
+  | { readonly CanReadAs: { readonly value: { readonly party: string } } }
+  | { readonly CanExecuteAs: { readonly value: { readonly party: string } } }
+  | { readonly CanExecuteAsAnyParty: { readonly value: Record<string, never> } }
+  | { readonly CanReadAsAnyParty: { readonly value: Record<string, never> } }
+  | { readonly ParticipantAdmin: { readonly value: Record<string, never> } }
+  | { readonly IdentityProviderAdmin: { readonly value: Record<string, never> } }
 
 /** Request to create a user. */
 export type CreateUserRequest = {
-  readonly id: string
-  readonly primaryParty?: Party
-  readonly rights?: readonly UserRight[]
-  readonly identityProviderId?: string
+  readonly user: User
+  readonly rights?: readonly Right[]
 }
