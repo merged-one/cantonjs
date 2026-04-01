@@ -1,0 +1,77 @@
+# cantonjs
+
+TypeScript interface for the Canton Network — viem for Canton.
+
+## Installation
+
+npm install cantonjs
+
+## Usage
+
+import { createLedgerClient, jsonApi } from 'cantonjs'
+
+const client = createLedgerClient({
+  transport: jsonApi({ url: 'http://localhost:7575', token: 'your-jwt' }),
+  actAs: 'Alice::1234',
+})
+
+// Create a contract
+const created = await client.createContract('pkg:Module:Template', { owner: 'Alice', value: 100 })
+
+// Exercise a choice
+const tx = await client.exerciseChoice('pkg:Module:Template', created.contractId, 'Transfer', { newOwner: 'Bob' })
+
+// Query active contracts
+const contracts = await client.queryContracts('pkg:Module:Template')
+
+## Subpath Imports
+
+import { createLedgerClient } from 'cantonjs/ledger'
+import { createAdminClient } from 'cantonjs/admin'
+import { createTestClient } from 'cantonjs/testing'
+import { localNet, devNet, testNet, mainNet } from 'cantonjs/chains'
+
+## Client Types
+
+LedgerClient — party-scoped contract operations (create, exercise, query, stream)
+AdminClient — party/user/package management (allocateParty, uploadDar, createUser)
+TestClient — sandbox testing (advanceTime, allocateParties, resetLedger)
+
+## Canton Key Concepts
+
+Party — identity unit (not address), permissions via JWT token
+Template — Daml contract definition, identified by packageId:moduleName:entityName
+Choice — operation on a contract (like calling a function)
+ContractId — unique UTXO-style identifier
+DAR — Daml Archive deployment artifact
+Synchronizer — consensus domain for transaction ordering
+
+## Canton Ledger API V2
+
+JSON API endpoints under /v2/:
+  /v2/commands/submit-and-wait — synchronous command submission
+  /v2/commands/submit-and-wait-for-transaction — returns transaction
+  /v2/state/active-contracts — query active contracts (streaming)
+  /v2/updates — transaction update stream
+  /v2/parties — party management
+  /v2/users — user management
+  /v2/packages — package queries
+  /v2/dars — DAR upload
+  /v2/version — API version
+  /livez — health check (unauthenticated)
+
+## Error Codes
+
+CJ1xxx — Transport (connection, HTTP, gRPC)
+CJ2xxx — Authentication (JWT)
+CJ3xxx — Ledger (command rejection, authorization)
+CJ4xxx — Admin (party, user, package)
+CJ5xxx — Streaming
+CJ6xxx — Codegen
+
+## Links
+
+Repository: https://github.com/merged-one/cantonjs
+Companion CLI: https://github.com/merged-one/cantonctl
+Canton Network: https://www.canton.network
+Canton Docs: https://docs.digitalasset.com

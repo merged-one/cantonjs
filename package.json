@@ -1,0 +1,119 @@
+{
+  "name": "cantonjs",
+  "version": "0.0.1",
+  "description": "TypeScript interface for the Canton Network — viem for Canton",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./ledger": {
+      "types": "./dist/types/ledger/index.d.ts",
+      "import": "./dist/esm/ledger/index.js",
+      "default": "./dist/cjs/ledger/index.js"
+    },
+    "./admin": {
+      "types": "./dist/types/admin/index.d.ts",
+      "import": "./dist/esm/admin/index.js",
+      "default": "./dist/cjs/admin/index.js"
+    },
+    "./testing": {
+      "types": "./dist/types/testing/index.d.ts",
+      "import": "./dist/esm/testing/index.js",
+      "default": "./dist/cjs/testing/index.js"
+    },
+    "./chains": {
+      "types": "./dist/types/chains/index.d.ts",
+      "import": "./dist/esm/chains/index.js",
+      "default": "./dist/cjs/chains/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "ledger": ["./dist/types/ledger/index.d.ts"],
+      "admin": ["./dist/types/admin/index.d.ts"],
+      "testing": ["./dist/types/testing/index.d.ts"],
+      "chains": ["./dist/types/chains/index.d.ts"]
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.test-d.ts"
+  ],
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:esm": "tsc --project tsconfig.build.json --outDir dist/esm",
+    "build:cjs": "tsc --project tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:types": "tsc --project tsconfig.build.json --declarationDir dist/types --emitDeclarationOnly --declaration --declarationMap",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "size": "size-limit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merged-one/cantonjs.git"
+  },
+  "keywords": [
+    "canton",
+    "canton-network",
+    "daml",
+    "blockchain",
+    "ledger-api",
+    "typescript",
+    "web3"
+  ],
+  "author": "Charles Dusek",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/merged-one/cantonjs/issues"
+  },
+  "homepage": "https://github.com/merged-one/cantonjs#readme",
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^11.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^3.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "size-limit": "^11.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.4"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "size-limit": [
+    {
+      "path": "dist/esm/index.js",
+      "limit": "10 kB"
+    },
+    {
+      "path": "dist/esm/ledger/index.js",
+      "limit": "15 kB"
+    }
+  ]
+}
