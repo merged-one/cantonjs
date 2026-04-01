@@ -1,0 +1,160 @@
+// Minimal Daml-LF archive proto definition for cantonjs-codegen.
+//
+// Derived from the official Daml-LF archive schema:
+// https://github.com/digital-asset/daml/blob/main/sdk/daml-lf/archive/src/main/protobuf/com/digitalasset/daml_lf_dev/daml_lf.proto
+//
+// Only the subset needed for codegen (types, templates, choices) is included.
+
+syntax = "proto3";
+
+package daml_lf_dev;
+
+// Top-level archive wrapper.
+message Archive {
+  HashFunction hash_function = 1;
+  string hash = 2;
+  bytes payload = 3;
+}
+
+enum HashFunction {
+  SHA256 = 0;
+}
+
+// The decoded payload of an Archive.
+message ArchivePayload {
+  string minor = 1;
+  oneof Sum {
+    Package daml_lf_2 = 11;
+  }
+}
+
+// A Daml-LF package.
+message Package {
+  repeated Module modules = 1;
+  repeated string interned_strings = 2;
+  repeated InternedDottedName interned_dotted_names = 3;
+  PackageMetadata metadata = 4;
+}
+
+message PackageMetadata {
+  int32 name_interned_str = 1;
+  int32 version_interned_str = 2;
+}
+
+message InternedDottedName {
+  repeated int32 segments_interned_str = 1;
+}
+
+// A module within a package.
+message Module {
+  int32 name_interned_dname = 1;
+  repeated DefDataType data_types = 3;
+  repeated DefTemplate templates = 4;
+}
+
+// Data type definition (record, variant, or enum).
+message DefDataType {
+  int32 name_interned_dname = 1;
+  repeated TypeVarWithKind params = 2;
+
+  oneof DataCons {
+    DefDataType.Fields record = 3;
+    DefDataType.Fields variant = 4;
+    DefDataType.EnumConstructors enum = 5;
+  }
+
+  message Fields {
+    repeated FieldWithType fields = 1;
+  }
+
+  message EnumConstructors {
+    repeated int32 constructors_interned_str = 1;
+  }
+}
+
+message TypeVarWithKind {
+  int32 var_interned_str = 1;
+}
+
+message FieldWithType {
+  int32 field_interned_str = 1;
+  Type type = 2;
+}
+
+// Template definition.
+message DefTemplate {
+  int32 tycon_interned_dname = 1;
+  repeated TemplateChoice choices = 4;
+}
+
+message TemplateChoice {
+  int32 name_interned_str = 1;
+  bool consuming = 2;
+  Type arg_type = 5;
+  Type ret_type = 7;
+}
+
+// Type representation.
+message Type {
+  oneof Sum {
+    Type.Prim prim = 3;
+    Type.Con con = 4;
+    Type.Var var = 5;
+    int64 nat = 11;
+    int32 interned = 12;
+  }
+
+  message Prim {
+    PrimType prim = 1;
+    repeated Type args = 2;
+  }
+
+  message Con {
+    TypeConName tycon = 1;
+    repeated Type args = 2;
+  }
+
+  message Var {
+    int32 var_interned_str = 1;
+  }
+}
+
+message TypeConName {
+  ModuleRef module_ref = 1;
+  int32 name_interned_dname = 2;
+}
+
+message ModuleRef {
+  PackageRef package_ref = 1;
+  int32 module_name_interned_dname = 2;
+}
+
+message PackageRef {
+  oneof Sum {
+    Unit self = 1;
+    string package_id_interned_str = 2;
+  }
+}
+
+message Unit {}
+
+enum PrimType {
+  UNIT = 0;
+  BOOL = 1;
+  INT64 = 2;
+  DECIMAL = 3;
+  TEXT = 4;
+  TIMESTAMP = 5;
+  PARTY = 6;
+  LIST = 7;
+  UPDATE = 8;
+  SCENARIO = 9;
+  DATE = 10;
+  CONTRACT_ID = 11;
+  OPTIONAL = 12;
+  ARROW = 13;
+  TEXTMAP = 14;
+  NUMERIC = 15;
+  ANY = 16;
+  GENMAP = 100;
+}

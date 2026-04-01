@@ -1,0 +1,56 @@
+{
+  "name": "cantonjs-codegen",
+  "version": "0.0.1",
+  "description": "Generate TypeScript types from Daml DAR files for cantonjs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "cantonjs-codegen": "./bin/cantonjs-codegen.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "proto"
+  ],
+  "keywords": [
+    "canton",
+    "daml",
+    "codegen",
+    "typescript",
+    "dar"
+  ],
+  "author": "Charles Dusek",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merged-one/cantonjs.git",
+    "directory": "packages/cantonjs-codegen"
+  },
+  "dependencies": {
+    "jszip": "^3.10.0",
+    "protobufjs": "^7.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "peerDependencies": {
+    "cantonjs": "^0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "cantonjs": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -32,6 +32,11 @@
       "types": "./dist/types/chains/index.d.ts",
       "import": "./dist/esm/chains/index.js",
       "default": "./dist/cjs/chains/index.js"
+    },
+    "./codegen": {
+      "types": "./dist/types/codegen/index.d.ts",
+      "import": "./dist/esm/codegen/index.js",
+      "default": "./dist/cjs/codegen/index.js"
     }
   },
   "typesVersions": {
@@ -47,6 +52,9 @@
       ],
       "chains": [
         "./dist/types/chains/index.d.ts"
+      ],
+      "codegen": [
+        "./dist/types/codegen/index.d.ts"
       ]
     }
   },
