@@ -14,6 +14,10 @@ npm run size          # Check bundle size limits
 # Codegen package (packages/cantonjs-codegen/)
 cd packages/cantonjs-codegen && npx vitest run   # Run codegen tests
 cd packages/cantonjs-codegen && npx tsc --noEmit  # Typecheck codegen
+
+# React package (packages/cantonjs-react/)
+cd packages/cantonjs-react && npx vitest run      # Run React hook tests
+cd packages/cantonjs-react && npx tsc --noEmit    # Typecheck React package
 ```
 
 ## Architecture Rules
@@ -65,6 +69,7 @@ Complementary to cantonctl's E1xxx-E8xxx:
 | Package | Purpose |
 |---------|---------|
 | `packages/cantonjs-codegen/` | CLI tool: DAR → TypeScript codegen (`cantonjs-codegen --dar <path> --output <dir>`) |
+| `packages/cantonjs-react/` | React hooks for Canton dApps (CantonProvider, useContracts, useCreateContract, useExercise, useStreamContracts) |
 
 ## Test Patterns
 

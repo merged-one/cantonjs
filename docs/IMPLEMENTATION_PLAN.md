@@ -19,8 +19,9 @@
 | Phase 4: TestClient | **COMPLETE** | 171 | Sandbox fixture, mock/recording transport, cantonctl integration |
 | Phase 5: Codegen | **COMPLETE** | 200 (171 + 29) | DAR parser, type mapper, code emitter, CLI (`cantonjs-codegen` package) |
 | Phase 6: Advanced | **COMPLETE** | 221 (192 + 29) | Fallback/gRPC transports, reassignment, interactive submission |
+| Phase 7: React | **COMPLETE** | 237 (192 + 29 + 16) | CantonProvider, hooks, TanStack Query, polling stream |
 
-Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
+Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`, 16 in `packages/cantonjs-react`.
 
 ### ADRs Written
 
@@ -33,6 +34,7 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 | 0005 | Streaming architecture (AsyncIterator pattern) | 2 |
 | 0006 | Testing strategy (sandbox + mock transport) | 4 |
 | 0007 | Codegen architecture and output format | 5 |
+| 0008 | React integration architecture | 7 |
 
 ### Key Commits
 
@@ -45,42 +47,11 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 | `c7df451` | 4 | Testing utilities with cantonctl integration |
 | `69daf36` | 5 | Codegen pipeline for DAR-to-TypeScript generation |
 | `6779c5e` | 6 | Advanced features: transports, reassignment, interactive submission |
+| (pending) | 7 | React integration: cantonjs-react hooks package |
 
 ---
 
-## Next: Phase 7 — React Integration
-
-**Priority:** MEDIUM
-**Complexity:** L (1-2 weeks)
-**Depends on:** Phase 6
-
-### 7a. Package Scaffold
-- `packages/cantonjs-react/` — separate npm package
-- Peer deps: react 18+, @tanstack/react-query 5+, cantonjs
-- Files: package.json, tsconfig, barrel exports
-
-### 7b. Context Provider
-- `CantonProvider` — wraps QueryClientProvider + canton config
-- `useCantonClient()` — access LedgerClient from context
-- `useParty()` — current party identity
-
-### 7c. Query Hooks
-- `useContracts(template, filter?)` — TanStack Query wrapper for queryContracts
-- `useContractById(contractId)` — single contract lookup
-- `useStreamContracts(template, filter?)` — streaming subscription via useEffect + AsyncIterator
-
-### 7d. Mutation Hooks
-- `useCreateContract(template)` — returns `{ create, isPending, error }`
-- `useExercise(template, choice)` — returns `{ exercise, isPending, error }`
-- Optimistic update support via TanStack Query's `onMutate`
-
-### ADR to Write
-- 0008: React integration architecture (three-layer pattern)
-
-### Exit Criteria
-- React developers can build Canton dApps with familiar hook patterns
-- TanStack Query provides caching/deduplication
-- Streaming hooks auto-update UI
+## Next: Phase 8 — Documentation & Release
 
 ---
 
@@ -102,7 +73,7 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 
 ## Immediate Action Items
 
-1. **Begin Phase 7** — React hooks package (`packages/cantonjs-react/`)
+1. **Begin Phase 8** — Documentation site and getting started guide
 2. **Add integration tests** — Run against Canton sandbox with cantonctl
 3. **Plan cantonctl codegen integration** — `cantonctl build` → cantonjs-codegen pipeline
 
@@ -114,5 +85,5 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`.
 |-----------|--------|--------|
 | Phase 5 complete | ✅ Done | 200 tests, codegen from DAR files |
 | Phase 6 complete | ✅ Done | 221 tests, interactive submission, gRPC, reassignment |
-| Phase 7 complete | Next | React hooks, TanStack Query integration |
+| Phase 7 complete | ✅ Done | 237 tests, React hooks, TanStack Query integration |
 | v1.0 release | After 8 | Docs site, examples, 90%+ coverage |

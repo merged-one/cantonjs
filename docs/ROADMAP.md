@@ -10,11 +10,12 @@
 
 ## Current State
 
-- **Phases 0–5 complete** (200 tests passing, CI green)
+- **Phases 0–7 complete** (237 tests passing, CI green)
 - Core library: LedgerClient, AdminClient, TestClient, streaming, codegen runtime
 - Separate `cantonjs-codegen` package for DAR-to-TypeScript generation
-- ADRs 0001–0007 written
-- Next up: Phase 6 (Advanced Features)
+- Separate `cantonjs-react` package with React hooks for Canton dApps
+- ADRs 0001–0008 written
+- Next up: Phase 8 (Documentation & Polish)
 
 ---
 
@@ -188,25 +189,26 @@
 > `cantonjs-react` — React hooks for Canton dApps.
 
 ### Deliverables
-- [ ] `cantonjs-react` package (separate npm package)
-- [ ] `CantonProvider` context component
-- [ ] `useContracts(template, filter?)` — query hook with caching
-- [ ] `useExercise(template, choice)` — mutation hook
-- [ ] `useCreateContract(template)` — mutation hook
-- [ ] `useParty()` — current party context
-- [ ] `useStreamContracts(template, filter?)` — streaming subscription hook
-- [ ] `useLedgerClient()` — escape hatch for direct client access
-- [ ] TanStack Query integration (peer dependency)
-- [ ] Optimistic update support for exercises
-- [ ] CIP-0103 wallet connection hook: `useWalletConnect()`
+- [x] `cantonjs-react` package (separate npm package in `packages/cantonjs-react/`)
+- [x] `CantonProvider` context component wrapping TanStack QueryClientProvider
+- [x] `useContracts(options)` — query hook with caching via TanStack Query
+- [x] `useExercise(options)` — mutation hook with cache invalidation
+- [x] `useCreateContract(options)` — mutation hook with cache invalidation
+- [x] `useParty()` — current party identity from client context
+- [x] `useCantonClient()` — direct client access hook
+- [x] `useStreamContracts(options)` — polling-based streaming hook
+- [x] TanStack Query integration (peer dependency)
+- [ ] Optimistic update support for exercises (deferred)
+- [ ] CIP-0103 wallet connection hook: `useWalletConnect()` (deferred)
 
-### ADR to Write
-- 0008: React integration architecture (three-layer pattern)
+### ADR Written
+- 0008: React integration architecture (TanStack Query wrapping)
 
-### Exit Criteria
+### Exit Criteria — Met
 - React developers can build Canton dApps with familiar hook patterns
 - TanStack Query provides automatic caching, deduplication, and refetching
-- Streaming hooks auto-reconnect and update UI in real-time
+- Polling-based streaming hook updates UI; WebSocket streaming deferred
+- 16 React tests passing
 
 ---
 
