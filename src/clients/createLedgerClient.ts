@@ -16,6 +16,11 @@ import type {
   ContractEntry,
 } from '../types/contract.js'
 import type { JsTransaction } from '../types/transaction.js'
+import type { Reassignment, ReassignmentCommand } from '../types/reassignment.js'
+import type {
+  PrepareSubmissionResponse,
+  PartySignatures,
+} from '../types/interactive.js'
 import type { LedgerOffset, EventFormat, TransactionFormat } from '../types/command.js'
 
 export type LedgerClientConfig = {
@@ -69,6 +74,31 @@ export type LedgerClient = {
 
   /** Get the latest pruned offsets. */
   getLatestPrunedOffsets: () => Promise<PrunedOffsets>
+
+  /** Submit a reassignment command and wait for completion. */
+  submitReassignment: (
+    command: ReassignmentCommand,
+    options?: CommandOptions,
+  ) => Promise<Reassignment>
+
+  /**
+   * Prepare a transaction for external signing.
+   * Returns the prepared transaction and hash to sign.
+   */
+  prepareSubmission: (
+    templateId: string,
+    createArguments: Record<string, unknown>,
+    options?: CommandOptions,
+  ) => Promise<PrepareSubmissionResponse>
+
+  /**
+   * Execute a previously prepared and externally signed transaction.
+   */
+  executeSubmission: (
+    preparedTransaction: string,
+    partySignatures: readonly PartySignatures[],
+    options?: { readonly submissionId?: string; readonly signal?: AbortSignal },
+  ) => Promise<JsTransaction>
 }
 
 /** A connected synchronizer (domain). */
@@ -270,6 +300,56 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
         path: '/v2/state/latest-pruned-offsets',
       })
       return response
+    },
+
+    async submitReassignment(command, options) {
+      const request: TransportRequest = {
+        method: 'POST',
+        path: '/v2/commands/submit-and-wait-for-reassignment',
+        body: {
+          reassignmentCommand: command,
+          commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+          submitter: actAs,
+          workflowId: options?.workflowId,
+        },
+      }
+      if (options?.signal) request.signal = options.signal
+
+      const response = await transport.request<{ reassignment: Reassignment }>(request)
+      return response.reassignment
+    },
+
+    async prepareSubmission(templateId, createArguments, options) {
+      const request: TransportRequest = {
+        method: 'POST',
+        path: '/v2/interactive-submission/prepare',
+        body: {
+          commands: [{ CreateCommand: { templateId, createArguments } }],
+          commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+          actAs: [actAs],
+          readAs: readAs.length > 0 ? readAs : undefined,
+          workflowId: options?.workflowId,
+        },
+      }
+      if (options?.signal) request.signal = options.signal
+
+      return transport.request<PrepareSubmissionResponse>(request)
+    },
+
+    async executeSubmission(preparedTransaction, partySignatures, options) {
+      const request: TransportRequest = {
+        method: 'POST',
+        path: '/v2/interactive-submission/execute',
+        body: {
+          preparedTransaction,
+          partySignatures,
+          submissionId: options?.submissionId,
+        },
+      }
+      if (options?.signal) request.signal = options.signal
+
+      const response = await transport.request<{ transaction: JsTransaction }>(request)
+      return response.transaction
     },
   }
 }

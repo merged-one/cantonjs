@@ -335,6 +335,114 @@ describe('createLedgerClient', () => {
     })
   })
 
+  describe('submitReassignment', () => {
+    it('sends an unassign command and returns the reassignment', async () => {
+      const reassignment = {
+        updateId: 'r-1',
+        offset: 5,
+        events: [{
+          UnassignedEvent: {
+            unassignId: 'unassign-1',
+            contractId: 'contract-1',
+            templateId,
+            packageName: 'my-pkg',
+            source: 'sync-1',
+            target: 'sync-2',
+            submitter: 'Alice::1234',
+            reassignmentCounter: 0,
+            witnessParties: ['Alice::1234'],
+          },
+        }],
+        recordTime: '2026-04-01T00:00:00Z',
+      }
+
+      const transport = mockTransport({ reassignment })
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      const result = await client.submitReassignment(
+        { UnassignCommand: { contractId: 'contract-1', source: 'sync-1', target: 'sync-2' } },
+      )
+
+      expect(result.updateId).toBe('r-1')
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('POST')
+      expect(req.path).toBe('/v2/commands/submit-and-wait-for-reassignment')
+      expect(req.body.reassignmentCommand.UnassignCommand.contractId).toBe('contract-1')
+      expect(req.body.submitter).toBe('Alice::1234')
+    })
+
+    it('sends an assign command', async () => {
+      const transport = mockTransport({
+        reassignment: { updateId: 'r-2', offset: 6, events: [], recordTime: '2026-04-01T00:00:00Z' },
+      })
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      await client.submitReassignment(
+        { AssignCommand: { unassignId: 'unassign-1', source: 'sync-1', target: 'sync-2' } },
+      )
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.body.reassignmentCommand.AssignCommand.unassignId).toBe('unassign-1')
+    })
+  })
+
+  describe('prepareSubmission', () => {
+    it('prepares a transaction for external signing', async () => {
+      const transport = mockTransport({
+        preparedTransaction: 'base64-prepared-tx',
+        preparedTransactionHash: 'sha256-hash',
+        hashingSchemeVersion: 'V2',
+      })
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      const result = await client.prepareSubmission(templateId, { owner: 'Alice', value: 100 })
+
+      expect(result.preparedTransaction).toBe('base64-prepared-tx')
+      expect(result.preparedTransactionHash).toBe('sha256-hash')
+      expect(result.hashingSchemeVersion).toBe('V2')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('POST')
+      expect(req.path).toBe('/v2/interactive-submission/prepare')
+      expect(req.body.commands).toEqual([
+        { CreateCommand: { templateId, createArguments: { owner: 'Alice', value: 100 } } },
+      ])
+      expect(req.body.actAs).toEqual(['Alice::1234'])
+    })
+  })
+
+  describe('executeSubmission', () => {
+    it('executes a signed transaction', async () => {
+      const transaction = {
+        updateId: 'u-1',
+        events: [],
+        offset: 10,
+        synchronizerId: 'sync-1',
+        effectiveAt: '2026-04-01T00:00:00Z',
+        recordTime: '2026-04-01T00:00:00Z',
+      }
+
+      const transport = mockTransport({ transaction })
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      const result = await client.executeSubmission('base64-prepared-tx', [
+        {
+          party: 'Alice::1234',
+          signatures: [{ format: 'RAW' as const, signature: 'sig-data', signedBy: 'key-1' }],
+        },
+      ])
+
+      expect(result.updateId).toBe('u-1')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('POST')
+      expect(req.path).toBe('/v2/interactive-submission/execute')
+      expect(req.body.preparedTransaction).toBe('base64-prepared-tx')
+      expect(req.body.partySignatures).toHaveLength(1)
+      expect(req.body.partySignatures[0].party).toBe('Alice::1234')
+    })
+  })
+
   describe('readAs parties', () => {
     it('includes readAs in command submissions', async () => {
       const bob = 'Bob::5678' as Party

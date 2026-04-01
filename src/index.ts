@@ -25,6 +25,8 @@ export {
 
 // Transport
 export { jsonApi } from './transport/json-api.js'
+export { grpc, type GrpcTransportConfig, type GrpcTransportLike } from './transport/grpc.js'
+export { fallback, type FallbackTransportConfig } from './transport/fallback.js'
 export type { Transport, TransportConfig, TransportRequest } from './transport/types.js'
 
 // Errors
@@ -84,6 +86,24 @@ export type {
   CreateIdentityProviderRequest,
   UpdateIdentityProviderRequest,
 } from './types/idp.js'
+
+export type {
+  Reassignment,
+  ReassignmentEvent,
+  AssignedEvent,
+  UnassignedEvent,
+  ReassignmentCommand,
+  UnassignCommand,
+  AssignCommand,
+} from './types/reassignment.js'
+
+export type {
+  PrepareSubmissionResponse,
+  ExecuteSubmissionRequest,
+  PartySignatures,
+  Signature,
+  SignatureFormat,
+} from './types/interactive.js'
 
 // Streaming
 export { streamUpdates } from './streaming/streamUpdates.js'

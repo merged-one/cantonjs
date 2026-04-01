@@ -45,3 +45,22 @@ export type {
   CreateIdentityProviderRequest,
   UpdateIdentityProviderRequest,
 } from './idp.js'
+
+export type {
+  PrepareSubmissionRequest,
+  PrepareSubmissionResponse,
+  ExecuteSubmissionRequest,
+  PartySignatures,
+  Signature,
+  SignatureFormat,
+} from './interactive.js'
+
+export type {
+  Reassignment,
+  ReassignmentEvent,
+  AssignedEvent,
+  UnassignedEvent,
+  ReassignmentCommand,
+  UnassignCommand,
+  AssignCommand,
+} from './reassignment.js'

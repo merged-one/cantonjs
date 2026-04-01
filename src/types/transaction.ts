@@ -11,6 +11,7 @@
 
 import type { TaggedEvent } from './contract.js'
 import type { EventFormat } from './command.js'
+import type { Reassignment } from './reassignment.js'
 
 /** A transaction from the ledger (wire format). */
 export type JsTransaction = {
@@ -39,7 +40,7 @@ export type OffsetCheckpoint = {
 /** Tagged update union as it appears on the wire. */
 export type TaggedUpdate =
   | { readonly Transaction: { readonly value: JsTransaction } }
-  | { readonly Reassignment: unknown }
+  | { readonly Reassignment: Reassignment }
   | { readonly OffsetCheckpoint: { readonly value: OffsetCheckpoint } }
   | { readonly TopologyTransaction: unknown }
 
