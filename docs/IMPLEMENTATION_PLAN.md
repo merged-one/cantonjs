@@ -16,7 +16,7 @@
 | Phase 1: LedgerClient Core | **COMPLETE** | 74 passing | All client methods implemented and tested |
 | Phase 2: Streaming | **COMPLETE** | 128 passing | AsyncIterable streams, auto-reconnect, offset tracking |
 | Phase 3: AdminClient | **COMPLETE** | 142 passing | Pagination, IDP, package vetting, state queries |
-| Phase 4: TestClient | Implemented | 8 tests | Methods + tests done, sandbox integration remaining |
+| Phase 4: TestClient | **COMPLETE** | 164 passing | Sandbox fixture, mock/recording transport, cantonctl integration |
 
 ---
 
