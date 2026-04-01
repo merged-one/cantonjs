@@ -10,10 +10,11 @@
 
 ## Current State
 
-- Repository initialized (Apache 2.0 license)
-- Research complete: blockchain client library analysis, Canton Ledger API V2 surface analysis
-- Design decisions documented (10 foundational decisions)
-- No source code yet
+- **Phases 0–5 complete** (200 tests passing, CI green)
+- Core library: LedgerClient, AdminClient, TestClient, streaming, codegen runtime
+- Separate `cantonjs-codegen` package for DAR-to-TypeScript generation
+- ADRs 0001–0007 written
+- Next up: Phase 6 (Advanced Features)
 
 ---
 

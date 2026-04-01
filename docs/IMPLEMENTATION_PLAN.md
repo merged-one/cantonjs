@@ -17,6 +17,7 @@
 | Phase 2: Streaming | **COMPLETE** | 128 passing | AsyncIterable streams, auto-reconnect, offset tracking |
 | Phase 3: AdminClient | **COMPLETE** | 142 passing | Pagination, IDP, package vetting, state queries |
 | Phase 4: TestClient | **COMPLETE** | 164 passing | Sandbox fixture, mock/recording transport, cantonctl integration |
+| Phase 5: Codegen | **COMPLETE** | 200 passing | DAR parser, type mapper, code emitter, CLI, cantonjs-codegen package |
 
 ---
 
@@ -273,12 +274,97 @@ Add to LedgerClient:
 
 ---
 
+## Step 7: Phase 6 — Advanced Features
+
+**Priority:** HIGH
+**Complexity:** L (1-2 weeks)
+**Depends on:** Step 6
+
+### Work Items
+
+#### 7a. Interactive Submission (External Signing)
+- `prepareSubmission(commands)` — returns a prepared submission with hash to sign
+- `executeSubmission(prepared, signature)` — submit with external signature
+- Supports HSM and hardware wallet workflows
+- Files: `src/ledger/interactiveSubmission.ts`, tests
+
+#### 7b. Reassignment Support
+- `submitReassignment({ contractId, source, target })` — cross-synchronizer transfer
+- `unassignContract()` + `assignContract()` — two-step reassignment
+- Files: `src/ledger/reassignment.ts`, tests
+
+#### 7c. gRPC Transport (ConnectRPC)
+- `grpc({ url })` transport factory using connect-es
+- Must pass same test suite as JSON API transport
+- Files: `src/transport/grpc.ts`, `src/transport/grpc.test.ts`
+
+#### 7d. Fallback Transport
+- `fallback([primary, secondary])` — tries primary, falls back to secondary
+- Files: `src/transport/fallback.ts`, tests
+
+### Exit Criteria
+- Interactive submission works end-to-end
+- gRPC transport passes full test suite
+- Reassignment tested with mock transport
+
+---
+
+## Step 8: Phase 7 — React Integration
+
+**Priority:** MEDIUM
+**Complexity:** L (1-2 weeks)
+**Depends on:** Step 7
+
+### Work Items
+
+#### 8a. Package Scaffold
+- `packages/cantonjs-react/` — separate npm package
+- Peer deps: react 18+, @tanstack/react-query 5+, cantonjs
+- Files: package.json, tsconfig, barrel exports
+
+#### 8b. Context Provider
+- `CantonProvider` — wraps QueryClientProvider + canton config
+- `useCantonClient()` — access LedgerClient from context
+- `useParty()` — current party identity
+
+#### 8c. Query Hooks
+- `useContracts(template, filter?)` — TanStack Query wrapper for queryContracts
+- `useContractById(contractId)` — single contract lookup
+- `useStreamContracts(template, filter?)` — streaming subscription via useEffect + AsyncIterator
+
+#### 8d. Mutation Hooks
+- `useCreateContract(template)` — returns `{ create, isPending, error }`
+- `useExercise(template, choice)` — returns `{ exercise, isPending, error }`
+- Optimistic update support via TanStack Query's `onMutate`
+
+### Exit Criteria
+- React developers can build Canton dApps with familiar hook patterns
+- TanStack Query provides caching/deduplication
+- Streaming hooks auto-update UI
+
+---
+
+## Step 9: Phase 8 — Documentation & Release
+
+**Priority:** MEDIUM
+**Complexity:** M (1 week)
+**Depends on:** Step 8
+
+### Work Items
+- Documentation site (VitePress or Starlight)
+- Getting started guide, API reference
+- Migration guide from @daml/ledger
+- Example projects: basic CLI, streaming dApp, React full-stack
+- Bundle size audit and optimization
+- Version bump to 1.0.0
+
+---
+
 ## Immediate Action Items
 
-1. **Create ESLint config** → unblock CI
-2. **Write AdminClient + TestClient tests** → complete Phase 1
-3. **Run `npm run size`** → establish bundle size baseline
-4. **Begin WebSocket streaming research** → prep Phase 2
+1. **Begin Phase 6** — Interactive submission and gRPC transport
+2. **Add integration tests** — Run against Canton sandbox with cantonctl
+3. **Plan cantonctl codegen integration** — `cantonctl build` → cantonjs-codegen pipeline
 
 ---
 
