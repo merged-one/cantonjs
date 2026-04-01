@@ -6,6 +6,8 @@
  * followed by an assign to the target synchronizer.
  */
 
+import type { CreatedEvent } from './contract.js'
+
 /** A reassignment event from the update stream. */
 export type Reassignment = {
   readonly updateId: string
@@ -29,7 +31,7 @@ export type AssignedEvent = {
   readonly unassignId: string
   readonly submitter: string
   readonly reassignmentCounter: number
-  readonly createdEvent: import('./contract.js').CreatedEvent
+  readonly createdEvent: CreatedEvent
 }
 
 /** Contract unassigned from a source synchronizer. */
