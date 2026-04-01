@@ -10,6 +10,7 @@
  */
 
 import type { TaggedEvent } from './contract.js'
+import type { EventFormat } from './command.js'
 
 /** A transaction from the ledger (wire format). */
 export type JsTransaction = {
@@ -48,8 +49,8 @@ export type UpdateFormat = {
     readonly transactionShape:
       | 'TRANSACTION_SHAPE_ACS_DELTA'
       | 'TRANSACTION_SHAPE_LEDGER_EFFECTS'
-    readonly eventFormat: import('./command.js').EventFormat
+    readonly eventFormat: EventFormat
   }
-  readonly includeReassignments?: import('./command.js').EventFormat
+  readonly includeReassignments?: EventFormat
   readonly includeTopologyEvents?: unknown
 }

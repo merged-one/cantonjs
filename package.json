@@ -36,10 +36,18 @@
   },
   "typesVersions": {
     "*": {
-      "ledger": ["./dist/types/ledger/index.d.ts"],
-      "admin": ["./dist/types/admin/index.d.ts"],
-      "testing": ["./dist/types/testing/index.d.ts"],
-      "chains": ["./dist/types/chains/index.d.ts"]
+      "ledger": [
+        "./dist/types/ledger/index.d.ts"
+      ],
+      "admin": [
+        "./dist/types/admin/index.d.ts"
+      ],
+      "testing": [
+        "./dist/types/testing/index.d.ts"
+      ],
+      "chains": [
+        "./dist/types/chains/index.d.ts"
+      ]
     }
   },
   "files": [
@@ -54,8 +62,8 @@
     "build:cjs": "tsc --project tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "build:types": "tsc --project tsconfig.build.json --declarationDir dist/types --emitDeclarationOnly --declaration --declarationMap",
     "clean": "rm -rf dist",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
     "typecheck": "tsc --noEmit",
@@ -93,6 +101,7 @@
     "prettier": "^3.0.0",
     "size-limit": "^11.0.0",
     "typescript": "^5.5.0",
+    "typescript-eslint": "^8.58.0",
     "vitest": "^3.0.0"
   },
   "peerDependencies": {

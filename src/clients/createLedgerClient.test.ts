@@ -242,4 +242,77 @@ describe('createLedgerClient', () => {
       expect(result.updateId).toBe('u-1')
     })
   })
+
+  describe('getEventsByContractId', () => {
+    it('sends contract ID and requesting parties', async () => {
+      const bob = 'Bob::5678' as Party
+      const transport = mockTransport({ created: {}, archived: false })
+      const client = createLedgerClient({ transport, actAs: alice, readAs: [bob] })
+
+      await client.getEventsByContractId('contract-123')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('POST')
+      expect(req.path).toBe('/v2/events/events-by-contract-id')
+      expect(req.body.contractId).toBe('contract-123')
+      expect(req.body.requestingParties).toEqual(['Alice::1234', 'Bob::5678'])
+    })
+  })
+
+  describe('createContract with options', () => {
+    it('uses custom commandId and workflowId', async () => {
+      const createdEvent = {
+        offset: 1, nodeId: 0, contractId: 'c-1', templateId,
+        packageName: 'my-pkg', representativePackageId: 'abc',
+        createArgument: {}, signatories: ['Alice::1234'],
+        witnessParties: ['Alice::1234'], acsDelta: true,
+        createdAt: '2026-04-01T00:00:00Z',
+      }
+
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-1', events: [{ CreatedEvent: createdEvent }],
+          offset: 1, synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:00Z', recordTime: '2026-04-01T00:00:00Z',
+        },
+      })
+
+      const client = createLedgerClient({ transport, actAs: alice })
+      await client.createContract(templateId, { value: 1 }, {
+        commandId: 'my-cmd-id',
+        workflowId: 'my-workflow',
+      })
+
+      const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
+      expect(body.commands.commandId).toBe('my-cmd-id')
+      expect(body.commands.workflowId).toBe('my-workflow')
+    })
+  })
+
+  describe('readAs parties', () => {
+    it('includes readAs in command submissions', async () => {
+      const bob = 'Bob::5678' as Party
+      const createdEvent = {
+        offset: 1, nodeId: 0, contractId: 'c-1', templateId,
+        packageName: 'my-pkg', representativePackageId: 'abc',
+        createArgument: {}, signatories: ['Alice::1234'],
+        witnessParties: ['Alice::1234'], acsDelta: true,
+        createdAt: '2026-04-01T00:00:00Z',
+      }
+
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-1', events: [{ CreatedEvent: createdEvent }],
+          offset: 1, synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:00Z', recordTime: '2026-04-01T00:00:00Z',
+        },
+      })
+
+      const client = createLedgerClient({ transport, actAs: alice, readAs: [bob] })
+      await client.createContract(templateId, {})
+
+      const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
+      expect(body.commands.readAs).toEqual(['Bob::5678'])
+    })
+  })
 })
