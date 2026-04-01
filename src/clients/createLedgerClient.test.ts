@@ -289,6 +289,52 @@ describe('createLedgerClient', () => {
     })
   })
 
+  describe('getConnectedSynchronizers', () => {
+    it('returns connected synchronizer list', async () => {
+      const transport = mockTransport({
+        connectedSynchronizers: [
+          { synchronizerId: 'sync-1', permission: 'SUBMISSION' },
+          { synchronizerId: 'sync-2', permission: 'OBSERVATION' },
+        ],
+      })
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      const result = await client.getConnectedSynchronizers()
+      expect(result).toHaveLength(2)
+      expect(result[0]!.synchronizerId).toBe('sync-1')
+      expect(result[0]!.permission).toBe('SUBMISSION')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('GET')
+      expect(req.path).toBe('/v2/state/connected-synchronizers')
+    })
+
+    it('returns empty array when no synchronizers', async () => {
+      const transport = mockTransport({})
+      const client = createLedgerClient({ transport, actAs: alice })
+      const result = await client.getConnectedSynchronizers()
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('getLatestPrunedOffsets', () => {
+    it('returns pruned offset information', async () => {
+      const transport = mockTransport({
+        participantPrunedUpToInclusive: 100,
+        allDivulgedContractsPrunedUpToInclusive: 50,
+      })
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      const result = await client.getLatestPrunedOffsets()
+      expect(result.participantPrunedUpToInclusive).toBe(100)
+      expect(result.allDivulgedContractsPrunedUpToInclusive).toBe(50)
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('GET')
+      expect(req.path).toBe('/v2/state/latest-pruned-offsets')
+    })
+  })
+
   describe('readAs parties', () => {
     it('includes readAs in command submissions', async () => {
       const bob = 'Bob::5678' as Party

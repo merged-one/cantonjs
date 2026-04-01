@@ -15,7 +15,7 @@
 | Phase 0: Foundation | **COMPLETE** | 74 passing | ESLint, build, size tracking all working |
 | Phase 1: LedgerClient Core | **COMPLETE** | 74 passing | All client methods implemented and tested |
 | Phase 2: Streaming | **COMPLETE** | 128 passing | AsyncIterable streams, auto-reconnect, offset tracking |
-| Phase 3: AdminClient | Implemented | 20 tests | Methods + tests done, pagination/IDP remaining |
+| Phase 3: AdminClient | **COMPLETE** | 142 passing | Pagination, IDP, package vetting, state queries |
 | Phase 4: TestClient | Implemented | 8 tests | Methods + tests done, sandbox integration remaining |
 
 ---

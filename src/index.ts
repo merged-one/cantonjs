@@ -5,12 +5,16 @@ export {
   type LedgerClientConfig,
   type CommandOptions,
   type QueryOptions,
+  type ConnectedSynchronizer,
+  type PrunedOffsets,
 } from './clients/createLedgerClient.js'
 
 export {
   createAdminClient,
   type AdminClient,
   type AdminClientConfig,
+  type PaginationOptions,
+  type PaginatedResult,
 } from './clients/createAdminClient.js'
 
 export {
@@ -75,6 +79,11 @@ export type {
 
 export type { User, Right, RightKind, CreateUserRequest } from './types/user.js'
 export type { PackageStatus, PackageDetails } from './types/package.js'
+export type {
+  IdentityProviderConfig,
+  CreateIdentityProviderRequest,
+  UpdateIdentityProviderRequest,
+} from './types/idp.js'
 
 // Streaming
 export { streamUpdates } from './streaming/streamUpdates.js'

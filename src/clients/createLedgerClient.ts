@@ -63,6 +63,24 @@ export type LedgerClient = {
 
   /** Get events for a specific contract. */
   getEventsByContractId: (contractId: string) => Promise<unknown>
+
+  /** Get connected synchronizer IDs. */
+  getConnectedSynchronizers: () => Promise<readonly ConnectedSynchronizer[]>
+
+  /** Get the latest pruned offsets. */
+  getLatestPrunedOffsets: () => Promise<PrunedOffsets>
+}
+
+/** A connected synchronizer (domain). */
+export type ConnectedSynchronizer = {
+  readonly synchronizerId: string
+  readonly permission: 'SUBMISSION' | 'OBSERVATION' | 'UNSPECIFIED'
+}
+
+/** Pruned offset information. */
+export type PrunedOffsets = {
+  readonly participantPrunedUpToInclusive?: number
+  readonly allDivulgedContractsPrunedUpToInclusive?: number
 }
 
 export type CommandOptions = {
@@ -234,6 +252,24 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
         path: '/v2/events/events-by-contract-id',
         body: { contractId, requestingParties: [actAs, ...readAs] },
       })
+    },
+
+    async getConnectedSynchronizers() {
+      const response = await transport.request<{
+        connectedSynchronizers: readonly ConnectedSynchronizer[]
+      }>({
+        method: 'GET',
+        path: '/v2/state/connected-synchronizers',
+      })
+      return response.connectedSynchronizers ?? []
+    },
+
+    async getLatestPrunedOffsets() {
+      const response = await transport.request<PrunedOffsets>({
+        method: 'GET',
+        path: '/v2/state/latest-pruned-offsets',
+      })
+      return response
     },
   }
 }

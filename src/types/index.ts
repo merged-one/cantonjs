@@ -39,3 +39,9 @@ export type {
 export type { User, Right, RightKind, CreateUserRequest } from './user.js'
 
 export type { PackageStatus, PackageDetails } from './package.js'
+
+export type {
+  IdentityProviderConfig,
+  CreateIdentityProviderRequest,
+  UpdateIdentityProviderRequest,
+} from './idp.js'

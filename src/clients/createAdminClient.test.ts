@@ -55,10 +55,10 @@ describe('createAdminClient', () => {
       })
 
       const client = createAdminClient({ transport })
-      const parties = await client.listParties()
+      const result = await client.listParties()
 
-      expect(parties).toHaveLength(2)
-      expect(parties[0]!.party).toBe('Alice::1220')
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0]!.party).toBe('Alice::1220')
 
       const path = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].path
       expect(path).toBe('/v2/parties')
@@ -74,11 +74,26 @@ describe('createAdminClient', () => {
       expect(path).toBe('/v2/parties?filter-party=Alice')
     })
 
-    it('returns empty array when no parties', async () => {
+    it('returns empty items array when no parties', async () => {
       const transport = mockTransport({})
       const client = createAdminClient({ transport })
-      const parties = await client.listParties()
-      expect(parties).toEqual([])
+      const result = await client.listParties()
+      expect(result.items).toEqual([])
+    })
+
+    it('passes pagination parameters', async () => {
+      const transport = mockTransport({
+        partyDetails: [{ party: 'Alice::1220', isLocal: true }],
+        nextPageToken: 'token-2',
+      })
+
+      const client = createAdminClient({ transport })
+      const result = await client.listParties(undefined, { pageSize: 10, pageToken: 'token-1' })
+
+      expect(result.nextPageToken).toBe('token-2')
+      const path = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].path
+      expect(path).toContain('page_size=10')
+      expect(path).toContain('page_token=token-1')
     })
   })
 
@@ -165,16 +180,31 @@ describe('createAdminClient', () => {
       })
 
       const client = createAdminClient({ transport })
-      const users = await client.listUsers()
+      const result = await client.listUsers()
 
-      expect(users).toHaveLength(2)
+      expect(result.items).toHaveLength(2)
     })
 
-    it('returns empty array when no users', async () => {
+    it('returns empty items array when no users', async () => {
       const transport = mockTransport({})
       const client = createAdminClient({ transport })
-      const users = await client.listUsers()
-      expect(users).toEqual([])
+      const result = await client.listUsers()
+      expect(result.items).toEqual([])
+    })
+
+    it('passes pagination parameters', async () => {
+      const transport = mockTransport({
+        users: [{ id: 'alice' }],
+        nextPageToken: 'page-2',
+      })
+
+      const client = createAdminClient({ transport })
+      const result = await client.listUsers({ pageSize: 5, pageToken: 'page-1' })
+
+      expect(result.nextPageToken).toBe('page-2')
+      const path = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].path
+      expect(path).toContain('page_size=5')
+      expect(path).toContain('page_token=page-1')
     })
   })
 
@@ -303,6 +333,146 @@ describe('createAdminClient', () => {
       const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
       expect(req.method).toBe('GET')
       expect(req.path).toBe('/v2/version')
+    })
+  })
+
+  describe('createIdentityProvider', () => {
+    it('creates an IDP configuration', async () => {
+      const idpConfig = {
+        identityProviderId: 'my-idp',
+        issuer: 'https://auth.example.com',
+        jwksUrl: 'https://auth.example.com/.well-known/jwks.json',
+        audience: 'my-app',
+      }
+
+      const transport = mockTransport({ identityProviderConfig: idpConfig })
+      const client = createAdminClient({ transport })
+      const result = await client.createIdentityProvider({ identityProviderConfig: idpConfig })
+
+      expect(result.identityProviderId).toBe('my-idp')
+      expect(result.issuer).toBe('https://auth.example.com')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('POST')
+      expect(req.path).toBe('/v2/identity-provider-configs')
+      expect(req.body.identityProviderConfig.issuer).toBe('https://auth.example.com')
+    })
+  })
+
+  describe('getIdentityProvider', () => {
+    it('fetches an IDP by ID', async () => {
+      const transport = mockTransport({
+        identityProviderConfig: {
+          identityProviderId: 'my-idp',
+          issuer: 'https://auth.example.com',
+          jwksUrl: 'https://auth.example.com/.well-known/jwks.json',
+        },
+      })
+
+      const client = createAdminClient({ transport })
+      const result = await client.getIdentityProvider('my-idp')
+
+      expect(result.identityProviderId).toBe('my-idp')
+
+      const path = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].path
+      expect(path).toBe('/v2/identity-provider-configs/my-idp')
+    })
+  })
+
+  describe('updateIdentityProvider', () => {
+    it('updates an IDP configuration via PATCH', async () => {
+      const idpConfig = {
+        identityProviderId: 'my-idp',
+        issuer: 'https://new-auth.example.com',
+        jwksUrl: 'https://new-auth.example.com/.well-known/jwks.json',
+      }
+
+      const transport = mockTransport({ identityProviderConfig: idpConfig })
+      const client = createAdminClient({ transport })
+      const result = await client.updateIdentityProvider({
+        identityProviderConfig: idpConfig,
+        updateMask: { paths: ['issuer', 'jwks_url'] },
+      })
+
+      expect(result.issuer).toBe('https://new-auth.example.com')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('PATCH')
+      expect(req.path).toBe('/v2/identity-provider-configs/my-idp')
+      expect(req.body.updateMask.paths).toEqual(['issuer', 'jwks_url'])
+    })
+  })
+
+  describe('deleteIdentityProvider', () => {
+    it('deletes an IDP by ID', async () => {
+      const transport = mockTransport({})
+      const client = createAdminClient({ transport })
+      await client.deleteIdentityProvider('my-idp')
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('DELETE')
+      expect(req.path).toBe('/v2/identity-provider-configs/my-idp')
+    })
+  })
+
+  describe('listIdentityProviders', () => {
+    it('lists all IDP configurations', async () => {
+      const transport = mockTransport({
+        identityProviderConfigs: [
+          { identityProviderId: 'idp-1', issuer: 'https://a.com', jwksUrl: 'https://a.com/jwks' },
+          { identityProviderId: 'idp-2', issuer: 'https://b.com', jwksUrl: 'https://b.com/jwks' },
+        ],
+      })
+
+      const client = createAdminClient({ transport })
+      const result = await client.listIdentityProviders()
+
+      expect(result).toHaveLength(2)
+      expect(result[0]!.identityProviderId).toBe('idp-1')
+    })
+
+    it('returns empty array when no IDPs configured', async () => {
+      const transport = mockTransport({})
+      const client = createAdminClient({ transport })
+      const result = await client.listIdentityProviders()
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('getVettedPackages', () => {
+    it('returns vetted package IDs', async () => {
+      const transport = mockTransport({
+        packageIds: ['pkg-1', 'pkg-2'],
+      })
+
+      const client = createAdminClient({ transport })
+      const result = await client.getVettedPackages()
+
+      expect(result).toEqual(['pkg-1', 'pkg-2'])
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('GET')
+      expect(req.path).toBe('/v2/package-vetting')
+    })
+
+    it('returns empty array when no packages vetted', async () => {
+      const transport = mockTransport({})
+      const client = createAdminClient({ transport })
+      const result = await client.getVettedPackages()
+      expect(result).toEqual([])
+    })
+  })
+
+  describe('updateVettedPackages', () => {
+    it('sends package IDs to vetting endpoint', async () => {
+      const transport = mockTransport({})
+      const client = createAdminClient({ transport })
+      await client.updateVettedPackages(['pkg-1', 'pkg-2', 'pkg-3'])
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.method).toBe('POST')
+      expect(req.path).toBe('/v2/package-vetting')
+      expect(req.body.packageIds).toEqual(['pkg-1', 'pkg-2', 'pkg-3'])
     })
   })
 })

@@ -10,17 +10,37 @@
 import type { Transport } from '../transport/types.js'
 import type { PartyDetails, AllocatePartyRequest } from '../types/party.js'
 import type { User, Right, CreateUserRequest } from '../types/user.js'
+import type {
+  IdentityProviderConfig,
+  CreateIdentityProviderRequest,
+  UpdateIdentityProviderRequest,
+} from '../types/idp.js'
 
 export type AdminClientConfig = {
   readonly transport: Transport
+}
+
+/** Pagination options for list endpoints. */
+export type PaginationOptions = {
+  readonly pageSize?: number
+  readonly pageToken?: string
+}
+
+/** Paginated result with items and optional next page token. */
+export type PaginatedResult<T> = {
+  readonly items: readonly T[]
+  readonly nextPageToken?: string
 }
 
 export type AdminClient = {
   /** Allocate a new party on the ledger. */
   allocateParty: (request?: AllocatePartyRequest) => Promise<PartyDetails>
 
-  /** List all known parties. */
-  listParties: (filter?: string) => Promise<readonly PartyDetails[]>
+  /** List known parties with optional filter and pagination. */
+  listParties: (
+    filter?: string,
+    pagination?: PaginationOptions,
+  ) => Promise<PaginatedResult<PartyDetails>>
 
   /** Get details for a specific party. */
   getParty: (party: string) => Promise<PartyDetails>
@@ -34,8 +54,8 @@ export type AdminClient = {
   /** Get a user by ID. */
   getUser: (userId: string) => Promise<User>
 
-  /** List all users. */
-  listUsers: () => Promise<readonly User[]>
+  /** List all users with optional pagination. */
+  listUsers: (pagination?: PaginationOptions) => Promise<PaginatedResult<User>>
 
   /** Delete a user. */
   deleteUser: (userId: string) => Promise<void>
@@ -57,6 +77,31 @@ export type AdminClient = {
 
   /** Get the Ledger API version. */
   getLedgerApiVersion: () => Promise<string>
+
+  /** Create an identity provider configuration. */
+  createIdentityProvider: (
+    request: CreateIdentityProviderRequest,
+  ) => Promise<IdentityProviderConfig>
+
+  /** Get an identity provider configuration by ID. */
+  getIdentityProvider: (id: string) => Promise<IdentityProviderConfig>
+
+  /** Update an identity provider configuration. */
+  updateIdentityProvider: (
+    request: UpdateIdentityProviderRequest,
+  ) => Promise<IdentityProviderConfig>
+
+  /** Delete an identity provider configuration. */
+  deleteIdentityProvider: (id: string) => Promise<void>
+
+  /** List all identity provider configurations. */
+  listIdentityProviders: () => Promise<readonly IdentityProviderConfig[]>
+
+  /** Get the current package vetting configuration. */
+  getVettedPackages: () => Promise<readonly string[]>
+
+  /** Update the package vetting configuration. */
+  updateVettedPackages: (packageIds: readonly string[]) => Promise<void>
 }
 
 export function createAdminClient(config: AdminClientConfig): AdminClient {
@@ -78,9 +123,11 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
       return response.partyDetails
     },
 
-    async listParties(filter) {
+    async listParties(filter, pagination) {
       const params = new URLSearchParams()
       if (filter !== undefined) params.set('filter-party', filter)
+      if (pagination?.pageSize !== undefined) params.set('page_size', String(pagination.pageSize))
+      if (pagination?.pageToken !== undefined) params.set('page_token', pagination.pageToken)
       const qs = params.toString()
       const response = await transport.request<{
         partyDetails: readonly PartyDetails[]
@@ -89,7 +136,10 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
         method: 'GET',
         path: `/v2/parties${qs ? `?${qs}` : ''}`,
       })
-      return response.partyDetails ?? []
+      return {
+        items: response.partyDetails ?? [],
+        nextPageToken: response.nextPageToken,
+      }
     },
 
     async getParty(party) {
@@ -128,15 +178,22 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
       return response.user
     },
 
-    async listUsers() {
+    async listUsers(pagination) {
+      const params = new URLSearchParams()
+      if (pagination?.pageSize !== undefined) params.set('page_size', String(pagination.pageSize))
+      if (pagination?.pageToken !== undefined) params.set('page_token', pagination.pageToken)
+      const qs = params.toString()
       const response = await transport.request<{
         users: readonly User[]
         nextPageToken?: string
       }>({
         method: 'GET',
-        path: '/v2/users',
+        path: `/v2/users${qs ? `?${qs}` : ''}`,
       })
-      return response.users ?? []
+      return {
+        items: response.users ?? [],
+        nextPageToken: response.nextPageToken,
+      }
     },
 
     async deleteUser(userId) {
@@ -206,6 +263,74 @@ export function createAdminClient(config: AdminClientConfig): AdminClient {
         path: '/v2/version',
       })
       return response.version
+    },
+
+    async createIdentityProvider(request) {
+      const response = await transport.request<{
+        identityProviderConfig: IdentityProviderConfig
+      }>({
+        method: 'POST',
+        path: '/v2/identity-provider-configs',
+        body: request,
+      })
+      return response.identityProviderConfig
+    },
+
+    async getIdentityProvider(id) {
+      const response = await transport.request<{
+        identityProviderConfig: IdentityProviderConfig
+      }>({
+        method: 'GET',
+        path: `/v2/identity-provider-configs/${encodeURIComponent(id)}`,
+      })
+      return response.identityProviderConfig
+    },
+
+    async updateIdentityProvider(request) {
+      const id = request.identityProviderConfig.identityProviderId
+      const response = await transport.request<{
+        identityProviderConfig: IdentityProviderConfig
+      }>({
+        method: 'PATCH',
+        path: `/v2/identity-provider-configs/${encodeURIComponent(id)}`,
+        body: request,
+      })
+      return response.identityProviderConfig
+    },
+
+    async deleteIdentityProvider(id) {
+      await transport.request<Record<string, never>>({
+        method: 'DELETE',
+        path: `/v2/identity-provider-configs/${encodeURIComponent(id)}`,
+      })
+    },
+
+    async listIdentityProviders() {
+      const response = await transport.request<{
+        identityProviderConfigs: readonly IdentityProviderConfig[]
+      }>({
+        method: 'GET',
+        path: '/v2/identity-provider-configs',
+      })
+      return response.identityProviderConfigs ?? []
+    },
+
+    async getVettedPackages() {
+      const response = await transport.request<{
+        packageIds: readonly string[]
+      }>({
+        method: 'GET',
+        path: '/v2/package-vetting',
+      })
+      return response.packageIds ?? []
+    },
+
+    async updateVettedPackages(packageIds) {
+      await transport.request<Record<string, never>>({
+        method: 'POST',
+        path: '/v2/package-vetting',
+        body: { packageIds },
+      })
     },
   }
 }
