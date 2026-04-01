@@ -35,6 +35,9 @@ export {
   AuthorizationError,
   TokenExpiredError,
   InvalidTokenError,
+  WebSocketError,
+  StreamClosedError,
+  ReconnectFailedError,
 } from './errors/index.js'
 export type { ErrorCode, CantonjsErrorOptions } from './errors/base.js'
 
@@ -72,3 +75,19 @@ export type {
 
 export type { User, Right, RightKind, CreateUserRequest } from './types/user.js'
 export type { PackageStatus, PackageDetails } from './types/package.js'
+
+// Streaming
+export { streamUpdates } from './streaming/streamUpdates.js'
+export { streamContracts, type ActiveContractsResponse } from './streaming/streamContracts.js'
+export { streamCompletions } from './streaming/streamCompletions.js'
+export { toWebSocketUrl } from './streaming/createStream.js'
+export type {
+  WebSocketConstructor,
+  WebSocketLike,
+  ReconnectConfig,
+  StreamOptions,
+  StreamUpdatesOptions,
+  StreamContractsOptions,
+  StreamCompletionsOptions,
+  CompletionEvent,
+} from './streaming/types.js'
