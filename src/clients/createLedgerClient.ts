@@ -127,6 +127,24 @@ export type QueryOptions = {
   readonly activeAtOffset?: LedgerOffset
 }
 
+/** Generate a random UUID, compatible with Node.js 18+ and browsers. */
+function generateUUID(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
+  }
+  // Fallback for Node.js 18 where globalThis.crypto.randomUUID may not exist
+  const bytes = new Uint8Array(16)
+  if (typeof globalThis.crypto?.getRandomValues === 'function') {
+    globalThis.crypto.getRandomValues(bytes)
+  } else {
+    for (let i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256)
+  }
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+}
+
 export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
   const { transport, actAs, readAs = [] } = config
 
@@ -184,7 +202,7 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
         body: {
           commands: {
             commands: [{ CreateCommand: { templateId, createArguments } }],
-            commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+            commandId: options?.commandId ?? generateUUID(),
             actAs: [actAs],
             readAs: readAs.length > 0 ? readAs : undefined,
             workflowId: options?.workflowId,
@@ -214,7 +232,7 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
             commands: [
               { ExerciseCommand: { templateId, contractId, choice, choiceArgument } },
             ],
-            commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+            commandId: options?.commandId ?? generateUUID(),
             actAs: [actAs],
             readAs: readAs.length > 0 ? readAs : undefined,
             workflowId: options?.workflowId,
@@ -308,7 +326,7 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
         path: '/v2/commands/submit-and-wait-for-reassignment',
         body: {
           reassignmentCommand: command,
-          commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+          commandId: options?.commandId ?? generateUUID(),
           submitter: actAs,
           workflowId: options?.workflowId,
         },
@@ -325,7 +343,7 @@ export function createLedgerClient(config: LedgerClientConfig): LedgerClient {
         path: '/v2/interactive-submission/prepare',
         body: {
           commands: [{ CreateCommand: { templateId, createArguments } }],
-          commandId: options?.commandId ?? globalThis.crypto.randomUUID(),
+          commandId: options?.commandId ?? generateUUID(),
           actAs: [actAs],
           readAs: readAs.length > 0 ? readAs : undefined,
           workflowId: options?.workflowId,
