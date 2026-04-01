@@ -24,18 +24,54 @@ const tx = await client.exerciseChoice('pkg:Module:Template', created.contractId
 // Query active contracts
 const contracts = await client.queryContracts('pkg:Module:Template')
 
+// Stream updates (AsyncIterator pattern)
+const stream = streamUpdates(transport, { beginExclusive: '0', signal: controller.signal })
+for await (const update of stream) {
+  // process update — auto-reconnects on disconnect
+}
+
 ## Subpath Imports
 
 import { createLedgerClient } from 'cantonjs/ledger'
 import { createAdminClient } from 'cantonjs/admin'
 import { createTestClient } from 'cantonjs/testing'
 import { localNet, devNet, testNet, mainNet } from 'cantonjs/chains'
+import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
 
 ## Client Types
 
 LedgerClient — party-scoped contract operations (create, exercise, query, stream)
-AdminClient — party/user/package management (allocateParty, uploadDar, createUser)
-TestClient — sandbox testing (advanceTime, allocateParties, resetLedger)
+AdminClient — party/user/package/IDP management (allocateParty, uploadDar, createUser, pagination)
+TestClient — sandbox testing (advanceTime, allocateParties, setupCantonSandbox)
+
+## Codegen
+
+cantonjs-codegen — separate CLI package for generating TypeScript types from Daml DAR files
+
+cantonjs-codegen --dar ./model.dar --output ./src/generated
+
+Generates:
+- Record types → TypeScript type aliases with readonly fields
+- Variant types → discriminated unions ({ tag: 'Name'; value: T })
+- Enum types → string union types ('A' | 'B' | 'C')
+- Templates → companion const objects with templateId and choices
+- Choice argument types → type aliases
+
+## Streaming
+
+WebSocket-based streaming with AsyncIterator pattern:
+- streamUpdates() — transaction update stream with auto-reconnect
+- streamContracts() — active contract stream (bounded, no reconnect)
+- streamCompletions() — command completion stream
+- Auto-reconnect: exponential backoff (1s initial, 30s max, 2x factor, ±25% jitter)
+- Offset-based resumption for gap-free reconnection
+- AbortSignal cancellation support
+
+## Testing Utilities
+
+- createMockTransport() — mock with response sequences, error injection, assertion helpers
+- createRecordingTransport() — records all requests for replay
+- setupCantonSandbox() — vitest fixture with cantonctl integration (start, health, JWT, cleanup)
 
 ## Canton Key Concepts
 
@@ -53,10 +89,15 @@ JSON API endpoints under /v2/:
   /v2/commands/submit-and-wait-for-transaction — returns transaction
   /v2/state/active-contracts — query active contracts (streaming)
   /v2/updates — transaction update stream
+  /v2/commands/completions — command completion stream
   /v2/parties — party management
   /v2/users — user management
   /v2/packages — package queries
   /v2/dars — DAR upload
+  /v2/identity-provider-configs — IDP management
+  /v2/package-vetting — package vetting
+  /v2/state/connected-synchronizers — synchronizer queries
+  /v2/state/latest-pruned-offsets — pruning state
   /v2/version — API version
   /livez — health check (unauthenticated)
 
@@ -66,8 +107,16 @@ CJ1xxx — Transport (connection, HTTP, gRPC)
 CJ2xxx — Authentication (JWT)
 CJ3xxx — Ledger (command rejection, authorization)
 CJ4xxx — Admin (party, user, package)
-CJ5xxx — Streaming
-CJ6xxx — Codegen
+CJ5xxx — Streaming (WebSocket, reconnection)
+CJ6xxx — Codegen (type mismatch, generation)
+
+## Architecture
+
+- Function exports, not classes (tree-shakeable)
+- Dependency injection via Transport interface (no direct fetch)
+- ESM-first with CJS fallback, sideEffects: false
+- Structured errors: CantonjsError with code, metaMessages, docsPath, walk()
+- AbortSignal support for long-running operations
 
 ## Links
 
