@@ -12,11 +12,11 @@
 
 | Phase | Status | Tests | Notes |
 |-------|--------|-------|-------|
-| Phase 0: Foundation | 95% | 43 passing | ESLint config missing (blocks CI) |
-| Phase 1: LedgerClient Core | 70% | 11 tests | Core methods implemented, AdminClient/TestClient untested |
+| Phase 0: Foundation | **COMPLETE** | 74 passing | ESLint, build, size tracking all working |
+| Phase 1: LedgerClient Core | **COMPLETE** | 74 passing | All client methods implemented and tested |
 | Phase 2: Streaming | Not started | — | WebSocket transport needed |
-| Phase 3: AdminClient | Stub only | — | Methods implemented, no tests |
-| Phase 4: TestClient | Stub only | — | Sandbox integration needed |
+| Phase 3: AdminClient | Implemented | 20 tests | Methods + tests done, pagination/IDP remaining |
+| Phase 4: TestClient | Implemented | 8 tests | Methods + tests done, sandbox integration remaining |
 
 ---
 
