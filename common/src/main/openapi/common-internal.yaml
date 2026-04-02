@@ -1,0 +1,61 @@
+openapi: 3.0.0
+info:
+  title: Splice Common Internal Support
+  version: 0.0.0
+paths: {}
+components:
+  schemas:
+    BatchListVotesByVoteRequestsRequest:
+      type: object
+      additionalProperties: true
+    ContractWithState:
+      type: object
+      properties:
+        contract:
+          $ref: "common-external.yaml#/components/schemas/Contract"
+        state:
+          type: string
+        domain_id:
+          type: string
+      additionalProperties: true
+    FeatureSupportResponse:
+      type: object
+      additionalProperties: true
+    GetDsoInfoResponse:
+      type: object
+      additionalProperties: true
+    ListAmuletPriceVotesResponse:
+      type: object
+      additionalProperties: true
+    ListDsoRulesVoteRequestsResponse:
+      type: object
+      additionalProperties: true
+    ListDsoRulesVoteResultsResponse:
+      type: object
+      additionalProperties: true
+    ListValidatorLicensesResponse:
+      type: object
+      additionalProperties: true
+    ListVoteRequestByTrackingCidResponse:
+      type: object
+      additionalProperties: true
+    ListVoteResultsRequest:
+      type: object
+      additionalProperties: true
+    LookupDsoRulesVoteRequestResponse:
+      type: object
+      additionalProperties: true
+    MaybeCachedContractWithState:
+      type: object
+      properties:
+        contract_id:
+          $ref: "common-external.yaml#/components/schemas/ContractId"
+        contract:
+          $ref: "#/components/schemas/ContractWithState"
+        cached:
+          type: boolean
+      additionalProperties: true
+    MaybeCachedContractWithStateMap:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/MaybeCachedContractWithState"
