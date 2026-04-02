@@ -1,0 +1,59 @@
+{
+  "name": "cantonjs-wallet-adapters",
+  "version": "0.2.0",
+  "description": "Experimental CIP-0103 wallet and dApp interop adapters for cantonjs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "canton",
+    "wallet",
+    "cip-0103",
+    "interop",
+    "experimental",
+    "typescript"
+  ],
+  "author": "Charles Dusek",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merged-one/cantonjs.git",
+    "directory": "packages/cantonjs-wallet-adapters"
+  },
+  "peerDependencies": {
+    "@canton-network/dapp-sdk": "^0.25.0"
+  },
+  "peerDependenciesMeta": {
+    "@canton-network/dapp-sdk": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
