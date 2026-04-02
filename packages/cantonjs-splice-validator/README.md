@@ -23,6 +23,41 @@ npm install cantonjs cantonjs-splice-validator
 - Proxy operations backed by internal, deprecated, or pre-alpha Scan semantics are intentionally excluded from the main client.
 - `legacyWallet` is a legacy compatibility surface. For new transfer flows, prefer Token Standard integrations instead of `wallet-external`.
 
+## Experimental APIs
+
+> [!WARNING]
+> Experimental Validator imports are pinned to `vendor/splice/0.5.17`.
+> They may break on any upstream release. Import them only from `cantonjs-splice-validator/experimental`.
+
+The experimental subpath isolates two unstable upstream surfaces:
+
+- `createExperimentalValidatorInternalClient()` for the vendored `validator-internal.yaml` surface.
+- `createExperimentalScanProxyClient()` for `scan-proxy` routes whose backing Scan semantics are tagged `internal` in the vendored `scan.yaml`.
+
+```ts
+import {
+  createExperimentalScanProxyClient,
+  createExperimentalValidatorInternalClient,
+} from 'cantonjs-splice-validator/experimental'
+
+const validatorInternal = createExperimentalValidatorInternalClient({
+  url: 'https://example.com/api/validator',
+  token: process.env.SPLICE_VALIDATOR_JWT,
+})
+
+const experimentalScanProxy = createExperimentalScanProxyClient({
+  url: 'https://example.com/api/validator',
+  token: process.env.SPLICE_VALIDATOR_JWT,
+})
+
+const operator = await validatorInternal.getValidatorUserInfo()
+const featured = await experimentalScanProxy.lookupFeaturedAppRight({
+  provider_party_id: 'Alice::validator',
+})
+```
+
+The stable `cantonjs-splice-validator` entrypoint intentionally continues to omit these APIs.
+
 ## Quick Start
 
 ```ts
