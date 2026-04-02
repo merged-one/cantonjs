@@ -31,3 +31,19 @@ export class InvalidTokenError extends CantonjsError {
     this.name = 'InvalidTokenError'
   }
 }
+
+/** A request-scoped auth/session provider failed before the request was sent. */
+export class AuthProviderError extends CantonjsError {
+  constructor(transport: string, path: string, options?: { cause?: Error }) {
+    super('Failed to resolve authentication for request', {
+      code: 'CJ2003' as ErrorCode,
+      cause: options?.cause,
+      metaMessages: [
+        `Transport: ${transport}`,
+        `Path: ${path}`,
+        'Ensure your auth/session provider returns a token or throws a CantonjsError.',
+      ],
+    })
+    this.name = 'AuthProviderError'
+  }
+}

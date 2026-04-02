@@ -63,6 +63,31 @@ describe('grpc', () => {
     expect(headers).toEqual({ Authorization: 'Bearer my-jwt-token' })
   })
 
+  it('includes Authorization header when async auth provider returns a token', async () => {
+    const grpcTransportLike = mockGrpcTransport({})
+    const auth = vi.fn().mockResolvedValue('dynamic-jwt-token')
+    const transport = grpc({
+      url: 'http://localhost:7575',
+      auth,
+      grpcTransport: grpcTransportLike,
+    })
+
+    await transport.request({ method: 'GET', path: '/v2/version' })
+
+    const headers = (grpcTransportLike.unary as ReturnType<typeof vi.fn>).mock.calls[0]![4]
+    expect(headers).toEqual({ Authorization: 'Bearer dynamic-jwt-token' })
+    expect(auth).toHaveBeenCalledWith({
+      transport: 'grpc',
+      url: 'http://localhost:7575',
+      request: {
+        method: 'GET',
+        path: '/v2/version',
+        headers: undefined,
+        signal: undefined,
+      },
+    })
+  })
+
   it('passes signal and timeout to gRPC transport', async () => {
     const grpcTransportLike = mockGrpcTransport({})
     const transport = grpc({

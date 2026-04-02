@@ -6,12 +6,17 @@
  */
 
 import { ConnectionError, HttpError, TimeoutError } from '../errors/transport.js'
-import type { Transport, TransportConfig, TransportRequest } from './types.js'
+import {
+  resolveTransportHeaders,
+  type Transport,
+  type TransportConfig,
+  type TransportRequest,
+} from './types.js'
 
 const DEFAULT_TIMEOUT = 30_000
 
 export function jsonApi(config: TransportConfig): Transport {
-  const { url, token, timeout = DEFAULT_TIMEOUT, fetchFn = globalThis.fetch } = config
+  const { url, timeout = DEFAULT_TIMEOUT, fetchFn = globalThis.fetch } = config
 
   const baseUrl = url.replace(/\/+$/, '')
 
@@ -21,13 +26,21 @@ export function jsonApi(config: TransportConfig): Transport {
 
     async request<TResponse = unknown>(args: TransportRequest): Promise<TResponse> {
       const requestUrl = `${baseUrl}${args.path}`
+      const authHeaders = await resolveTransportHeaders(config, {
+        transport: 'json-api',
+        url: baseUrl,
+        request: {
+          method: args.method,
+          path: args.path,
+          headers: args.headers,
+          signal: args.signal,
+        },
+      })
+
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         ...args.headers,
-      }
-
-      if (token !== undefined) {
-        headers['Authorization'] = `Bearer ${token}`
+        ...authHeaders,
       }
 
       const controller = new AbortController()

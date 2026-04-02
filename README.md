@@ -60,15 +60,33 @@ const created = await client.createContract('#my-pkg:Main:Asset', {
 })
 
 // 4. Exercise a choice
-const tx = await client.exerciseChoice(
-  '#my-pkg:Main:Asset',
-  created.contractId,
-  'Transfer',
-  { newOwner: 'Bob' },
-)
+const tx = await client.exerciseChoice('#my-pkg:Main:Asset', created.contractId, 'Transfer', {
+  newOwner: 'Bob',
+})
 
 // 5. Query active contracts
 const contracts = await client.queryContracts('#my-pkg:Main:Asset')
+```
+
+Static bearer tokens remain supported. For request-scoped auth, provide an async token or session provider:
+
+```typescript
+import { createLedgerClient, jsonApi, type AuthProvider } from 'cantonjs'
+
+const auth: AuthProvider = async ({ request }) => {
+  if (request.path.startsWith('/v2/state/')) return undefined
+  return await getFreshJwtForAudience('participant')
+}
+
+const transport = jsonApi({
+  url: 'http://localhost:7575',
+  auth,
+})
+
+const client = createLedgerClient({
+  transport,
+  actAs: 'Alice::1234',
+})
 ```
 
 ## Streaming
@@ -102,19 +120,23 @@ import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
 
 ## Clients
 
-| Client | Purpose |
-|--------|---------|
-| `createLedgerClient()` | Party-scoped contract operations (create, exercise, query, stream) |
-| `createAdminClient()` | Node administration (parties, users, packages, IDP) |
-| `createTestClient()` | Sandbox testing (time control, party allocation, sandbox lifecycle) |
+| Client                 | Purpose                                                             |
+| ---------------------- | ------------------------------------------------------------------- |
+| `createLedgerClient()` | Party-scoped contract operations (create, exercise, query, stream)  |
+| `createAdminClient()`  | Node administration (parties, users, packages, IDP)                 |
+| `createTestClient()`   | Sandbox testing (time control, party allocation, sandbox lifecycle) |
 
 ## Transports
 
-| Transport | Description |
-|-----------|-------------|
-| `jsonApi({ url, token })` | HTTP transport for Canton JSON API V2 |
-| `grpc({ grpcTransport, token })` | gRPC via injected ConnectRPC client |
-| `fallback({ transports })` | Failover across multiple transports |
+| Transport                          | Description                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `jsonApi({ url, token })`          | HTTP transport for Canton JSON API V2 with static bearer auth                         |
+| `jsonApi({ url, auth })`           | HTTP transport with async per-request token lookup                                    |
+| `jsonApi({ url, session })`        | HTTP transport with async per-request token and header injection                      |
+| `grpc({ grpcTransport, token })`   | gRPC via injected ConnectRPC client with static bearer auth                           |
+| `grpc({ grpcTransport, auth })`    | gRPC via injected ConnectRPC client with async per-request token lookup               |
+| `grpc({ grpcTransport, session })` | gRPC via injected ConnectRPC client with async per-request token and header injection |
+| `fallback({ transports })`         | Failover across multiple transports                                                   |
 
 ## Error Handling
 
@@ -133,14 +155,14 @@ try {
 }
 ```
 
-| Range | Domain |
-|-------|--------|
+| Range  | Domain                                      |
+| ------ | ------------------------------------------- |
 | CJ1xxx | Transport (connection, HTTP, gRPC, timeout) |
-| CJ2xxx | Authentication (JWT, token lifecycle) |
-| CJ3xxx | Ledger (command rejection, authorization) |
-| CJ4xxx | Admin (party, user, package management) |
-| CJ5xxx | Streaming (WebSocket, reconnection) |
-| CJ6xxx | Codegen (type mismatch, generation) |
+| CJ2xxx | Authentication (JWT, token lifecycle)       |
+| CJ3xxx | Ledger (command rejection, authorization)   |
+| CJ4xxx | Admin (party, user, package management)     |
+| CJ5xxx | Streaming (WebSocket, reconnection)         |
+| CJ6xxx | Codegen (type mismatch, generation)         |
 
 ## Packages
 
@@ -192,10 +214,8 @@ function AssetList() {
         Create
       </button>
       <ul>
-        {assets?.map(c => (
-          <li key={c.createdEvent.contractId}>
-            {JSON.stringify(c.createdEvent.createArgument)}
-          </li>
+        {assets?.map((c) => (
+          <li key={c.createdEvent.contractId}>{JSON.stringify(c.createdEvent.createArgument)}</li>
         ))}
       </ul>
     </div>
@@ -233,23 +253,23 @@ const sandbox = setupCantonSandbox({
 
 ## Canton Concepts
 
-| Concept | Description |
-|---------|-------------|
-| **Party** | Identity unit (not an address), permissions via JWT |
-| **Template** | Daml contract definition (`packageId:moduleName:entityName`) |
-| **Choice** | Operation on a contract (like a function call) |
-| **ContractId** | Unique UTXO-style identifier for a contract instance |
-| **DAR** | Daml Archive &mdash; the deployment artifact |
-| **Synchronizer** | Consensus domain for transaction ordering |
+| Concept          | Description                                                  |
+| ---------------- | ------------------------------------------------------------ |
+| **Party**        | Identity unit (not an address), permissions via JWT          |
+| **Template**     | Daml contract definition (`packageId:moduleName:entityName`) |
+| **Choice**       | Operation on a contract (like a function call)               |
+| **ContractId**   | Unique UTXO-style identifier for a contract instance         |
+| **DAR**          | Daml Archive &mdash; the deployment artifact                 |
+| **Synchronizer** | Consensus domain for transaction ordering                    |
 
 ## Bundle Size
 
 cantonjs is designed for minimal footprint:
 
-| Entry Point | Size (minified + brotli) |
-|-------------|--------------------------|
-| `cantonjs` | 5.08 KB |
-| `cantonjs/ledger` | 1.1 KB |
+| Entry Point       | Size (minified + brotli) |
+| ----------------- | ------------------------ |
+| `cantonjs`        | 5.08 KB                  |
+| `cantonjs/ledger` | 1.1 KB                   |
 
 ## Requirements
 
@@ -283,16 +303,16 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, coding conventio
 
 Design decisions are documented as Architecture Decision Records (ADRs):
 
-| ADR | Topic |
-|-----|-------|
+| ADR                                                    | Topic                            |
+| ------------------------------------------------------ | -------------------------------- |
 | [0001](./docs/adr/0001-typescript-function-exports.md) | TypeScript with function exports |
-| [0002](./docs/adr/0002-transport-abstraction.md) | Transport abstraction |
-| [0003](./docs/adr/0003-party-scoped-clients.md) | Party-scoped client architecture |
-| [0004](./docs/adr/0004-structured-error-model.md) | Structured error model |
-| [0005](./docs/adr/0005-streaming-architecture.md) | Streaming architecture |
-| [0006](./docs/adr/0006-testing-strategy.md) | Testing strategy |
-| [0007](./docs/adr/0007-codegen-architecture.md) | Codegen architecture |
-| [0008](./docs/adr/0008-react-integration.md) | React integration |
+| [0002](./docs/adr/0002-transport-abstraction.md)       | Transport abstraction            |
+| [0003](./docs/adr/0003-party-scoped-clients.md)        | Party-scoped client architecture |
+| [0004](./docs/adr/0004-structured-error-model.md)      | Structured error model           |
+| [0005](./docs/adr/0005-streaming-architecture.md)      | Streaming architecture           |
+| [0006](./docs/adr/0006-testing-strategy.md)            | Testing strategy                 |
+| [0007](./docs/adr/0007-codegen-architecture.md)        | Codegen architecture             |
+| [0008](./docs/adr/0008-react-integration.md)           | React integration                |
 
 ## Related
 

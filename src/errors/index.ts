@@ -1,5 +1,5 @@
 export { CantonjsError, type ErrorCode, type CantonjsErrorOptions } from './base.js'
 export { ConnectionError, HttpError, GrpcError, TimeoutError } from './transport.js'
 export { CommandRejectedError, ContractNotFoundError, AuthorizationError } from './ledger.js'
-export { TokenExpiredError, InvalidTokenError } from './auth.js'
+export { TokenExpiredError, InvalidTokenError, AuthProviderError } from './auth.js'
 export { WebSocketError, StreamClosedError, ReconnectFailedError } from './streaming.js'

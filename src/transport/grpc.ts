@@ -20,14 +20,17 @@
  *   })
  */
 
-import type { Transport, TransportRequest } from './types.js'
+import {
+  resolveTransportHeaders,
+  type Transport,
+  type TransportAuthConfig,
+  type TransportRequest,
+} from './types.js'
 
 /** Configuration for the gRPC transport. */
-export type GrpcTransportConfig = {
+export type GrpcTransportConfig = TransportAuthConfig & {
   /** Base URL of the Canton node. */
   readonly url: string
-  /** JWT Bearer token for authentication. */
-  readonly token?: string
   /**
    * A ConnectRPC transport instance (from @connectrpc/connect-web or connect-node).
    * Injected to keep cantonjs zero-dependency.
@@ -57,7 +60,7 @@ export type GrpcTransportLike = {
  * Maps Transport requests to gRPC unary calls.
  */
 export function grpc(config: GrpcTransportConfig): Transport {
-  const { url, token, grpcTransport } = config
+  const { url, grpcTransport } = config
   const baseUrl = url.replace(/\/+$/, '')
 
   return {
@@ -65,9 +68,18 @@ export function grpc(config: GrpcTransportConfig): Transport {
     url: baseUrl,
 
     async request<TResponse = unknown>(args: TransportRequest): Promise<TResponse> {
-      const headers: Record<string, string> = {}
-      if (token !== undefined) {
-        headers['Authorization'] = `Bearer ${token}`
+      const headers = {
+        ...args.headers,
+        ...(await resolveTransportHeaders(config, {
+          transport: 'grpc',
+          url: baseUrl,
+          request: {
+            method: args.method,
+            path: args.path,
+            headers: args.headers,
+            signal: args.signal,
+          },
+        })),
       }
 
       const result = await grpcTransport.unary(
@@ -92,16 +104,16 @@ export function grpc(config: GrpcTransportConfig): Transport {
 function pathToService(path: string): { typeName: string } {
   const segments = path.replace(/^\/v2\//, '').split('/')
   const serviceMap: Record<string, string> = {
-    'commands': 'com.daml.ledger.api.v2.CommandService',
+    commands: 'com.daml.ledger.api.v2.CommandService',
     'interactive-submission': 'com.daml.ledger.api.v2.InteractiveSubmissionService',
-    'state': 'com.daml.ledger.api.v2.StateService',
-    'updates': 'com.daml.ledger.api.v2.UpdateService',
-    'events': 'com.daml.ledger.api.v2.EventQueryService',
-    'parties': 'com.daml.ledger.api.v2.PartyManagementService',
-    'users': 'com.daml.ledger.api.v2.UserManagementService',
-    'packages': 'com.daml.ledger.api.v2.PackageService',
-    'dars': 'com.daml.ledger.api.v2.PackageManagementService',
-    'version': 'com.daml.ledger.api.v2.VersionService',
+    state: 'com.daml.ledger.api.v2.StateService',
+    updates: 'com.daml.ledger.api.v2.UpdateService',
+    events: 'com.daml.ledger.api.v2.EventQueryService',
+    parties: 'com.daml.ledger.api.v2.PartyManagementService',
+    users: 'com.daml.ledger.api.v2.UserManagementService',
+    packages: 'com.daml.ledger.api.v2.PackageService',
+    dars: 'com.daml.ledger.api.v2.PackageManagementService',
+    version: 'com.daml.ledger.api.v2.VersionService',
   }
   const serviceName = serviceMap[segments[0] ?? ''] ?? 'unknown'
   return { typeName: serviceName }
