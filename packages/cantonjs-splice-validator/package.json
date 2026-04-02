@@ -1,0 +1,60 @@
+{
+  "name": "cantonjs-splice-validator",
+  "version": "0.2.0",
+  "description": "Validator-facing Splice clients for ANS, filtered Scan Proxy, and legacy wallet compatibility",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "generate:types": "npm run generate:types:ans && npm run generate:types:scan-proxy && npm run generate:types:wallet",
+    "generate:types:ans": "SPLICE_TAG=\"$(find ../../vendor/splice -mindepth 1 -maxdepth 1 -type d -exec basename {} \\; | sort -V | tail -n1)\" && mkdir -p ./src/generated && npx openapi-typescript \"../../vendor/splice/${SPLICE_TAG}/openapi/ans-external.yaml\" -o \"./src/generated/ans.types.ts\"",
+    "generate:types:scan-proxy": "SPLICE_TAG=\"$(find ../../vendor/splice -mindepth 1 -maxdepth 1 -type d -exec basename {} \\; | sort -V | tail -n1)\" && mkdir -p ./src/generated ../../scan/src/main/openapi && ln -sf \"$PWD/../../vendor/splice/${SPLICE_TAG}/openapi/scan.yaml\" ../../scan/src/main/openapi/scan.yaml && npx openapi-typescript \"../../vendor/splice/${SPLICE_TAG}/openapi/scan-proxy.yaml\" -o \"./src/generated/scanProxy.types.ts\" && rm -f ../../scan/src/main/openapi/scan.yaml && rmdir ../../scan/src/main/openapi ../../scan/src/main ../../scan/src 2>/dev/null || true",
+    "generate:types:wallet": "SPLICE_TAG=\"$(find ../../vendor/splice -mindepth 1 -maxdepth 1 -type d -exec basename {} \\; | sort -V | tail -n1)\" && mkdir -p ./src/generated && npx openapi-typescript \"../../vendor/splice/${SPLICE_TAG}/openapi/wallet-external.yaml\" -o \"./src/generated/walletExternal.types.ts\"",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "canton",
+    "splice",
+    "validator",
+    "ans",
+    "typescript",
+    "client"
+  ],
+  "author": "Charles Dusek",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merged-one/cantonjs.git",
+    "directory": "packages/cantonjs-splice-validator"
+  },
+  "peerDependencies": {
+    "cantonjs": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "cantonjs": "file:../..",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0",
+    "yaml": "^2.8.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
