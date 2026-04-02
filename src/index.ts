@@ -27,7 +27,21 @@ export {
 export { jsonApi } from './transport/json-api.js'
 export { grpc, type GrpcTransportConfig, type GrpcTransportLike } from './transport/grpc.js'
 export { fallback, type FallbackTransportConfig } from './transport/fallback.js'
-export type { Transport, TransportConfig, TransportRequest } from './transport/types.js'
+export type {
+  Transport,
+  TransportAuthConfig,
+  TransportConfig,
+  TransportRequest,
+} from './transport/types.js'
+
+// Auth
+export type {
+  MaybePromise,
+  AuthContext,
+  AuthSession,
+  AuthProvider,
+  SessionProvider,
+} from './auth/index.js'
 
 // Errors
 export {
@@ -41,6 +55,7 @@ export {
   AuthorizationError,
   TokenExpiredError,
   InvalidTokenError,
+  AuthProviderError,
   WebSocketError,
   StreamClosedError,
   ReconnectFailedError,
@@ -73,11 +88,7 @@ export type {
   TransactionFormat,
 } from './types/command.js'
 
-export type {
-  JsTransaction,
-  TaggedUpdate,
-  UpdateFormat,
-} from './types/transaction.js'
+export type { JsTransaction, TaggedUpdate, UpdateFormat } from './types/transaction.js'
 
 export type { User, Right, RightKind, CreateUserRequest } from './types/user.js'
 export type { PackageStatus, PackageDetails } from './types/package.js'

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { jsonApi } from './json-api.js'
+import { AuthProviderError } from '../errors/auth.js'
 import { ConnectionError, HttpError, TimeoutError } from '../errors/transport.js'
 
 function mockFetch(response: {
@@ -77,7 +78,7 @@ describe('jsonApi transport', () => {
     )
   })
 
-  it('includes Authorization header when token is provided', async () => {
+  it('includes Authorization header when static token is provided', async () => {
     const fetchFn = mockFetch({
       ok: true,
       status: 200,
@@ -96,6 +97,36 @@ describe('jsonApi transport', () => {
     expect(callArgs[1].headers['Authorization']).toBe('Bearer my-jwt-token')
   })
 
+  it('includes Authorization header when async auth provider returns a token', async () => {
+    const fetchFn = mockFetch({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+    })
+    const auth = vi.fn().mockResolvedValue('dynamic-jwt-token')
+
+    const transport = jsonApi({
+      url: 'http://localhost:7575',
+      auth,
+      fetchFn,
+    })
+
+    await transport.request({ method: 'GET', path: '/v2/version' })
+
+    const callArgs = fetchFn.mock.calls[0]!
+    expect(callArgs[1].headers['Authorization']).toBe('Bearer dynamic-jwt-token')
+    expect(auth).toHaveBeenCalledWith({
+      transport: 'json-api',
+      url: 'http://localhost:7575',
+      request: {
+        method: 'GET',
+        path: '/v2/version',
+        headers: undefined,
+        signal: undefined,
+      },
+    })
+  })
+
   it('does not include Authorization header when no token', async () => {
     const fetchFn = mockFetch({
       ok: true,
@@ -110,6 +141,46 @@ describe('jsonApi transport', () => {
     expect(callArgs[1].headers['Authorization']).toBeUndefined()
   })
 
+  it('allows per-request auth providers to return undefined', async () => {
+    const fetchFn = mockFetch({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+    })
+    const auth = vi.fn().mockImplementation(async ({ request }: { request: { path: string } }) => {
+      return request.path === '/v2/version' ? undefined : 'dynamic-jwt-token'
+    })
+
+    const transport = jsonApi({
+      url: 'http://localhost:7575',
+      auth,
+      fetchFn,
+    })
+
+    await transport.request({ method: 'GET', path: '/v2/version' })
+    await transport.request({ method: 'GET', path: '/v2/state/ledger-end' })
+
+    expect(fetchFn.mock.calls[0]![1].headers['Authorization']).toBeUndefined()
+    expect(fetchFn.mock.calls[1]![1].headers['Authorization']).toBe('Bearer dynamic-jwt-token')
+  })
+
+  it('wraps auth provider failures as structured auth errors', async () => {
+    const fetchFn = vi.fn()
+
+    const transport = jsonApi({
+      url: 'http://localhost:7575',
+      auth: async () => {
+        throw new Error('auth backend unavailable')
+      },
+      fetchFn,
+    })
+
+    await expect(transport.request({ method: 'GET', path: '/v2/version' })).rejects.toThrow(
+      AuthProviderError,
+    )
+    expect(fetchFn).not.toHaveBeenCalled()
+  })
+
   it('throws HttpError on non-ok response', async () => {
     const fetchFn = mockFetch({
       ok: false,
@@ -120,9 +191,9 @@ describe('jsonApi transport', () => {
 
     const transport = jsonApi({ url: 'http://localhost:7575', fetchFn })
 
-    await expect(
-      transport.request({ method: 'GET', path: '/v2/version' }),
-    ).rejects.toThrow(HttpError)
+    await expect(transport.request({ method: 'GET', path: '/v2/version' })).rejects.toThrow(
+      HttpError,
+    )
   })
 
   it('throws TimeoutError when request times out', async () => {
@@ -140,9 +211,9 @@ describe('jsonApi transport', () => {
       fetchFn,
     })
 
-    await expect(
-      transport.request({ method: 'GET', path: '/v2/version' }),
-    ).rejects.toThrow(TimeoutError)
+    await expect(transport.request({ method: 'GET', path: '/v2/version' })).rejects.toThrow(
+      TimeoutError,
+    )
   })
 
   it('throws ConnectionError on network failure', async () => {
@@ -150,9 +221,9 @@ describe('jsonApi transport', () => {
 
     const transport = jsonApi({ url: 'http://localhost:7575', fetchFn })
 
-    await expect(
-      transport.request({ method: 'GET', path: '/v2/version' }),
-    ).rejects.toThrow(ConnectionError)
+    await expect(transport.request({ method: 'GET', path: '/v2/version' })).rejects.toThrow(
+      ConnectionError,
+    )
   })
 
   it('returns text response when content-type is not JSON', async () => {
