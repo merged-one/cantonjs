@@ -15,8 +15,9 @@
  * @see https://docs.digitalasset.com/build/3.4/component-howtos/development-tooling-authors/how-to-parse-daml-archive-files.html
  */
 
-import * as protobuf from 'protobufjs'
+import protobuf from 'protobufjs'
 import * as path from 'node:path'
+import * as fs from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import type {
   DalfPackage,
@@ -38,7 +39,8 @@ let protoRoot: protobuf.Root | null = null
 async function getProtoRoot(): Promise<protobuf.Root> {
   if (protoRoot) return protoRoot
   const protoPath = path.resolve(__dirname, '../../proto/daml_lf.proto')
-  protoRoot = await protobuf.load(protoPath)
+  const protoSource = await fs.readFile(protoPath, 'utf8')
+  protoRoot = protobuf.parse(protoSource, new protobuf.Root(), { keepCase: true }).root
   return protoRoot
 }
 
@@ -57,7 +59,6 @@ export async function decodeDalf(
   // Decode Archive message
   const ArchiveType = root.lookupType('daml_lf_dev.Archive')
   const archive = ArchiveType.decode(dalfBytes) as unknown as {
-    hashFunction: number
     hash: string
     payload: Uint8Array
   }
@@ -66,11 +67,10 @@ export async function decodeDalf(
   const ArchivePayloadType = root.lookupType('daml_lf_dev.ArchivePayload')
   const payload = ArchivePayloadType.decode(archive.payload) as unknown as {
     minor: string
-    Package?: RawPackage
     daml_lf_2?: RawPackage
   }
 
-  const pkg = payload.Package ?? payload.daml_lf_2
+  const pkg = payload.daml_lf_2
   if (!pkg) {
     throw new Error(`Failed to decode package from DALF: no Package field found`)
   }
@@ -130,6 +130,7 @@ type RawFieldWithType = {
 
 type RawDefTemplate = {
   tycon_interned_dname?: number
+  param_interned_str?: number
   choices?: RawTemplateChoice[]
 }
 
@@ -137,8 +138,13 @@ type RawTemplateChoice = {
   name_interned_str?: number
   name?: string
   consuming?: boolean
-  arg_type?: RawType
+  arg_binder?: RawVarWithType
   ret_type?: RawType
+}
+
+type RawVarWithType = {
+  var_interned_str?: number
+  type?: RawType
 }
 
 type RawType = {
@@ -288,8 +294,8 @@ function decodeChoice(raw: RawTemplateChoice, intern: InternTable): DamlChoice {
     ? intern.getString(raw.name_interned_str)
     : (raw.name ?? '')
 
-  const argType = raw.arg_type
-    ? decodeType(raw.arg_type, intern)
+  const argType = raw.arg_binder?.type
+    ? decodeType(raw.arg_binder.type, intern)
     : { kind: 'prim' as const, prim: 'UNIT' as DamlPrimType, args: [] }
 
   const returnType = raw.ret_type

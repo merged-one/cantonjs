@@ -11,9 +11,8 @@ package daml_lf_dev;
 
 // Top-level archive wrapper.
 message Archive {
-  HashFunction hash_function = 1;
-  string hash = 2;
   bytes payload = 3;
+  string hash = 4;
 }
 
 enum HashFunction {
@@ -22,9 +21,9 @@ enum HashFunction {
 
 // The decoded payload of an Archive.
 message ArchivePayload {
-  string minor = 1;
+  string minor = 3;
   oneof Sum {
-    Package daml_lf_2 = 11;
+    Package daml_lf_2 = 4;
   }
 }
 
@@ -47,20 +46,21 @@ message InternedDottedName {
 
 // A module within a package.
 message Module {
-  int32 name_interned_dname = 1;
-  repeated DefDataType data_types = 3;
-  repeated DefTemplate templates = 4;
+  int32 name_interned_dname = 2;
+  repeated DefDataType data_types = 4;
+  repeated DefTemplate templates = 6;
 }
 
 // Data type definition (record, variant, or enum).
 message DefDataType {
-  int32 name_interned_dname = 1;
-  repeated TypeVarWithKind params = 2;
+  int32 name_interned_dname = 2;
+  repeated TypeVarWithKind params = 3;
+  bool serializable = 4;
 
   oneof DataCons {
-    DefDataType.Fields record = 3;
-    DefDataType.Fields variant = 4;
-    DefDataType.EnumConstructors enum = 5;
+    DefDataType.Fields record = 5;
+    DefDataType.Fields variant = 6;
+    DefDataType.EnumConstructors enum = 7;
   }
 
   message Fields {
@@ -77,30 +77,36 @@ message TypeVarWithKind {
 }
 
 message FieldWithType {
-  int32 field_interned_str = 1;
-  Type type = 2;
+  int32 field_interned_str = 2;
+  Type type = 3;
 }
 
 // Template definition.
 message DefTemplate {
-  int32 tycon_interned_dname = 1;
-  repeated TemplateChoice choices = 4;
+  int32 tycon_interned_dname = 2;
+  int32 param_interned_str = 3;
+  repeated TemplateChoice choices = 6;
+}
+
+message VarWithType {
+  int32 var_interned_str = 1;
+  Type type = 2;
 }
 
 message TemplateChoice {
-  int32 name_interned_str = 1;
-  bool consuming = 2;
-  Type arg_type = 5;
-  Type ret_type = 7;
+  int32 name_interned_str = 2;
+  bool consuming = 4;
+  VarWithType arg_binder = 9;
+  Type ret_type = 10;
 }
 
 // Type representation.
 message Type {
   oneof Sum {
-    Type.Prim prim = 3;
-    Type.Con con = 4;
-    Type.Var var = 5;
-    int64 nat = 11;
+    Type.Var var = 3;
+    Type.Con con = 6;
+    Type.Prim prim = 8;
+    int64 nat = 9;
     int32 interned = 12;
   }
 
