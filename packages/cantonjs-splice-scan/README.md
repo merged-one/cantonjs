@@ -72,6 +72,30 @@ for await (const update of scan.iterateUpdates({ page_size: 100 })) {
 - The main entrypoint exports only stable public Scan helpers and stable public derived types.
 - No network access is required at install time.
 
+## Experimental APIs
+
+> [!WARNING]
+> Experimental Scan imports are pinned to `vendor/splice/0.5.17`.
+> They may break on any upstream release. Import them only from `cantonjs-splice-scan/experimental`.
+
+The experimental subpath exposes the unstable portions of `scan.yaml`: `internal`, `deprecated`, and `pre-alpha` operations.
+
+```ts
+import { createExperimentalScanClient } from 'cantonjs-splice-scan/experimental'
+
+const experimentalScan = createExperimentalScanClient({
+  url: 'https://example.com/api/scan',
+  token: process.env.SPLICE_SCAN_JWT,
+})
+
+const migration = await experimentalScan.getMigrationSchedule()
+const bulkSnapshot = await experimentalScan.listBulkAcsSnapshotObjects({
+  at_or_before_record_time: '2026-04-02T00:00:00.000Z',
+})
+```
+
+The stable `cantonjs-splice-scan` entrypoint will continue to exclude these operations even when experimental wrappers exist.
+
 ## License
 
 [Apache-2.0](https://github.com/merged-one/cantonjs/blob/main/LICENSE)

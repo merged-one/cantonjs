@@ -49,28 +49,55 @@ describe('Validator spec classification', () => {
 
   it('documents legacyWallet separately from the GA validator surfaces', () => {
     const readme = readFileSync(resolve(packageRoot, 'README.md'), 'utf8')
+    const docs = readFileSync(
+      resolve(repoRoot, 'docs/experimental/splice-internal-apis.md'),
+      'utf8',
+    )
+    const spliceTag = loadVendoredSpliceTag()
 
     expect(readme).toContain('## GA Scan Proxy Surface')
     expect(readme).toContain('## Legacy Wallet Compatibility')
+    expect(readme).toContain('## Experimental APIs')
     expect(readme).toContain('legacyWallet')
     expect(readme).toContain('legacy/deprecated-oriented')
     expect(readme).toContain('Token Standard')
     expect(readme).toContain('createLegacyWalletClient')
+    expect(readme).toContain('cantonjs-splice-validator/experimental')
+    expect(readme).toContain(`vendor/splice/${spliceTag}`)
+    expect(readme).toContain('may break on any upstream release')
+    expect(docs).toContain('cantonjs-splice-validator/experimental')
+    expect(docs).toContain(`vendor/splice/${spliceTag}`)
   })
 
   it('keeps generated helpers and internal classification state out of the main entrypoint', async () => {
     const entrypoint = await import('./index.js')
+    const experimentalEntrypoint = await import('./experimental/index.js')
+    const packageJson = JSON.parse(readFileSync(resolve(packageRoot, 'package.json'), 'utf8')) as {
+      exports: Record<string, unknown>
+    }
 
     expect(entrypoint.createAnsClient).toBeTypeOf('function')
     expect(entrypoint.createScanProxyClient).toBeTypeOf('function')
     expect(entrypoint.createLegacyWalletClient).toBeTypeOf('function')
+    expect(entrypoint).not.toHaveProperty('createExperimentalScanProxyClient')
+    expect(entrypoint).not.toHaveProperty('createExperimentalValidatorInternalClient')
     expect(entrypoint).not.toHaveProperty('GA_SCAN_PROXY_OPERATIONS')
     expect(entrypoint).not.toHaveProperty('paths')
     expect(entrypoint).not.toHaveProperty('operations')
+    expect(experimentalEntrypoint.createExperimentalScanProxyClient).toBeTypeOf('function')
+    expect(experimentalEntrypoint.createExperimentalValidatorInternalClient).toBeTypeOf('function')
+    expect(Object.keys(packageJson.exports).sort()).toEqual(['.', './experimental'])
   })
 })
 
 function loadVendoredSpec(filename: string): OpenApiSpec {
+  const spliceTag = loadVendoredSpliceTag()
+
+  const specPath = resolve(repoRoot, `vendor/splice/${spliceTag}/openapi/${filename}`)
+  return parse(readFileSync(specPath, 'utf8')) as OpenApiSpec
+}
+
+function loadVendoredSpliceTag(): string {
   const spliceTag = readdirSync(resolve(repoRoot, 'vendor/splice'), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
@@ -81,8 +108,7 @@ function loadVendoredSpec(filename: string): OpenApiSpec {
     throw new Error('No vendored Splice tag directories found')
   }
 
-  const specPath = resolve(repoRoot, `vendor/splice/${spliceTag}/openapi/${filename}`)
-  return parse(readFileSync(specPath, 'utf8')) as OpenApiSpec
+  return spliceTag
 }
 
 function findOperationById(spec: OpenApiSpec, operationId: string): unknown {

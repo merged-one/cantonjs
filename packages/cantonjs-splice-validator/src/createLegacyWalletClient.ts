@@ -1,4 +1,4 @@
-import { HttpError, jsonApi, type TransportConfig } from 'cantonjs'
+import { jsonApi, type TransportConfig } from 'cantonjs'
 import type { components, operations } from './generated/walletExternal.types.js'
 
 type Primitive = string | number | boolean
@@ -152,14 +152,11 @@ function buildPath(pathTemplate: string, pathParams: PathParametersRecord): stri
   })
 }
 
-function isNotFoundHttpError(error: unknown): error is HttpError {
-  return (
-    error instanceof HttpError ||
-    (typeof error === 'object' &&
-      error !== null &&
-      'name' in error &&
-      'status' in error &&
-      error.name === 'HttpError' &&
-      error.status === 404)
-  )
+function isNotFoundHttpError(error: unknown): boolean {
+  const candidate =
+    typeof error === 'object' && error !== null
+      ? (error as { name?: unknown; status?: unknown })
+      : undefined
+
+  return candidate?.name === 'HttpError' && candidate.status === 404
 }
