@@ -1,0 +1,55 @@
+{
+  "name": "cantonjs-splice-token-standard",
+  "version": "0.2.0",
+  "description": "Ledger-centric CIP-0056 Token Standard helpers for cantonjs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "canton",
+    "splice",
+    "token-standard",
+    "cip-0056",
+    "typescript"
+  ],
+  "author": "Charles Dusek",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merged-one/cantonjs.git",
+    "directory": "packages/cantonjs-splice-token-standard"
+  },
+  "peerDependencies": {
+    "cantonjs": "^0.2.0",
+    "cantonjs-splice-interfaces": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "cantonjs": "file:../..",
+    "cantonjs-splice-interfaces": "file:../cantonjs-splice-interfaces",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
