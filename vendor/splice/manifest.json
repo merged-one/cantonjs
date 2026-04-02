@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "upstream": {
+    "repository": "https://github.com/hyperledger-labs/splice",
+    "resolvedTag": "0.5.17",
+    "releaseLine": "0.5"
+  },
+  "checksumFile": "vendor/splice/0.5.17/openapi/SHA256SUMS",
+  "artifacts": [
+    {
+      "id": "ans-external",
+      "path": "vendor/splice/0.5.17/openapi/ans-external.yaml",
+      "source": "https://raw.githubusercontent.com/hyperledger-labs/splice/0.5.17/apps/validator/src/main/openapi/ans-external.yaml",
+      "classification": "external",
+      "compatibility": "backward-compatible",
+      "why": "Upstream names this spec external and packages it under external.ans."
+    },
+    {
+      "id": "scan-proxy",
+      "path": "vendor/splice/0.5.17/openapi/scan-proxy.yaml",
+      "source": "https://raw.githubusercontent.com/hyperledger-labs/splice/0.5.17/apps/validator/src/main/openapi/scan-proxy.yaml",
+      "classification": "legacy",
+      "compatibility": "legacy",
+      "why": "Validator-local proxy surface over Scan data; cantonjs treats it as a compatibility layer rather than a primary stable client target."
+    },
+    {
+      "id": "scan",
+      "path": "vendor/splice/0.5.17/openapi/scan.yaml",
+      "source": "https://raw.githubusercontent.com/hyperledger-labs/splice/0.5.17/apps/scan/src/main/openapi/scan.yaml",
+      "classification": "legacy",
+      "compatibility": "mixed",
+      "why": "Single Scan spec mixes external, internal, deprecated, and pre-alpha tags in one file."
+    },
+    {
+      "id": "validator-internal",
+      "path": "vendor/splice/0.5.17/openapi/validator-internal.yaml",
+      "source": "https://raw.githubusercontent.com/hyperledger-labs/splice/0.5.17/apps/validator/src/main/openapi/validator-internal.yaml",
+      "classification": "internal/experimental",
+      "compatibility": "no-guarantee",
+      "why": "Upstream names this spec internal; do not treat it as a stable client input."
+    },
+    {
+      "id": "wallet-external",
+      "path": "vendor/splice/0.5.17/openapi/wallet-external.yaml",
+      "source": "https://raw.githubusercontent.com/hyperledger-labs/splice/0.5.17/apps/wallet/src/main/openapi/wallet-external.yaml",
+      "classification": "legacy",
+      "compatibility": "legacy",
+      "why": "Official public spec, but these wallet transfer-offer flows are product-specific and superseded by token-standard-first integration in cantonjs."
+    }
+  ]
+}

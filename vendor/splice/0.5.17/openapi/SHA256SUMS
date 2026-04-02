@@ -1,0 +1,5 @@
+2999da38ddc9bfdadcf687a18386e3f60de4f96e3697d57a868ffc191f691bc5  vendor/splice/0.5.17/openapi/ans-external.yaml
+012527ca3309d385bc1b1b94c61fd42ff3f1a584335565491966ca889f232721  vendor/splice/0.5.17/openapi/scan-proxy.yaml
+bfdc58b51b860fd41b1a8018c4506f3e35bdd7904b672f2f4a2ae88428052505  vendor/splice/0.5.17/openapi/scan.yaml
+c7230856346552dead1e564891793687f7a39b1c4bccf68385c6d3ba23a10b9c  vendor/splice/0.5.17/openapi/validator-internal.yaml
+a11a65dd4e445b55c4179f9c0efbddca91d115048d93775e39699460aeb38def  vendor/splice/0.5.17/openapi/wallet-external.yaml
