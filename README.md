@@ -1,0 +1,305 @@
+<p align="center">
+  <strong>cantonjs</strong>
+</p>
+
+<p align="center">
+  TypeScript interface for the Canton Network &mdash; <em>viem for Canton</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/merged-one/cantonjs/actions/workflows/ci.yml"><img src="https://github.com/merged-one/cantonjs/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://www.npmjs.com/package/cantonjs"><img src="https://img.shields.io/npm/v/cantonjs.svg" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/cantonjs"><img src="https://img.shields.io/npm/dm/cantonjs.svg" alt="npm downloads" /></a>
+  <a href="https://github.com/merged-one/cantonjs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License" /></a>
+  <a href="https://img.shields.io/bundlephobia/minzip/cantonjs"><img src="https://img.shields.io/bundlephobia/minzip/cantonjs" alt="Bundle size" /></a>
+</p>
+
+---
+
+cantonjs is a modern, type-safe TypeScript library for the [Canton Network](https://www.canton.network/) Ledger API V2. It provides tree-shakeable function exports, real-time WebSocket streaming, structured errors, and first-class testing support.
+
+**Companion CLI:** [cantonctl](https://github.com/merged-one/cantonctl) ("Hardhat for Canton")
+
+## Features
+
+- **Function exports, not classes** &mdash; tree-shakeable, ESM + CJS dual build
+- **Type-safe codegen** &mdash; generate TypeScript from Daml DAR files
+- **Real-time streaming** &mdash; AsyncIterator WebSocket streams with auto-reconnect
+- **React hooks** &mdash; TanStack Query-powered hooks via [cantonjs-react](#cantonjs-react)
+- **First-class testing** &mdash; mock transports, recording transports, Canton sandbox fixtures
+- **Structured errors** &mdash; error codes, recovery hints, traversable cause chains
+- **Zero runtime dependencies** &mdash; transports are injected, not bundled
+
+## Install
+
+```bash
+npm install cantonjs
+```
+
+## Quick Start
+
+```typescript
+import { createLedgerClient, jsonApi } from 'cantonjs'
+
+// 1. Create a transport
+const transport = jsonApi({
+  url: 'http://localhost:7575',
+  token: 'your-jwt-token',
+})
+
+// 2. Create a party-scoped client
+const client = createLedgerClient({
+  transport,
+  actAs: 'Alice::1234',
+})
+
+// 3. Create a contract
+const created = await client.createContract('#my-pkg:Main:Asset', {
+  owner: 'Alice',
+  value: '100',
+})
+
+// 4. Exercise a choice
+const tx = await client.exerciseChoice(
+  '#my-pkg:Main:Asset',
+  created.contractId,
+  'Transfer',
+  { newOwner: 'Bob' },
+)
+
+// 5. Query active contracts
+const contracts = await client.queryContracts('#my-pkg:Main:Asset')
+```
+
+## Streaming
+
+Subscribe to real-time updates with auto-reconnect and offset tracking:
+
+```typescript
+import { streamUpdates } from 'cantonjs'
+
+const controller = new AbortController()
+
+for await (const update of streamUpdates(transport, {
+  beginExclusive: '0',
+  signal: controller.signal,
+})) {
+  console.log('Update:', update.updateId)
+}
+```
+
+## Subpath Imports
+
+Import only what you need for smaller bundles:
+
+```typescript
+import { createLedgerClient } from 'cantonjs/ledger'
+import { createAdminClient } from 'cantonjs/admin'
+import { createTestClient } from 'cantonjs/testing'
+import { localNet, devNet, testNet, mainNet } from 'cantonjs/chains'
+import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
+```
+
+## Clients
+
+| Client | Purpose |
+|--------|---------|
+| `createLedgerClient()` | Party-scoped contract operations (create, exercise, query, stream) |
+| `createAdminClient()` | Node administration (parties, users, packages, IDP) |
+| `createTestClient()` | Sandbox testing (time control, party allocation, sandbox lifecycle) |
+
+## Transports
+
+| Transport | Description |
+|-----------|-------------|
+| `jsonApi({ url, token })` | HTTP transport for Canton JSON API V2 |
+| `grpc({ grpcTransport, token })` | gRPC via injected ConnectRPC client |
+| `fallback({ transports })` | Failover across multiple transports |
+
+## Error Handling
+
+Every error is a `CantonjsError` with a machine-readable code, recovery hints, and a traversable cause chain:
+
+```typescript
+import { CommandRejectedError, TokenExpiredError } from 'cantonjs'
+
+try {
+  await client.createContract(templateId, args)
+} catch (error) {
+  if (error instanceof TokenExpiredError) {
+    // error.code === 'CJ2001'
+    // error.metaMessages === ['Refresh your JWT token']
+  }
+}
+```
+
+| Range | Domain |
+|-------|--------|
+| CJ1xxx | Transport (connection, HTTP, gRPC, timeout) |
+| CJ2xxx | Authentication (JWT, token lifecycle) |
+| CJ3xxx | Ledger (command rejection, authorization) |
+| CJ4xxx | Admin (party, user, package management) |
+| CJ5xxx | Streaming (WebSocket, reconnection) |
+| CJ6xxx | Codegen (type mismatch, generation) |
+
+## Packages
+
+### cantonjs-codegen
+
+Generate TypeScript types from Daml DAR files:
+
+```bash
+npm install --save-dev cantonjs-codegen
+
+cantonjs-codegen --dar ./model.dar --output ./src/generated
+```
+
+Records become type aliases, variants become discriminated unions, templates become companion const objects with `templateId` and choices. See [packages/cantonjs-codegen](./packages/cantonjs-codegen/).
+
+### cantonjs-react
+
+React hooks for Canton dApps, powered by TanStack Query:
+
+```bash
+npm install cantonjs-react @tanstack/react-query
+```
+
+```tsx
+import { CantonProvider, useContracts, useCreateContract } from 'cantonjs-react'
+
+function App() {
+  return (
+    <CantonProvider client={client}>
+      <AssetList />
+    </CantonProvider>
+  )
+}
+
+function AssetList() {
+  const { data: assets, isLoading } = useContracts({
+    templateId: '#my-pkg:Main:Asset',
+  })
+
+  const { mutate: create } = useCreateContract({
+    templateId: '#my-pkg:Main:Asset',
+  })
+
+  if (isLoading) return <div>Loading...</div>
+
+  return (
+    <div>
+      <button onClick={() => create({ createArguments: { owner: 'Alice', value: 100 } })}>
+        Create
+      </button>
+      <ul>
+        {assets?.map(c => (
+          <li key={c.createdEvent.contractId}>
+            {JSON.stringify(c.createdEvent.createArgument)}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+```
+
+See [packages/cantonjs-react](./packages/cantonjs-react/).
+
+## Testing
+
+cantonjs provides first-class testing utilities. No `vi.mock()` needed &mdash; all dependencies are injected:
+
+```typescript
+import { createMockTransport } from 'cantonjs/testing'
+
+const transport = createMockTransport({
+  responses: [{ contractId: 'contract-1', templateId: '#pkg:Mod:T' }],
+})
+
+const client = createLedgerClient({ transport, actAs: 'Alice::1234' })
+const created = await client.createContract('#pkg:Mod:T', { owner: 'Alice' })
+```
+
+Integration testing with a real Canton sandbox:
+
+```typescript
+import { setupCantonSandbox } from 'cantonjs/testing'
+
+const sandbox = setupCantonSandbox({
+  cantonctlPath: 'cantonctl',
+})
+// sandbox.client is a fully configured TestClient
+```
+
+## Canton Concepts
+
+| Concept | Description |
+|---------|-------------|
+| **Party** | Identity unit (not an address), permissions via JWT |
+| **Template** | Daml contract definition (`packageId:moduleName:entityName`) |
+| **Choice** | Operation on a contract (like a function call) |
+| **ContractId** | Unique UTXO-style identifier for a contract instance |
+| **DAR** | Daml Archive &mdash; the deployment artifact |
+| **Synchronizer** | Consensus domain for transaction ordering |
+
+## Bundle Size
+
+cantonjs is designed for minimal footprint:
+
+| Entry Point | Size (minified + brotli) |
+|-------------|--------------------------|
+| `cantonjs` | 5.08 KB |
+| `cantonjs/ledger` | 1.1 KB |
+
+## Requirements
+
+- Node.js >= 18
+- TypeScript >= 5.0.4 (optional peer dependency)
+
+## Development
+
+```bash
+git clone https://github.com/merged-one/cantonjs.git
+cd cantonjs
+npm install
+
+npm test              # Run tests (192 core tests)
+npm run typecheck     # Type-check
+npm run lint          # Lint
+npm run build         # Build ESM + CJS + types
+npm run size          # Bundle size audit
+npm run docs:dev      # Start docs dev server
+
+# Packages
+cd packages/cantonjs-codegen && npm test   # 29 codegen tests
+cd packages/cantonjs-react && npm test     # 16 React tests
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, coding conventions, and pull request guidelines.
+
+## Architecture Decisions
+
+Design decisions are documented as Architecture Decision Records (ADRs):
+
+| ADR | Topic |
+|-----|-------|
+| [0001](./docs/adr/0001-typescript-function-exports.md) | TypeScript with function exports |
+| [0002](./docs/adr/0002-transport-abstraction.md) | Transport abstraction |
+| [0003](./docs/adr/0003-party-scoped-clients.md) | Party-scoped client architecture |
+| [0004](./docs/adr/0004-structured-error-model.md) | Structured error model |
+| [0005](./docs/adr/0005-streaming-architecture.md) | Streaming architecture |
+| [0006](./docs/adr/0006-testing-strategy.md) | Testing strategy |
+| [0007](./docs/adr/0007-codegen-architecture.md) | Codegen architecture |
+| [0008](./docs/adr/0008-react-integration.md) | React integration |
+
+## Related
+
+- [cantonctl](https://github.com/merged-one/cantonctl) &mdash; CLI tooling for Canton ("Hardhat for Canton")
+- [Canton Network](https://www.canton.network/) &mdash; The Canton Network
+- [Canton Docs](https://docs.digitalasset.com/) &mdash; Official Canton documentation
+
+## License
+
+[Apache-2.0](./LICENSE)

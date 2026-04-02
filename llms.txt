@@ -41,8 +41,36 @@ import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
 ## Client Types
 
 LedgerClient — party-scoped contract operations (create, exercise, query, stream)
-AdminClient — party/user/package/IDP management (allocateParty, uploadDar, createUser, pagination)
-TestClient — sandbox testing (advanceTime, allocateParties, setupCantonSandbox)
+  - createContract(templateId, args, options?) -> CreatedEvent
+  - exerciseChoice(templateId, contractId, choice, args, options?) -> JsTransaction
+  - queryContracts(templateId, options?) -> ActiveContract[]
+  - getTransactionById(updateId) / getTransactionByOffset(offset) -> JsTransaction
+  - getEventsByContractId(contractId) -> TaggedEvent[]
+  - getLedgerEnd() -> string
+  - getConnectedSynchronizers() -> ConnectedSynchronizer[]
+  - submitReassignment(command, options?) -> Reassignment
+  - prepareSubmission(templateId, args, options?) -> PrepareSubmissionResponse
+  - executeSubmission(preparedTx, signatures, options?) -> JsTransaction
+
+AdminClient — node administration
+  - allocateParty, listParties, getParty, updateParty
+  - createUser, getUser, listUsers, deleteUser, grantRights, revokeRights
+  - uploadDar, listPackages, getPackage, validateDar
+  - getVettedPackages, updateVettedPackages
+  - createIdentityProvider, listIdentityProviders, updateIdentityProvider, deleteIdentityProvider
+  - getLedgerApiVersion
+  - Pagination via PaginatedResult<T> with page_size/page_token
+
+TestClient — extends LedgerClient + AdminClient
+  - getTime, setTime, advanceTime
+  - allocateParties(['Alice', 'Bob'])
+  - setupCantonSandbox() vitest fixture
+
+## Transports
+
+jsonApi({ url, token, timeout?, headers? }) — HTTP transport for Canton JSON API V2
+grpc({ grpcTransport, token }) — gRPC via injected ConnectRPC client
+fallback({ transports, retries? }) — failover, retries on ConnectionError/TimeoutError
 
 ## Codegen
 
@@ -51,11 +79,31 @@ cantonjs-codegen — separate CLI package for generating TypeScript types from D
 cantonjs-codegen --dar ./model.dar --output ./src/generated
 
 Generates:
-- Record types → TypeScript type aliases with readonly fields
-- Variant types → discriminated unions ({ tag: 'Name'; value: T })
-- Enum types → string union types ('A' | 'B' | 'C')
-- Templates → companion const objects with templateId and choices
-- Choice argument types → type aliases
+- Record types -> TypeScript type aliases with readonly fields
+- Variant types -> discriminated unions ({ tag: 'Name'; value: T })
+- Enum types -> string union types ('A' | 'B' | 'C')
+- Templates -> companion const objects with templateId and choices
+- Choice argument types -> type aliases
+
+Type mapping: Int64/Numeric -> string (precision), Party/ContractId -> string,
+Optional -> T | null, List -> readonly T[], Date/Time -> string (ISO 8601)
+
+## React Hooks (cantonjs-react)
+
+npm install cantonjs-react @tanstack/react-query
+
+CantonProvider — wraps QueryClientProvider + Canton context
+  <CantonProvider client={ledgerClient} queryClient={optionalQueryClient}>
+
+useContracts({ templateId, enabled?, refetchInterval? }) — TanStack Query wrapper
+useCreateContract({ templateId, onSuccess? }) — mutation with cache invalidation
+useExercise({ templateId, choice, onSuccess? }) — mutation with cache invalidation
+useStreamContracts({ templateId, enabled? }) — polling-based live updates (5s interval)
+useCantonClient() — access LedgerClient from context
+useParty() — current actAs party
+
+Query key pattern: ['canton', 'contracts', templateId, actAs]
+Mutations invalidate ['canton', 'contracts', templateId] on success
 
 ## Streaming
 
@@ -63,7 +111,7 @@ WebSocket-based streaming with AsyncIterator pattern:
 - streamUpdates() — transaction update stream with auto-reconnect
 - streamContracts() — active contract stream (bounded, no reconnect)
 - streamCompletions() — command completion stream
-- Auto-reconnect: exponential backoff (1s initial, 30s max, 2x factor, ±25% jitter)
+- Auto-reconnect: exponential backoff (1s initial, 30s max, 2x factor, +/-25% jitter)
 - Offset-based resumption for gap-free reconnection
 - AbortSignal cancellation support
 
@@ -72,6 +120,24 @@ WebSocket-based streaming with AsyncIterator pattern:
 - createMockTransport() — mock with response sequences, error injection, assertion helpers
 - createRecordingTransport() — records all requests for replay
 - setupCantonSandbox() — vitest fixture with cantonctl integration (start, health, JWT, cleanup)
+- No vi.mock() — all dependencies injected through function parameters
+
+## Error Handling
+
+All errors extend CantonjsError with: code, metaMessages (recovery hints), docsPath, walk()
+
+Error classes: ConnectionError, HttpError, GrpcError, TimeoutError,
+  TokenExpiredError, InvalidTokenError,
+  CommandRejectedError, ContractNotFoundError, AuthorizationError,
+  WebSocketError, StreamClosedError, ReconnectFailedError
+
+Error code ranges:
+CJ1xxx — Transport (connection, HTTP, gRPC)
+CJ2xxx — Authentication (JWT)
+CJ3xxx — Ledger (command rejection, authorization)
+CJ4xxx — Admin (party, user, package)
+CJ5xxx — Streaming (WebSocket, reconnection)
+CJ6xxx — Codegen (type mismatch, generation)
 
 ## Canton Key Concepts
 
@@ -87,6 +153,7 @@ Synchronizer — consensus domain for transaction ordering
 JSON API endpoints under /v2/:
   /v2/commands/submit-and-wait — synchronous command submission
   /v2/commands/submit-and-wait-for-transaction — returns transaction
+  /v2/commands/submit-and-wait-for-reassignment — reassignment
   /v2/state/active-contracts — query active contracts (streaming)
   /v2/updates — transaction update stream
   /v2/commands/completions — command completion stream
@@ -99,16 +166,9 @@ JSON API endpoints under /v2/:
   /v2/state/connected-synchronizers — synchronizer queries
   /v2/state/latest-pruned-offsets — pruning state
   /v2/version — API version
+  /v2/interactive-submission/prepare — external signing preparation
+  /v2/interactive-submission/execute — execute signed submission
   /livez — health check (unauthenticated)
-
-## Error Codes
-
-CJ1xxx — Transport (connection, HTTP, gRPC)
-CJ2xxx — Authentication (JWT)
-CJ3xxx — Ledger (command rejection, authorization)
-CJ4xxx — Admin (party, user, package)
-CJ5xxx — Streaming (WebSocket, reconnection)
-CJ6xxx — Codegen (type mismatch, generation)
 
 ## Architecture
 
@@ -117,6 +177,9 @@ CJ6xxx — Codegen (type mismatch, generation)
 - ESM-first with CJS fallback, sideEffects: false
 - Structured errors: CantonjsError with code, metaMessages, docsPath, walk()
 - AbortSignal support for long-running operations
+- Zero runtime dependencies — transports are injected
+- Bundle size: core 5.08 KB, ledger subpath 1.1 KB (minified + brotli)
+- 237 tests across 3 packages (192 core + 29 codegen + 16 React)
 
 ## Links
 
