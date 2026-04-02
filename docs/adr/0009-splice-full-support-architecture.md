@@ -168,7 +168,10 @@ This ADR is the source of truth for Splice-related milestones after Phase 8.
 ### Milestone 1: Stable-surface inventory
 
 - freeze the exact public token-standard interfaces and public Scan/Validator endpoints we will target
+- vendor the official raw Splice OpenAPI artifacts under `vendor/splice/<resolved-tag>/openapi/`
+- record upstream provenance in `vendor/splice/manifest.json` and content hashes in `vendor/splice/<resolved-tag>/openapi/SHA256SUMS`
 - record which upstream surfaces are `external`, `internal`, or `deprecated`
+- classify `ans-external.yaml` as external, `wallet-external.yaml` and `scan-proxy.yaml` as legacy, `validator-internal.yaml` as internal/experimental, and the monolithic `scan.yaml` as legacy inventory because it mixes external, internal, deprecated, and pre-alpha tags
 - define the first export map for `cantonjs/splice/*`
 
 ### Milestone 2: Token-standard foundation

@@ -79,6 +79,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "size": "size-limit",
+    "sync:splice-specs": "node scripts/sync-splice-specs.mjs",
+    "verify:splice-artifacts": "node scripts/verify-splice-artifacts.mjs",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
