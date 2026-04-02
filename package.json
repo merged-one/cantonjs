@@ -79,6 +79,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "size": "size-limit",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "prepublishOnly": "npm run clean && npm run build"
   },
   "repository": {
@@ -110,6 +113,7 @@
     "size-limit": "^11.0.0",
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.58.0",
+    "vitepress": "^1.6.4",
     "vitest": "^3.0.0"
   },
   "peerDependencies": {

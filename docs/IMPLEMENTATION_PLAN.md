@@ -20,6 +20,7 @@
 | Phase 5: Codegen | **COMPLETE** | 200 (171 + 29) | DAR parser, type mapper, code emitter, CLI (`cantonjs-codegen` package) |
 | Phase 6: Advanced | **COMPLETE** | 221 (192 + 29) | Fallback/gRPC transports, reassignment, interactive submission |
 | Phase 7: React | **COMPLETE** | 237 (192 + 29 + 16) | CantonProvider, hooks, TanStack Query, polling stream |
+| Phase 8: Docs & Polish | **COMPLETE** | 237 | VitePress site, guides, API ref, migration guide, CHANGELOG |
 
 Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`, 16 in `packages/cantonjs-react`.
 
@@ -48,6 +49,7 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`, 
 | `69daf36` | 5 | Codegen pipeline for DAR-to-TypeScript generation |
 | `6779c5e` | 6 | Advanced features: transports, reassignment, interactive submission |
 | (pending) | 7 | React integration: cantonjs-react hooks package |
+| (pending) | 8 | Documentation site, CHANGELOG, bundle size audit |
 
 ---
 
@@ -55,27 +57,19 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`, 
 
 ---
 
-## Phase 8 — Documentation & Release
+## Next: Phase 9 — Ecosystem & Community
 
-**Priority:** MEDIUM
-**Complexity:** M (1 week)
-**Depends on:** Phase 7
-
-### Work Items
-- Documentation site (VitePress or Starlight)
-- Getting started guide, API reference
-- Migration guide from @daml/ledger
-- Example projects: basic CLI, streaming dApp, React full-stack
-- Bundle size audit and optimization
-- Version bump to 1.0.0
+**Priority:** LOW
+**Complexity:** Ongoing
+**Depends on:** Phase 8
 
 ---
 
 ## Immediate Action Items
 
-1. **Begin Phase 8** — Documentation site and getting started guide
-2. **Add integration tests** — Run against Canton sandbox with cantonctl
-3. **Plan cantonctl codegen integration** — `cantonctl build` → cantonjs-codegen pipeline
+1. **Integration tests** — Run against Canton sandbox with cantonctl
+2. **cantonctl codegen integration** — `cantonctl build` → cantonjs-codegen pipeline
+3. **Version bump to 1.0.0** — After ecosystem validation
 
 ---
 
@@ -86,4 +80,5 @@ Test counts: 192 in core `cantonjs` package, 29 in `packages/cantonjs-codegen`, 
 | Phase 5 complete | ✅ Done | 200 tests, codegen from DAR files |
 | Phase 6 complete | ✅ Done | 221 tests, interactive submission, gRPC, reassignment |
 | Phase 7 complete | ✅ Done | 237 tests, React hooks, TanStack Query integration |
-| v1.0 release | After 8 | Docs site, examples, 90%+ coverage |
+| Phase 8 complete | ✅ Done | VitePress docs site, CHANGELOG, migration guide |
+| v1.0 release | After validation | Integration tests, ecosystem tooling |

@@ -1,0 +1,87 @@
+import { defineConfig } from 'vitepress'
+
+export default defineConfig({
+  title: 'cantonjs',
+  description: 'TypeScript interface for the Canton Network — viem for Canton',
+  base: '/cantonjs/',
+  cleanUrls: true,
+  themeConfig: {
+    nav: [
+      { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'API', link: '/api/' },
+      { text: 'Examples', link: '/examples/' },
+      {
+        text: 'Ecosystem',
+        items: [
+          { text: 'cantonjs-codegen', link: '/packages/codegen' },
+          { text: 'cantonjs-react', link: '/packages/react' },
+        ],
+      },
+    ],
+    sidebar: {
+      '/guide/': [
+        {
+          text: 'Introduction',
+          items: [
+            { text: 'Getting Started', link: '/guide/getting-started' },
+            { text: 'Why cantonjs?', link: '/guide/why-cantonjs' },
+          ],
+        },
+        {
+          text: 'Core Concepts',
+          items: [
+            { text: 'Transport', link: '/guide/transport' },
+            { text: 'LedgerClient', link: '/guide/ledger-client' },
+            { text: 'AdminClient', link: '/guide/admin-client' },
+            { text: 'Streaming', link: '/guide/streaming' },
+            { text: 'Error Handling', link: '/guide/errors' },
+          ],
+        },
+        {
+          text: 'Advanced',
+          items: [
+            { text: 'Codegen', link: '/guide/codegen' },
+            { text: 'Testing', link: '/guide/testing' },
+            { text: 'React Hooks', link: '/guide/react' },
+            { text: 'Migration from @daml/ledger', link: '/guide/migration' },
+          ],
+        },
+      ],
+      '/api/': [
+        {
+          text: 'API Reference',
+          items: [
+            { text: 'Overview', link: '/api/' },
+            { text: 'Clients', link: '/api/clients' },
+            { text: 'Transport', link: '/api/transport' },
+            { text: 'Streaming', link: '/api/streaming' },
+            { text: 'Types', link: '/api/types' },
+            { text: 'Errors', link: '/api/errors' },
+            { text: 'Chains', link: '/api/chains' },
+          ],
+        },
+      ],
+      '/examples/': [
+        {
+          text: 'Examples',
+          items: [
+            { text: 'Overview', link: '/examples/' },
+            { text: 'Basic Contract Operations', link: '/examples/basic' },
+            { text: 'Streaming Updates', link: '/examples/streaming' },
+            { text: 'React dApp', link: '/examples/react' },
+          ],
+        },
+      ],
+    },
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/merged-one/cantonjs' },
+    ],
+    footer: {
+      message: 'Released under the Apache 2.0 License.',
+      copyright: 'Copyright 2026 Charles Dusek',
+    },
+    search: {
+      provider: 'local',
+    },
+  },
+})

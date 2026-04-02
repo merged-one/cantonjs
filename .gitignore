@@ -5,3 +5,5 @@ coverage/
 .eslintcache
 *.log
 .DS_Store
+docs/.vitepress/dist/
+docs/.vitepress/cache/
