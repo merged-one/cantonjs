@@ -1,0 +1,54 @@
+{
+  "name": "cantonjs-splice-interfaces",
+  "version": "0.2.0",
+  "description": "Stable Splice Daml interface descriptors and generated TypeScript types for cantonjs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "generate:artifacts": "node ../../scripts/import-splice-dars.mjs",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "canton",
+    "splice",
+    "daml",
+    "interfaces",
+    "typescript"
+  ],
+  "author": "Charles Dusek",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/merged-one/cantonjs.git",
+    "directory": "packages/cantonjs-splice-interfaces"
+  },
+  "peerDependencies": {
+    "cantonjs": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "cantonjs": "file:../..",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

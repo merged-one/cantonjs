@@ -192,4 +192,28 @@ describe('emitModule', () => {
     expect(result.content).toContain('readonly tags: readonly string[]')
     expect(result.content).toContain('readonly nickname: string | null')
   })
+
+  it('emits type imports for cross-module references', () => {
+    const module: DamlModule = {
+      name: 'Splice.Api.Token.HoldingV1',
+      dataTypes: [{
+        name: 'HoldingView',
+        typeParams: [],
+        definition: {
+          kind: 'record',
+          fields: [
+            {
+              name: 'meta',
+              type: { kind: 'con', module: 'Splice.Api.Token.MetadataV1', name: 'Metadata', args: [] },
+            },
+          ],
+        },
+      }],
+      templates: [],
+    }
+
+    const result = emitModule(module, 'pkg')
+    expect(result.content).toContain("import type { Metadata } from './MetadataV1.js'")
+    expect(result.content).toContain('readonly meta: Metadata')
+  })
 })
