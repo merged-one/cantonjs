@@ -18,7 +18,7 @@
 
 cantonjs is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2. It provides tree-shakeable Ledger, Admin, and Test clients; injected transports; real-time streaming; structured errors; and first-class testing support for participant-connected app code.
 
-Scope and ecosystem boundaries: see [docs/positioning.md](./docs/positioning.md). DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack and reference-app path. The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK remain the canonical wallet-connected and wallet-provider stacks.
+Scope and ecosystem boundaries: see [docs/positioning.md](./docs/positioning.md) and the [ecosystem-fit guide](./docs/guide/ecosystem-fit.md). DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack and reference-app path. The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK remain the canonical wallet-connected and wallet-provider stacks.
 
 Development policy: the included runtime surface is gated at 100% statements, branches, functions, and lines, and every coverage exclusion or inline `v8 ignore` must be justified in [`EXCLUSIONS.md`](./EXCLUSIONS.md).
 
@@ -53,7 +53,7 @@ The repo centers on an app-side Ledger API V2 core plus focused add-ons and adap
 | Add-On | `cantonjs-splice-token-standard` | GA | Participant-first CIP-0056 helpers for new token transfer and allocation flows |
 | Adapter | `cantonjs-wallet-adapters` | Experimental | CIP-0103 edge adapters for official wallet-stack interop |
 
-For the canonical scope note that drives this package map, see [docs/positioning.md](./docs/positioning.md).
+For the canonical scope note that drives this package map, see [docs/positioning.md](./docs/positioning.md). For a tool-by-tool "when to use what" guide, see [docs/guide/ecosystem-fit.md](./docs/guide/ecosystem-fit.md).
 
 ## Stability Tiers
 
