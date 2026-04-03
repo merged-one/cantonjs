@@ -26,6 +26,7 @@ cantonjs is a modern, type-safe TypeScript library for the [Canton Network](http
 - **Type-safe codegen** &mdash; generate TypeScript from Daml DAR files
 - **Real-time streaming** &mdash; AsyncIterator WebSocket streams with auto-reconnect
 - **React hooks** &mdash; TanStack Query-powered hooks via [cantonjs-react](#cantonjs-react)
+- **Splice ecosystem packages** &mdash; public Scan, Validator ANS, Token Standard, and wallet-boundary integrations
 - **First-class testing** &mdash; mock transports, recording transports, Canton sandbox fixtures
 - **Structured errors** &mdash; error codes, recovery hints, traversable cause chains
 - **Zero runtime dependencies** &mdash; transports are injected, not bundled
@@ -114,9 +115,33 @@ Import only what you need for smaller bundles:
 import { createLedgerClient } from 'cantonjs/ledger'
 import { createAdminClient } from 'cantonjs/admin'
 import { createTestClient } from 'cantonjs/testing'
-import { localNet, devNet, testNet, mainNet } from 'cantonjs/chains'
+import { localNet, devNet, testNet, mainNet, withChainOverrides } from 'cantonjs/chains'
 import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
 ```
+
+## Network Presets
+
+Built-in public presets are discovery-first. They carry public Scan discovery metadata, auth audience hints, and the pinned Splice release line, but they do not commit operator-specific participant or validator URLs.
+
+Layer concrete deployment settings on top:
+
+```typescript
+import { devNet, withChainOverrides } from 'cantonjs/chains'
+
+const chain = withChainOverrides(devNet, {
+  participant: {
+    jsonApiUrl: process.env.CANTON_JSON_API_URL,
+  },
+  scan: {
+    url: process.env.SPLICE_SCAN_URL,
+  },
+  validator: {
+    apiBaseUrl: process.env.SPLICE_VALIDATOR_URL,
+  },
+})
+```
+
+`chain.scan.discoveryRoot` remains available when you need to resolve a live public Scan deployment from operator documentation first.
 
 ## Clients
 
@@ -224,6 +249,15 @@ function AssetList() {
 ```
 
 See [packages/cantonjs-react](./packages/cantonjs-react/).
+
+`cantonjs-react` stays focused on participant-private ledger state. For public Splice data, use TanStack Query directly with `cantonjs-splice-scan`; see [docs/examples/react.md](./docs/examples/react.md).
+
+### Splice Packages
+
+- `cantonjs-splice-scan` &mdash; public Scan reads for DSO metadata, updates, and public ANS lookups. See [docs/guide/scan.md](./docs/guide/scan.md).
+- `cantonjs-splice-validator` &mdash; validator ANS plus the GA Scan Proxy subset, with legacy wallet compatibility flows kept explicit. See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
+- `cantonjs-splice-token-standard` and `cantonjs-splice-interfaces` &mdash; stable CIP-0056 descriptors and ledger-centric helpers. See [docs/guide/token-standard.md](./docs/guide/token-standard.md).
+- `cantonjs-wallet-adapters` &mdash; experimental CIP-0103 wallet boundary adapters for browser and SDK interop. See [docs/guide/wallet-adapters.md](./docs/guide/wallet-adapters.md).
 
 ## Testing
 

@@ -78,6 +78,8 @@ function AssetList() {
 
 See [ADR 0008: React Integration](/adr/0008-react-integration) and the [React Hooks guide](/guide/react) for detailed documentation.
 
+For Splice apps, keep public Scan reads outside the provider layer and query them separately with `cantonjs-splice-scan`. See [Public Scan](/guide/scan) and the [React dApp example](/examples/react).
+
 ## Cache Invalidation
 
 Mutations automatically invalidate related queries:

@@ -61,6 +61,40 @@ function AssetList() {
 }
 ```
 
+## Public Scan Data Alongside Ledger Hooks
+
+`cantonjs-react` stays focused on participant-private ledger state. For public Splice data, use TanStack Query directly with `cantonjs-splice-scan`:
+
+```tsx
+import { useQuery } from '@tanstack/react-query'
+import { useContracts } from 'cantonjs-react'
+import { createScanClient } from 'cantonjs-splice-scan'
+
+const scan = createScanClient({
+  url: import.meta.env.VITE_SPLICE_SCAN_URL,
+})
+
+function NetworkDashboard() {
+  const { data: dso } = useQuery({
+    queryKey: ['scan', 'dso'],
+    queryFn: () => scan.getDsoInfo(),
+  })
+
+  const { data: assets } = useContracts({
+    templateId: '#my-pkg:Main:Asset',
+  })
+
+  return (
+    <div>
+      <pre>{JSON.stringify(dso, null, 2)}</pre>
+      <pre>{JSON.stringify(assets, null, 2)}</pre>
+    </div>
+  )
+}
+```
+
+This keeps public Scan reads and party-private ledger reads clearly separated. See [`../../docs/examples/react.md`](../../docs/examples/react.md) for the full example.
+
 ## Hooks
 
 ### `useContracts(options)`

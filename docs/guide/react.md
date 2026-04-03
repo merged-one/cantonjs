@@ -187,6 +187,16 @@ function PartyBadge() {
 }
 ```
 
+## Splice Public Data
+
+Keep `cantonjs-react` focused on participant-private ledger state. For public Splice data such as DSO info, public updates, or public ANS lookups, use TanStack Query directly with `cantonjs-splice-scan`.
+
+See:
+
+- [Public Scan](/guide/scan)
+- [React dApp Example](/examples/react)
+- [Wallet Adapters](/guide/wallet-adapters)
+
 ## Cache Invalidation
 
 Mutation hooks (`useCreateContract`, `useExercise`) automatically invalidate contract queries for the same template ID on success. This means `useContracts` queries refresh automatically after mutations.

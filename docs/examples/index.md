@@ -6,7 +6,7 @@ Practical examples demonstrating cantonjs in common scenarios.
 
 - [Basic Contract Operations](/examples/basic) — Create, exercise, and query contracts
 - [Streaming Updates](/examples/streaming) — Real-time contract subscriptions
-- [React dApp](/examples/react) — Full React application with hooks
+- [React dApp](/examples/react) — React hooks plus public Scan queries for Splice-style dashboards
 
 ## Running Examples
 
