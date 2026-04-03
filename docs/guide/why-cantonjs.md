@@ -1,20 +1,34 @@
 # Why cantonjs?
 
-cantonjs exists for application teams that want direct, typed access to a Canton participant's Ledger API V2 from TypeScript. It focuses on the runtime layer inside app code: Ledger, Admin, and Test clients; transports; streaming; errors; testing; and optional React or codegen support.
+`cantonjs` exists because app teams repeatedly need the same runtime layer once they decide to work directly against a Canton participant: typed clients, explicit transport and auth handling, streaming, testing, and a small API surface they can embed inside normal TypeScript services and UIs.
 
-It is intentionally not the canonical Daml build, test, or codegen toolchain, not the official full-stack reference-app path, and not the official wallet-connected stack. Those roles remain with DPM, Quickstart, and the official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK. For the detailed "when to use what" matrix, see [Ecosystem Fit](/guide/ecosystem-fit).
+This is a product-scope choice, not a "sell to everyone" story. The repo is centered on participant-connected application code, with optional React, DAR-to-TypeScript codegen, and selected stable/public Splice add-ons around that core. For persona-level guidance, see [Target Users](/guide/target-users). For the detailed "when to use what" matrix, see [Ecosystem Fit](/guide/ecosystem-fit).
 
-## What Direct Participant App Teams Need
+## The Gap It Fills
 
-- **Direct API V2 access** — talk to a participant from application code without wrapping everything in a broader framework
-- **Small, tree-shakeable exports** — import the runtime surface you actually need
-- **Injected transports and auth** — handle request-scoped tokens, sessions, gRPC, and fallback transport composition explicitly
-- **Real-time streaming** — follow contract and completion updates without building your own reconnect loop
-- **Structured errors** — get machine-readable failures with recovery hints instead of ad hoc exceptions
-- **Predictable testing** — use mock transports, recording transports, and sandbox fixtures rather than module-level mocking
-- **Optional app-side codegen** — generate TypeScript from existing DAR artifacts when your application needs stronger typing
+- Raw participant APIs and generated clients stay close to the wire, but most teams still need reusable runtime concerns such as auth injection, streaming, test seams, and structured error handling.
+- Official onboarding and wallet-connected tools own different boundaries: Daml lifecycle, end-to-end starter flows, wallet discovery, provider semantics, custody, and gateway responsibilities.
+- Teams building participant-connected services and apps still need one app-side TypeScript runtime that fits directly into their codebase once those other boundary decisions are already made.
 
-## The cantonjs Approach
+## What The Repo Optimizes For
+
+- Direct participant-connected application code
+- Tree-shakeable function exports instead of class-heavy SDK state
+- Explicit transport injection, request-scoped auth, and testability
+- Reconnecting streams and structured CJ-coded errors
+- Optional React and DAR-to-TypeScript layers for the same app-side runtime
+- Selected stable/public Splice add-ons that stay aligned with the participant-first core
+
+## Why A Dedicated SDK Is Justified
+
+| Team | Why `cantonjs` is a fit |
+| --- | --- |
+| Backend and full-stack participant services | Embed typed Ledger/Admin/Test clients, explicit auth, streaming, and tests directly into service code without adopting a broader framework |
+| Participant-private React apps | Reuse the same participant runtime through `cantonjs-react` for private reads, writes, and live updates |
+| Integration and data teams | Treat participant state and events as application inputs with durable transport control, stable typing, and predictable failure handling |
+| Advanced stable/public Splice integrators | Add public Scan, selected external Validator support, or stable published interfaces without redefining the repo as a universal SDK |
+
+## The cantonjs Runtime Shape
 
 ### Function Exports, Not Classes
 
@@ -78,14 +92,12 @@ await client.createContract(Asset.templateId, {
 })
 ```
 
-## Ecosystem Fit
+## Where It Stops
 
-| Tool | Primary role |
-|------|--------------|
-| cantonjs | Application-side SDK for direct participant work |
-| DPM | Canonical Daml build, test, and codegen foundation |
-| Quickstart | Official full-stack and reference-app path |
-| Official wallet stack | Wallet-connected UX, wallet-provider integration, custody, and gateway responsibilities |
-| [cantonctl](https://github.com/merged-one/cantonctl) | CLI companion for sandbox, admin, and test workflows |
+- `cantonjs` is not the canonical Daml build, test, or codegen toolchain.
+- It is not the official full-stack onboarding or reference-app path.
+- It is not the official wallet-connected or wallet-provider stack.
+- It is not the right lead product for wallet providers, exchanges, custodians, or teams whose main problem is wallet discovery and provider UX.
+- It does not promise GA coverage for every validator-private, operator-private, or unstable ecosystem surface.
 
-These boundaries are captured in the canonical [Positioning note](/positioning) and expanded in the [Ecosystem Fit guide](/guide/ecosystem-fit).
+Those boundaries are captured in the canonical [Positioning note](/positioning), the detailed [Target Users](/guide/target-users) guide, and the tool-by-tool [Ecosystem Fit guide](/guide/ecosystem-fit).

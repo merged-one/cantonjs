@@ -1,8 +1,10 @@
 # Ecosystem Fit
 
-`cantonjs` is not the starting point for every Canton workflow. The right tool depends on which boundary you own.
+`cantonjs` is not the starting point for every Canton workflow. It is built first for participant-connected application teams, with public Scan and selected stable/public Splice integrations as secondary add-ons. The right tool depends on which boundary you own.
 
 This repo complements the official stack. It does not try to replace the canonical tools for Daml build workflows, full-stack onboarding, wallet-connected dApps, or wallet-provider infrastructure.
+
+If you are still deciding whether your team is a primary, secondary, or non-primary audience for this repo, start with [Target Users](/guide/target-users).
 
 ## Choose Quickly
 
