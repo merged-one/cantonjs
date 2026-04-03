@@ -124,7 +124,7 @@ Coverage gates apply only to the included runtime surface, and those gates are `
 - pure type-only modules
 - narrowly documented, genuinely unreachable branches
 
-Every `coverage.exclude` entry and every inline `v8 ignore` comment must be listed in [`EXCLUSIONS.md`](../../EXCLUSIONS.md) with a concrete reason.
+Every `coverage.exclude` entry and every inline `v8 ignore` comment must be listed in [`EXCLUSIONS.md`](https://github.com/merged-one/cantonjs/blob/main/EXCLUSIONS.md) with a concrete reason.
 
 Run the enforcement check directly when you touch tests, coverage config, or inline ignores:
 
