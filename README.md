@@ -37,6 +37,36 @@ cantonjs is a modern, type-safe TypeScript library for the [Canton Network](http
 npm install cantonjs
 ```
 
+## Package Map
+
+The repo is now split into a stable Canton core plus focused Splice add-on packages.
+
+| Package | Stability | Purpose |
+| ------- | --------- | ------- |
+| `cantonjs` | GA | Canton Ledger API V2 clients, transports, chains, streaming, errors, and codegen runtime types |
+| `cantonjs-codegen` | GA | DAR-to-TypeScript code generation |
+| `cantonjs-react` | GA | React hooks for participant-private ledger data |
+| `cantonjs-splice-scan` | GA | Public Scan reads for DSO metadata, update history, and public ANS lookups |
+| `cantonjs-splice-validator` | GA + legacy compatibility | Validator ANS, filtered GA Scan Proxy reads, and legacy wallet compatibility flows |
+| `cantonjs-splice-interfaces` | GA | Stable Splice Daml interface descriptors and generated types |
+| `cantonjs-splice-token-standard` | GA | Ledger-centric CIP-0056 helpers for new token transfer and allocation flows |
+| `cantonjs-wallet-adapters` | Experimental | CIP-0103 wallet boundary adapters for browser and SDK interop |
+
+## Stability Tiers
+
+- **GA**: Covered by the normal semver promise for the pinned release line.
+- **Legacy compatibility**: Still supported for existing integrations, but not the recommended starting point for new work.
+- **Experimental**: May break in minor releases while the upstream surface is still moving.
+
+Current compatibility target:
+
+- **Canton GA line:** `3.4.x`
+- **Splice GA line:** `0.5.x`
+- **Vendored Splice artifacts:** `0.5.17`
+- **Legacy wallet note:** `createLegacyWalletClient()` exists for old `wallet-external` flows, but new transfer flows should use `cantonjs-splice-token-standard`.
+
+See [compatibility policy](./docs/compatibility.md) and [migration notes](./docs/MIGRATING_TO_SPLICE_SUPPORT.md).
+
 ## Quick Start
 
 ```typescript
@@ -254,9 +284,9 @@ See [packages/cantonjs-react](./packages/cantonjs-react/).
 
 ### Splice Packages
 
-- `cantonjs-splice-scan` &mdash; public Scan reads for DSO metadata, updates, and public ANS lookups. See [docs/guide/scan.md](./docs/guide/scan.md).
-- `cantonjs-splice-validator` &mdash; validator ANS plus the GA Scan Proxy subset, with legacy wallet compatibility flows kept explicit. See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
-- `cantonjs-splice-token-standard` and `cantonjs-splice-interfaces` &mdash; stable CIP-0056 descriptors and ledger-centric helpers. See [docs/guide/token-standard.md](./docs/guide/token-standard.md).
+- `cantonjs-splice-scan` &mdash; GA public Scan reads for DSO metadata, updates, and public ANS lookups. Experimental Scan routes stay behind `cantonjs-splice-scan/experimental`. See [docs/guide/scan.md](./docs/guide/scan.md).
+- `cantonjs-splice-validator` &mdash; GA validator ANS plus the filtered GA Scan Proxy subset. `createLegacyWalletClient()` is legacy compatibility only and is not recommended for new transfer flows. See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
+- `cantonjs-splice-token-standard` and `cantonjs-splice-interfaces` &mdash; GA stable CIP-0056 descriptors and ledger-centric helpers for new transfer and allocation flows. See [docs/guide/token-standard.md](./docs/guide/token-standard.md).
 - `cantonjs-wallet-adapters` &mdash; experimental CIP-0103 wallet boundary adapters for browser and SDK interop. See [docs/guide/wallet-adapters.md](./docs/guide/wallet-adapters.md).
 
 ## Testing

@@ -8,6 +8,12 @@ This package vendors official DARs from a Splice release bundle, extracts the em
 - FeaturedAppRightV2 interfaces
 - Wallet user proxy utilities from `splice-util-featured-app-proxies`
 
+## Status
+
+- **Stability:** GA
+- **Supported Splice line:** `0.5.x`
+- **Current vendored release bundle:** `0.5.17`
+
 ## Install
 
 ```bash
@@ -51,6 +57,7 @@ node scripts/import-splice-dars.mjs --tag 0.5.17
 - Only official DARs extracted from official Splice release bundles are allowed.
 - Generated code in `src/generated/` is not hand-edited.
 - Stable descriptors in `src/descriptors/` are generated from the same vendored DAR sources and package metadata.
+- Compatibility is tied to the pinned release bundle recorded in this repo, not to unpinned upstream nightly artifacts.
 
 ## Current Limits
 

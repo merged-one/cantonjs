@@ -66,6 +66,9 @@ jobs:
       - name: Validate Splice packages
         run: npm run test:packages
 
+  # Keep this publish list explicit so adding a new package does not
+  # silently change the npm release surface.
+
   publish-core:
     name: Publish cantonjs
     needs: ci
@@ -90,6 +93,68 @@ jobs:
 
       - name: Publish
         run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-splice-packages:
+    name: Publish Splice packages
+    needs: [ci, publish-core]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            packages/cantonjs-splice-interfaces/package-lock.json
+            packages/cantonjs-splice-scan/package-lock.json
+            packages/cantonjs-splice-token-standard/package-lock.json
+            packages/cantonjs-splice-validator/package-lock.json
+            packages/cantonjs-wallet-adapters/package-lock.json
+          registry-url: https://registry.npmjs.org
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Splice package dependencies
+        run: |
+          npm --prefix packages/cantonjs-splice-interfaces ci
+          npm --prefix packages/cantonjs-splice-scan ci
+          npm --prefix packages/cantonjs-splice-validator ci
+          npm --prefix packages/cantonjs-splice-token-standard ci
+          npm --prefix packages/cantonjs-wallet-adapters ci
+
+      - name: Build shared local dependencies
+        run: |
+          npm run build
+          npm --prefix packages/cantonjs-splice-interfaces run build
+
+      - name: Build GA Splice packages
+        run: |
+          npm --prefix packages/cantonjs-splice-scan run build
+          npm --prefix packages/cantonjs-splice-validator run build
+          npm --prefix packages/cantonjs-splice-token-standard run build
+
+      - name: Publish GA Splice packages
+        run: |
+          npm --prefix packages/cantonjs-splice-interfaces publish --access public --provenance
+          npm --prefix packages/cantonjs-splice-scan publish --access public --provenance
+          npm --prefix packages/cantonjs-splice-validator publish --access public --provenance
+          npm --prefix packages/cantonjs-splice-token-standard publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build experimental wallet adapters
+        run: npm --prefix packages/cantonjs-wallet-adapters run build
+
+      - name: Publish experimental wallet adapters
+        run: npm --prefix packages/cantonjs-wallet-adapters publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -155,7 +220,7 @@ jobs:
 
   github-release:
     name: GitHub Release
-    needs: [publish-core, publish-codegen, publish-react]
+    needs: [publish-core, publish-splice-packages, publish-codegen, publish-react]
     runs-on: ubuntu-latest
 
     steps:
