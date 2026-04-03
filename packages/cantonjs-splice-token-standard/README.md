@@ -11,6 +11,13 @@ This package is for app-side ledger integration:
 
 It intentionally does **not** depend on `validator-internal`, wallet-internal endpoints, or validator-private template names.
 
+## Status
+
+- **Stability:** GA
+- **Supported Canton line:** `3.4.x`
+- **Supported Splice line:** `0.5.x`
+- **Recommended for:** new transfer and allocation flows built on the stable Token Standard path
+
 ## Install
 
 ```bash
@@ -22,6 +29,8 @@ npm install cantonjs cantonjs-splice-interfaces cantonjs-splice-token-standard
 Use `cantonjs-splice-token-standard` when your app already talks to a Canton participant or validator Ledger API and you want stable, versioned helpers around the official Token Standard interfaces.
 
 Use the official wallet SDK instead when you need wallet-provider stacks, browser wallet UX, richer wallet workflows, end-user session/auth orchestration, or other wallet-managed flows that sit above raw ledger integration.
+
+For new transfer flows, prefer this package over legacy `wallet-external` transfer-offer APIs.
 
 ## Package Policy
 

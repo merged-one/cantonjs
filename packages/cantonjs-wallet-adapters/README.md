@@ -7,6 +7,12 @@ This package is intentionally narrow: it wraps official CIP-0103-style providers
 > [!WARNING]
 > `cantonjs-wallet-adapters` is experimental. The API may change in minor releases while the upstream wallet ecosystem continues to settle.
 
+## Status
+
+- **Stability:** Experimental
+- **Intended ecosystem:** current Canton `3.4.x` / Splice `0.5.x` era wallet-provider interop
+- **Support promise:** best-effort only until the CIP-0103 boundary and wallet SDK surface settle further
+
 ## Install
 
 ```bash
@@ -32,6 +38,7 @@ It does not:
 - manage signing providers
 - issue or custody keys
 - replace `@canton-network/dapp-sdk`
+- define the recommended path for new token transfer flows, which should stay on Token Standard helpers
 
 ## Quick Start
 

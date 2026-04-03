@@ -4,6 +4,12 @@ Public Scan client for Splice networks, layered on top of `cantonjs`.
 
 This package exposes only the stable public Scan surface. Internal, deprecated, and `pre-alpha` Scan operations are intentionally excluded from the main entrypoint.
 
+## Status
+
+- **Main entrypoint:** GA for the public Scan surface on the Splice `0.5.x` line
+- **Vendored artifacts:** currently pinned to `vendor/splice/0.5.17`
+- **Experimental subpath:** `cantonjs-splice-scan/experimental`, outside the GA promise and minor-release-breakable
+
 ## Install
 
 ```bash
@@ -71,6 +77,7 @@ for await (const update of scan.iterateUpdates({ page_size: 100 })) {
 - Generated low-level types are committed in `src/generated/scan.types.ts`.
 - The main entrypoint exports only stable public Scan helpers and stable public derived types.
 - No network access is required at install time.
+- New code should prefer the GA entrypoint unless it truly depends on internal, deprecated, or pre-alpha Scan behavior.
 
 ## Experimental APIs
 

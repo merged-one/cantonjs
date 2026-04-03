@@ -10,6 +10,12 @@ This package ships three surfaces:
 
 `validator-internal` is intentionally excluded from this package.
 
+## Status
+
+- **GA:** `createAnsClient()` and the filtered `createScanProxyClient()` surface on the Splice `0.5.x` line
+- **Legacy compatibility:** `createLegacyWalletClient()` for existing `wallet-external` integrations only
+- **Experimental:** `cantonjs-splice-validator/experimental`, pinned to `vendor/splice/0.5.17` and outside the GA promise
+
 ## Install
 
 ```bash
@@ -22,6 +28,7 @@ npm install cantonjs cantonjs-splice-validator
 - The GA validator surface is limited to ANS external plus the filtered Scan Proxy wrapper.
 - Proxy operations backed by internal, deprecated, or pre-alpha Scan semantics are intentionally excluded from the main client.
 - `legacyWallet` is a legacy compatibility surface. For new transfer flows, prefer Token Standard integrations instead of `wallet-external`.
+- The package is documented against the Splice `0.5.x` line, with vendored inputs currently pinned to `0.5.17`.
 
 ## Experimental APIs
 
