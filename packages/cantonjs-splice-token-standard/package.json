@@ -1,6 +1,6 @@
 {
   "name": "cantonjs-splice-token-standard",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Ledger-centric CIP-0056 Token Standard helpers for cantonjs",
   "type": "module",
   "main": "./dist/index.js",
@@ -40,8 +40,8 @@
     "directory": "packages/cantonjs-splice-token-standard"
   },
   "peerDependencies": {
-    "cantonjs": "^0.3.0",
-    "cantonjs-splice-interfaces": "^0.3.0"
+    "cantonjs": "^0.3.1",
+    "cantonjs-splice-interfaces": "^0.3.1"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",

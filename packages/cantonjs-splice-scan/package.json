@@ -1,6 +1,6 @@
 {
   "name": "cantonjs-splice-scan",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Public Scan client for Splice networks, built on cantonjs",
   "type": "module",
   "main": "./dist/index.js",
@@ -46,7 +46,7 @@
     "directory": "packages/cantonjs-splice-scan"
   },
   "peerDependencies": {
-    "cantonjs": "^0.3.0"
+    "cantonjs": "^0.3.1"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",

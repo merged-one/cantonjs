@@ -4,6 +4,13 @@ All notable changes to cantonjs are documented in this file.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-04-03
+
+### Fixed
+
+- The release workflow now publishes Splice packages from their package directories instead of invoking `npm publish` through `--prefix`, which attempted to republish the root `cantonjs` package
+- Release workflow documentation tests now assert the explicit Splice package allowlist against the current `cd ... && npm publish` workflow structure
+
 ## [0.3.0] - 2026-04-03
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "cantonjs-codegen",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Generate TypeScript types from Daml DAR files for cantonjs",
   "type": "module",
   "main": "./dist/index.js",
@@ -47,7 +47,7 @@
     "vitest": "^3.0.0"
   },
   "peerDependencies": {
-    "cantonjs": "^0.3.0"
+    "cantonjs": "^0.3.1"
   },
   "peerDependenciesMeta": {
     "cantonjs": {
