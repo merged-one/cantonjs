@@ -1,7 +1,7 @@
 {
   "name": "cantonjs-codegen",
   "version": "0.3.1",
-  "description": "Generate TypeScript types from Daml DAR files for cantonjs",
+  "description": "Optional DAR-to-TypeScript generator for cantonjs app code from existing Daml artifacts",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

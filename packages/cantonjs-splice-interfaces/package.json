@@ -1,7 +1,7 @@
 {
   "name": "cantonjs-splice-interfaces",
   "version": "0.3.1",
-  "description": "Stable Splice Daml interface descriptors and generated TypeScript types for cantonjs",
+  "description": "Published stable Splice interface descriptors and generated TypeScript types",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

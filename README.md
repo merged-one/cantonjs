@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  TypeScript interface for the Canton Network &mdash; <em>viem for Canton</em>
+  Application-side TypeScript SDK for Canton participant Ledger API V2
 </p>
 
 <p align="center">
@@ -16,22 +16,21 @@
 
 ---
 
-cantonjs is a modern, type-safe TypeScript library for the [Canton Network](https://www.canton.network/) Ledger API V2. It provides tree-shakeable function exports, real-time WebSocket streaming, structured errors, and first-class testing support.
+cantonjs is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2. It provides tree-shakeable Ledger, Admin, and Test clients; injected transports; real-time streaming; structured errors; and first-class testing support for participant-connected app code.
 
-**Companion CLI:** [cantonctl](https://github.com/merged-one/cantonctl) ("Hardhat for Canton")
+Scope and ecosystem boundaries: see [docs/positioning.md](./docs/positioning.md). DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack and reference-app path. The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK remain the canonical wallet-connected and wallet-provider stacks.
 
 Development policy: the included runtime surface is gated at 100% statements, branches, functions, and lines, and every coverage exclusion or inline `v8 ignore` must be justified in [`EXCLUSIONS.md`](./EXCLUSIONS.md).
 
 ## Features
 
-- **Function exports, not classes** &mdash; tree-shakeable, ESM + CJS dual build
-- **Type-safe codegen** &mdash; generate TypeScript from Daml DAR files
+- **Participant-side clients** &mdash; Ledger, Admin, and Test client factories for direct application work
+- **Injected transports** &mdash; JSON API V2, gRPC, and fallback transport layers without hidden I/O
 - **Real-time streaming** &mdash; AsyncIterator WebSocket streams with auto-reconnect
-- **React hooks** &mdash; TanStack Query-powered hooks via [cantonjs-react](#cantonjs-react)
-- **Splice ecosystem packages** &mdash; public Scan, Validator ANS, Token Standard, and wallet-boundary integrations
-- **First-class testing** &mdash; mock transports, recording transports, Canton sandbox fixtures
-- **Structured errors** &mdash; error codes, recovery hints, traversable cause chains
-- **Zero runtime dependencies** &mdash; transports are injected, not bundled
+- **Structured errors and testing** &mdash; CJ-coded errors, recovery hints, mock transports, and sandbox fixtures
+- **Optional codegen** &mdash; generate TypeScript from existing Daml DAR artifacts when app code needs it
+- **Participant-private React hooks** &mdash; TanStack Query-powered hooks via [cantonjs-react](#cantonjs-react)
+- **Focused add-ons and adapters** &mdash; public Scan, validator, token-standard, interfaces, and experimental CIP-0103 edge adapters
 
 ## Install
 
@@ -41,18 +40,20 @@ npm install cantonjs
 
 ## Package Map
 
-The repo is now split into a stable Canton core plus focused Splice add-on packages.
+The repo centers on an app-side Ledger API V2 core plus focused add-ons and adapters around that boundary.
 
-| Package | Stability | Purpose |
-| ------- | --------- | ------- |
-| `cantonjs` | GA | Canton Ledger API V2 clients, transports, chains, streaming, errors, and codegen runtime types |
-| `cantonjs-codegen` | GA | DAR-to-TypeScript code generation |
-| `cantonjs-react` | GA | React hooks for participant-private ledger data |
-| `cantonjs-splice-scan` | GA | Public Scan reads for DSO metadata, update history, and public ANS lookups |
-| `cantonjs-splice-validator` | GA + legacy compatibility | Validator ANS, filtered GA Scan Proxy reads, and legacy wallet compatibility flows |
-| `cantonjs-splice-interfaces` | GA | Stable Splice Daml interface descriptors and generated types |
-| `cantonjs-splice-token-standard` | GA | Ledger-centric CIP-0056 helpers for new token transfer and allocation flows |
-| `cantonjs-wallet-adapters` | Experimental | CIP-0103 wallet boundary adapters for browser and SDK interop |
+| Tier | Package | Stability | Purpose |
+| ---- | ------- | --------- | ------- |
+| Core | `cantonjs` | GA | Application-side Ledger, Admin, and Test clients; transports; streaming; errors; chains; and runtime typing helpers |
+| Core | `cantonjs-react` | GA | Participant-private React hooks for application code |
+| Core | `cantonjs-codegen` | GA | Optional DAR-to-TypeScript convenience from existing Daml artifacts |
+| Add-On | `cantonjs-splice-scan` | GA | Public Scan reads for DSO metadata, update history, and public ANS lookups |
+| Add-On | `cantonjs-splice-validator` | GA + legacy compatibility | Selected stable external validator support: ANS, filtered Scan Proxy reads, and legacy compatibility flows |
+| Add-On | `cantonjs-splice-interfaces` | GA | Stable published Splice interface descriptors and generated types |
+| Add-On | `cantonjs-splice-token-standard` | GA | Participant-first CIP-0056 helpers for new token transfer and allocation flows |
+| Adapter | `cantonjs-wallet-adapters` | Experimental | CIP-0103 edge adapters for official wallet-stack interop |
+
+For the canonical scope note that drives this package map, see [docs/positioning.md](./docs/positioning.md).
 
 ## Stability Tiers
 
@@ -225,7 +226,9 @@ try {
 
 ### cantonjs-codegen
 
-Generate TypeScript types from Daml DAR files:
+`cantonjs-codegen` is an optional DAR-to-TypeScript convenience for application code built from existing Daml artifacts. DPM remains canonical for Daml build, test, and codegen workflows.
+
+Generate TypeScript types from a DAR you already have:
 
 ```bash
 npm install --save-dev cantonjs-codegen
@@ -237,7 +240,7 @@ Records become type aliases, variants become discriminated unions, templates bec
 
 ### cantonjs-react
 
-React hooks for Canton dApps, powered by TanStack Query:
+React hooks for participant-private ledger application state, powered by TanStack Query:
 
 ```bash
 npm install cantonjs-react @tanstack/react-query
@@ -293,9 +296,9 @@ See [packages/cantonjs-react](./packages/cantonjs-react/).
 ### Splice Packages
 
 - `cantonjs-splice-scan` &mdash; GA public Scan reads for DSO metadata, updates, and public ANS lookups. Experimental Scan routes stay behind `cantonjs-splice-scan/experimental`. See [docs/guide/scan.md](./docs/guide/scan.md).
-- `cantonjs-splice-validator` &mdash; GA validator ANS plus the filtered GA Scan Proxy subset. `createLegacyWalletClient()` is legacy compatibility only and is not recommended for new transfer flows. See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
+- `cantonjs-splice-validator` &mdash; selected stable external validator support for ANS and the filtered GA Scan Proxy subset. `createLegacyWalletClient()` is legacy compatibility only and is not recommended for new transfer flows. See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
 - `cantonjs-splice-token-standard` and `cantonjs-splice-interfaces` &mdash; GA stable CIP-0056 descriptors and ledger-centric helpers for new transfer and allocation flows. See [docs/guide/token-standard.md](./docs/guide/token-standard.md).
-- `cantonjs-wallet-adapters` &mdash; experimental CIP-0103 wallet boundary adapters for browser and SDK interop. See [docs/guide/wallet-adapters.md](./docs/guide/wallet-adapters.md).
+- `cantonjs-wallet-adapters` &mdash; experimental CIP-0103 edge adapters for browser and SDK interop with the official wallet stack. See [docs/guide/wallet-adapters.md](./docs/guide/wallet-adapters.md).
 
 ## Testing
 
@@ -386,7 +389,7 @@ Design decisions are documented as Architecture Decision Records (ADRs):
 
 ## Related
 
-- [cantonctl](https://github.com/merged-one/cantonctl) &mdash; CLI tooling for Canton ("Hardhat for Canton")
+- [cantonctl](https://github.com/merged-one/cantonctl) &mdash; CLI companion for sandbox, admin, and test workflows
 - [Canton Network](https://www.canton.network/) &mdash; The Canton Network
 - [Canton Docs](https://docs.digitalasset.com/) &mdash; Official Canton documentation
 

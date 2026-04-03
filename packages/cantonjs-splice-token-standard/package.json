@@ -1,7 +1,7 @@
 {
   "name": "cantonjs-splice-token-standard",
   "version": "0.3.1",
-  "description": "Ledger-centric CIP-0056 Token Standard helpers for cantonjs",
+  "description": "Participant-first CIP-0056 helpers for cantonjs applications",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

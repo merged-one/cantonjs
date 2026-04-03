@@ -1,7 +1,7 @@
 {
   "name": "cantonjs-react",
   "version": "0.3.1",
-  "description": "React hooks for Canton Network dApps — built on cantonjs",
+  "description": "Participant-private React hooks for cantonjs applications",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
