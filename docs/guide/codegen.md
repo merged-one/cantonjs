@@ -1,6 +1,8 @@
 # Codegen
 
-`cantonjs-codegen` generates TypeScript types from Daml DAR files, closing the type-safety loop from contract definitions to client code.
+`cantonjs-codegen` is the optional convenience package for generating TypeScript types from Daml DAR files that already exist in your workflow.
+
+It is not the canonical Daml build, test, or codegen toolchain. DPM remains the canonical upstream tool for Daml project lifecycle work. `cantonjs-codegen` starts later, when an application team already has DAR artifacts and wants TypeScript descriptors and types for app-side code.
 
 ## Installation
 
@@ -15,6 +17,10 @@ cantonjs-codegen --dar ./model.dar --output ./src/generated
 ```
 
 This reads the DAR file, extracts Daml-LF package definitions, and generates TypeScript modules.
+
+Use it when you want better app-side typing. Do not use it as the reason to skip the official Daml toolchain.
+
+See [Package Architecture](/guide/package-architecture) for where `cantonjs-codegen` sits relative to the core SDK, add-ons, and adapters.
 
 ## Generated Output
 

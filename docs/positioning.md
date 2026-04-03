@@ -8,6 +8,8 @@ This document is the canonical scope and positioning note for subsequent docs an
 
 For the concrete tool-by-tool boundary guide, see [Ecosystem Fit](/guide/ecosystem-fit).
 
+For package-level architecture, see [Package Architecture](/guide/package-architecture).
+
 For named personas, jobs to be done, buyer messaging, and explicit anti-pitch guidance, see [Target Users](/guide/target-users).
 
 ## Scope Decision
@@ -72,17 +74,22 @@ This repo should not market itself as the answer for every Canton buyer. The tar
 | Package | Role |
 | --- | --- |
 | `cantonjs` | Core participant-facing Ledger API V2 SDK: ledger/admin/test clients, transports, streaming, errors, chains, and runtime typing helpers |
-| `cantonjs-codegen` | TypeScript generation from DAR artifacts produced by the canonical Daml toolchain |
-| `cantonjs-react` | React hooks for participant-private ledger application state |
+
+### Optional Convenience Packages
+
+| Package | Role |
+| --- | --- |
+| `cantonjs-react` | Participant-private React hooks layered on the core SDK |
+| `cantonjs-codegen` | Optional DAR-to-TypeScript convenience from artifacts produced by the canonical Daml toolchain |
 
 ### Add-Ons
 
 | Package | Role |
 | --- | --- |
 | `cantonjs-splice-scan` | Public Splice Scan reads |
-| `cantonjs-splice-validator` | Validator-facing ANS, filtered public Scan Proxy reads, and legacy compatibility flows |
-| `cantonjs-splice-interfaces` | Stable Splice descriptors and generated types |
-| `cantonjs-splice-token-standard` | Participant-first token-standard helpers built on stable interfaces |
+| `cantonjs-splice-validator` | Selected stable external Validator support: ANS, filtered public Scan Proxy reads, plus legacy compatibility flows kept clearly separate from the GA surface |
+| `cantonjs-splice-interfaces` | Stable published Splice descriptors and generated types |
+| `cantonjs-splice-token-standard` | Participant-first token-standard helpers built on stable published interfaces |
 
 ### Adapters
 
@@ -90,7 +97,7 @@ This repo should not market itself as the answer for every Canton buyer. The tar
 | --- | --- |
 | `cantonjs-wallet-adapters` | Experimental CIP-0103 boundary adapters for interop with the official wallet stack |
 
-Core packages define the main product story. Add-ons extend that story for adjacent public or Splice-specific needs. Adapters exist only to help applications interoperate with official wallet surfaces without redefining ownership boundaries.
+Core packages define the main product story. Optional convenience packages make that participant-connected core easier to use in React apps or with already-built DAR artifacts. Add-ons extend the core for public/stable Splice surfaces only. Adapters exist only to help applications interoperate with official wallet surfaces without redefining ownership boundaries.
 
 ## Messaging Rules For Follow-On Edits
 

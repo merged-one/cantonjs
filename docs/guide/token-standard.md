@@ -1,6 +1,6 @@
 # Token Standard
 
-`cantonjs-splice-token-standard` is the ledger-centric helper layer for stable CIP-0056 interfaces.
+`cantonjs-splice-token-standard` is the participant-first helper layer for stable CIP-0056 interfaces.
 
 It is intentionally participant-first:
 
@@ -8,6 +8,8 @@ It is intentionally participant-first:
 - writes go through a `LedgerClient` or participant interactive submission
 - stable descriptors come from `cantonjs-splice-interfaces`
 - validator-private and wallet-internal endpoints stay out of scope
+
+This package is for Ledger API V2 application code that wants stable token helpers. It is not the package for wallet-provider internals, validator-private transfer flows, or official wallet-connect responsibilities.
 
 ## Install
 
@@ -140,3 +142,5 @@ import {
 type HoldingView = InferView<typeof HoldingV1>
 type AcceptArgs = InferChoiceArgs<typeof TransferInstructionV1, 'TransferInstruction_Accept'>
 ```
+
+See [Package Architecture](/guide/package-architecture) for how Token Standard helpers relate to the core SDK, stable interfaces package, public Scan, and selected validator support.

@@ -2,7 +2,9 @@
 
 `cantonjs-wallet-adapters` is the experimental wallet boundary package for this repo.
 
-Use it when you want a small `cantonjs`-friendly wrapper around CIP-0103-style providers or the official `@canton-network/dapp-sdk` provider access patterns. Do not use it as a replacement for wallet discovery, custody, or the official SDK's connection UX.
+Use it when you want a thin `cantonjs`-friendly wrapper around CIP-0103-style providers or the official `@canton-network/dapp-sdk` provider access patterns.
+
+Use the official dApp SDK for provider discovery and connection UX. Use `cantonjs-wallet-adapters` only at the edge, after a wallet or provider has already been selected. `cantonjs` consumes wallet/provider output; it does not own wallet-connect responsibilities.
 
 ## Install
 
@@ -15,6 +17,12 @@ If your app already uses the official SDK for discovery and connection, keep doi
 ```bash
 npm install @canton-network/dapp-sdk
 ```
+
+The responsibility split is explicit:
+
+- the official dApp SDK / dApp API / Wallet Gateway own wallet discovery, connection UX, and wallet-connected responsibilities
+- the official Wallet SDK owns wallet-provider and custody-facing responsibilities
+- `cantonjs-wallet-adapters` only adapts provider output into a smaller interop layer that `cantonjs` can consume
 
 ## Connect A Raw Provider
 
@@ -34,7 +42,7 @@ console.log(accounts.map((account) => account.partyId))
 
 ## Bridge Wallet Access Into `cantonjs`
 
-The adapter keeps wallet interop at the edge. `cantonjs` still owns ledger access:
+The adapter keeps wallet interop at the edge. `cantonjs` still owns ledger access once the wallet/provider has already exposed the participant URL, token, and active party context:
 
 ```ts
 import { createLedgerClient, jsonApi } from 'cantonjs'
@@ -127,3 +135,5 @@ const wallet = createCip103Adapter({
 const activeNetwork = await wallet.getActiveNetwork()
 console.log(activeNetwork.networkId)
 ```
+
+See [Package Architecture](/guide/package-architecture) for the full repo-level split between core, add-ons, adapters, and official wallet interop boundaries.

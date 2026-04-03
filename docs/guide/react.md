@@ -1,6 +1,8 @@
 # React Hooks
 
-`cantonjs-react` provides TanStack Query-powered React hooks for building Canton dApps.
+`cantonjs-react` provides TanStack Query-powered React hooks for participant-private Canton ledger state.
+
+It is an optional convenience package around the participant Ledger API V2 core. Use it when your React app already has participant access and you want queries, mutations, and live updates on private ledger state. For public Splice data, use `cantonjs-splice-scan`. For wallet discovery and connection UX, use the official dApp SDK.
 
 ## Installation
 
@@ -193,6 +195,7 @@ Keep `cantonjs-react` focused on participant-private ledger state. For public Sp
 
 See:
 
+- [Package Architecture](/guide/package-architecture)
 - [Public Scan](/guide/scan)
 - [React dApp Example](/examples/react)
 - [Wallet Adapters](/guide/wallet-adapters)

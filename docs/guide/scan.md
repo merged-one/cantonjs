@@ -1,8 +1,10 @@
 # Public Scan
 
-`cantonjs-splice-scan` is the public, network-wide read surface for Splice deployments.
+`cantonjs-splice-scan` is the add-on package for public, network-visible Scan reads on Splice deployments.
 
-Use it for public DSO metadata, update history, ANS lookups, and similar network data. Do not use it for party-private contract state. Private ledger reads still go through a participant `LedgerClient`.
+Use it for public DSO metadata, update history, ANS lookups, and similar network data. Do not use it for party-private contract state, participant-submitted commands, or participant-scoped admin work. Those still go through a participant `LedgerClient` in `cantonjs`.
+
+Its main entrypoint is GA for the public Scan surface only. Internal, deprecated, and pre-alpha Scan routes stay behind `cantonjs-splice-scan/experimental`.
 
 ## Install
 
@@ -84,3 +86,5 @@ const privateContracts = await ledger.queryContracts('#pkg:Module:PrivateTemplat
 ```
 
 `scan.getHoldingsSummaryAt(...)` returns public aggregate state. `ledger.queryContracts(...)` returns party-visible contracts from the participant ledger API. Keep those concerns separate in app code and docs.
+
+See [Package Architecture](/guide/package-architecture) for where Scan sits relative to the core SDK, Token Standard helpers, and validator support.

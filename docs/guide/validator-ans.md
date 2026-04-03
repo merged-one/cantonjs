@@ -1,11 +1,13 @@
 # Validator ANS
 
-`cantonjs-splice-validator` covers the GA validator-facing surfaces in this repo:
+`cantonjs-splice-validator` is the add-on package for selected stable external Validator support in this repo.
+
+The GA surface is intentionally narrow:
 
 - `createAnsClient()` for `ans-external`
 - `createScanProxyClient()` for the filtered public subset of `scan-proxy`
 
-`validator-internal` stays behind the experimental subpath and is documented separately in the [GA vs Experimental guide](/guide/ga-vs-experimental).
+It is not a wrapper for the full validator API, and it does not turn validator-private routes into part of the main repo promise. `validator-internal` stays behind the experimental subpath and is documented separately in the [GA vs Experimental guide](/guide/ga-vs-experimental).
 
 ## Install
 
@@ -80,3 +82,5 @@ console.log(listed)
 ```
 
 For new app flows, keep ANS and public Scan Proxy reads distinct from legacy `wallet-external` compatibility flows. Reach for `createLegacyWalletClient()` only when you must interoperate with older transfer-offer integrations.
+
+See [Package Architecture](/guide/package-architecture) for the exact place of validator support relative to public Scan, Token Standard helpers, stable interfaces, and adapters.
