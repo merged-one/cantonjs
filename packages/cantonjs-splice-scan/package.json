@@ -1,7 +1,7 @@
 {
   "name": "cantonjs-splice-scan",
   "version": "0.3.1",
-  "description": "Public Scan client for Splice networks, built on cantonjs",
+  "description": "Public Scan reads for Splice networks",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

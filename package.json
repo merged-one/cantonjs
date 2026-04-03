@@ -1,7 +1,7 @@
 {
   "name": "cantonjs",
   "version": "0.3.1",
-  "description": "TypeScript interface for the Canton Network — viem for Canton",
+  "description": "Application-side TypeScript SDK for Canton participant Ledger API V2",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/cjs/index.js",
@@ -100,11 +100,11 @@
   "keywords": [
     "canton",
     "canton-network",
-    "daml",
-    "blockchain",
-    "ledger-api",
+    "participant",
+    "ledger-api-v2",
     "typescript",
-    "web3"
+    "sdk",
+    "streaming"
   ],
   "author": "Charles Dusek",
   "license": "Apache-2.0",

@@ -2,17 +2,18 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'cantonjs',
-  description: 'TypeScript interface for the Canton Network — viem for Canton',
+  description: 'Application-side TypeScript SDK for Canton participant Ledger API V2',
   base: '/cantonjs/',
   cleanUrls: true,
   themeConfig: {
     nav: [
-      { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'Splice', link: '/guide/scan' },
+      { text: 'Core SDK', link: '/guide/getting-started' },
+      { text: 'Positioning', link: '/positioning' },
+      { text: 'Add-Ons', link: '/guide/scan' },
       { text: 'API', link: '/api/' },
       { text: 'Examples', link: '/examples/' },
       {
-        text: 'Ecosystem',
+        text: 'Packages',
         items: [
           { text: 'cantonjs-codegen', link: '/packages/codegen' },
           { text: 'cantonjs-react', link: '/packages/react' },
@@ -24,6 +25,7 @@ export default defineConfig({
         {
           text: 'Introduction',
           items: [
+            { text: 'Positioning & Boundaries', link: '/positioning' },
             { text: 'Getting Started', link: '/guide/getting-started' },
             { text: 'Why cantonjs?', link: '/guide/why-cantonjs' },
           ],
@@ -44,7 +46,7 @@ export default defineConfig({
             { text: 'Codegen', link: '/guide/codegen' },
             { text: 'Testing', link: '/guide/testing' },
             { text: 'React Hooks', link: '/guide/react' },
-            { text: 'Migration from @daml/ledger', link: '/guide/migration' },
+            { text: 'Migration from Older Daml JS', link: '/guide/migration' },
           ],
         },
         {
@@ -79,7 +81,7 @@ export default defineConfig({
             { text: 'Overview', link: '/examples/' },
             { text: 'Basic Contract Operations', link: '/examples/basic' },
             { text: 'Streaming Updates', link: '/examples/streaming' },
-            { text: 'React dApp', link: '/examples/react' },
+            { text: 'Participant React App', link: '/examples/react' },
           ],
         },
       ],

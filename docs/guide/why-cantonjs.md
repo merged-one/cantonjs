@@ -1,29 +1,27 @@
 # Why cantonjs?
 
-## The Problem
+cantonjs exists for application teams that want direct, typed access to a Canton participant's Ledger API V2 from TypeScript. It focuses on the runtime layer inside app code: Ledger, Admin, and Test clients; transports; streaming; errors; testing; and optional React or codegen support.
 
-The existing `@daml/ledger` library has several limitations:
+It is intentionally not the canonical Daml build, test, or codegen toolchain, not the official full-stack reference-app path, and not the official wallet-connected stack. Those roles remain with DPM, Quickstart, and the official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK.
 
-- **Targets deprecated JSON API v1** — not compatible with Canton's modern V2 API
-- **Class-based architecture** — poor tree-shaking, large bundle sizes
-- **Weak TypeScript types** — `Record<string, unknown>` everywhere
-- **No streaming support** — polling only, no WebSocket subscriptions
-- **Monolithic package** — imports everything even when you need one function
+## What Direct Participant App Teams Need
+
+- **Direct API V2 access** — talk to a participant from application code without wrapping everything in a broader framework
+- **Small, tree-shakeable exports** — import the runtime surface you actually need
+- **Injected transports and auth** — handle request-scoped tokens, sessions, gRPC, and fallback transport composition explicitly
+- **Real-time streaming** — follow contract and completion updates without building your own reconnect loop
+- **Structured errors** — get machine-readable failures with recovery hints instead of ad hoc exceptions
+- **Predictable testing** — use mock transports, recording transports, and sandbox fixtures rather than module-level mocking
+- **Optional app-side codegen** — generate TypeScript from existing DAR artifacts when your application needs stronger typing
 
 ## The cantonjs Approach
-
-cantonjs draws inspiration from [viem](https://viem.sh/) (Ethereum's modern TypeScript library) and applies the same principles to Canton:
 
 ### Function Exports, Not Classes
 
 ```typescript
-// cantonjs — tree-shakeable
 import { createLedgerClient } from 'cantonjs'
-const client = createLedgerClient({ transport, actAs: 'Alice::1234' })
 
-// @daml/ledger — not tree-shakeable
-import Ledger from '@daml/ledger'
-const ledger = new Ledger({ token, httpBaseUrl })
+const client = createLedgerClient({ transport, actAs: 'Alice::1234' })
 ```
 
 ### Dependency Injection
@@ -41,7 +39,7 @@ AsyncIterator-based WebSocket streams with auto-reconnect:
 
 ```typescript
 for await (const update of streamUpdates(transport, { beginExclusive: '0' })) {
-  // Process updates — auto-reconnects on disconnect
+  // Process updates with automatic reconnect and offset tracking
 }
 ```
 
@@ -63,9 +61,9 @@ try {
 }
 ```
 
-### Type-Safe Codegen
+### Optional Codegen For App Types
 
-Generate TypeScript types from your Daml models:
+Generate TypeScript from DAR artifacts your Daml toolchain already produced:
 
 ```bash
 cantonjs-codegen --dar ./model.dar --output ./src/generated
@@ -74,20 +72,20 @@ cantonjs-codegen --dar ./model.dar --output ./src/generated
 ```typescript
 import { Asset } from './generated/Main.js'
 
-// Full type safety — templateId, choice args, payload all typed
 await client.createContract(Asset.templateId, {
-  owner: 'Alice',  // type-checked
-  value: '100',    // type-checked
+  owner: 'Alice',
+  value: '100',
 })
 ```
 
-## Companion: cantonctl
+## Ecosystem Fit
 
-cantonjs pairs with [cantonctl](https://github.com/merged-one/cantonctl) ("Hardhat for Canton") for a complete developer workflow:
+| Tool | Primary role |
+|------|--------------|
+| cantonjs | Application-side SDK for direct participant work |
+| DPM | Canonical Daml build, test, and codegen foundation |
+| Quickstart | Official full-stack and reference-app path |
+| Official wallet stack | Wallet-connected UX, wallet-provider integration, custody, and gateway responsibilities |
+| [cantonctl](https://github.com/merged-one/cantonctl) | CLI companion for sandbox, admin, and test workflows |
 
-| Tool | Role | Analogy |
-|------|------|---------|
-| cantonjs | Client library | viem |
-| cantonctl | CLI & tooling | Hardhat |
-
-They share error conventions, JWT formats, and testing philosophy.
+These boundaries are captured in the canonical [Positioning note](/positioning).

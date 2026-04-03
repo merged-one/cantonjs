@@ -1,8 +1,10 @@
 # Getting Started
 
-cantonjs is the TypeScript interface for the Canton Network Ledger API V2 — **viem for Canton**.
+cantonjs is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2.
 
-It provides type-safe, tree-shakeable functions for interacting with Canton ledger nodes, with first-class support for streaming, testing, and code generation.
+Use it when your app or service already has participant access and you want typed Ledger, Admin, and Test clients; injected transports; streaming; and optional React or codegen support. For the canonical scope note, see [Positioning](/positioning).
+
+DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack path. The official wallet stack remains the right place for wallet-connected UX and provider responsibilities.
 
 ## Installation
 
@@ -14,7 +16,7 @@ npm install cantonjs
 
 ### 1. Create a Transport
 
-The transport layer handles HTTP communication with your Canton node's JSON API V2:
+The transport layer handles HTTP communication with your participant's JSON API V2:
 
 ```typescript
 import { jsonApi } from 'cantonjs'
@@ -108,7 +110,7 @@ For Splice-specific work, combine the core package with the focused add-on packa
 - [LedgerClient](/guide/ledger-client) — Full contract operation reference
 - [Streaming](/guide/streaming) — Real-time subscriptions
 - [Codegen](/guide/codegen) — Generate TypeScript from Daml models
-- [React Hooks](/guide/react) — Build Canton dApps with React
+- [React Hooks](/guide/react) — Build participant-connected React apps
 - [Public Scan](/guide/scan) — Read public Splice network state
 - [Token Standard](/guide/token-standard) — Query and submit stable token-standard flows
 - [Testing](/guide/testing) — Mock transports and sandbox fixtures
