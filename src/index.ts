@@ -63,7 +63,23 @@ export {
 export type { ErrorCode, CantonjsErrorOptions } from './errors/base.js'
 
 // Chains
-export { localNet, devNet, testNet, mainNet, type CantonChain } from './chains/definitions.js'
+export {
+  defineChainPreset,
+  withChainOverrides,
+  localNet,
+  devNet,
+  testNet,
+  mainNet,
+  type CantonAuthAudienceHints,
+  type CantonChain,
+  type CantonChainOverrides,
+  type CantonChainPresetInput,
+  type CantonNetwork,
+  type CantonParticipantEndpoints,
+  type CantonScanEndpoints,
+  type CantonSpliceMetadata,
+  type CantonValidatorEndpoints,
+} from './chains/index.js'
 
 // Core types
 export type {

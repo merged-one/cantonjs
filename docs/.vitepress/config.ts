@@ -8,6 +8,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'Splice', link: '/guide/scan' },
       { text: 'API', link: '/api/' },
       { text: 'Examples', link: '/examples/' },
       {
@@ -44,6 +45,16 @@ export default defineConfig({
             { text: 'Testing', link: '/guide/testing' },
             { text: 'React Hooks', link: '/guide/react' },
             { text: 'Migration from @daml/ledger', link: '/guide/migration' },
+          ],
+        },
+        {
+          text: 'Splice',
+          items: [
+            { text: 'Public Scan', link: '/guide/scan' },
+            { text: 'Validator ANS', link: '/guide/validator-ans' },
+            { text: 'Token Standard', link: '/guide/token-standard' },
+            { text: 'Wallet Adapters', link: '/guide/wallet-adapters' },
+            { text: 'GA vs Experimental', link: '/guide/ga-vs-experimental' },
           ],
         },
       ],

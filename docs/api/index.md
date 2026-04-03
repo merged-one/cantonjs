@@ -41,12 +41,14 @@ Complete API reference for cantonjs.
 
 ## Chains
 
-| Constant | Description |
-|----------|-------------|
-| [`localNet`](/api/chains#localnet) | Local development (`localhost:7575`) |
-| [`devNet`](/api/chains#devnet) | Canton dev network |
-| [`testNet`](/api/chains#testnet) | Canton test network |
-| [`mainNet`](/api/chains#mainnet) | Canton main network |
+| Export | Description |
+|--------|-------------|
+| [`defineChainPreset(config)`](/api/chains#helper-functions) | Define a custom chain preset |
+| [`withChainOverrides(chain, overrides)`](/api/chains#override-friendly-usage) | Layer runtime URLs and auth hints onto a preset |
+| [`localNet`](/api/chains#localnet) | Local development with concrete participant URLs |
+| [`devNet`](/api/chains#devnet) | Discovery-first public dev preset |
+| [`testNet`](/api/chains#testnet) | Discovery-first public test preset |
+| [`mainNet`](/api/chains#mainnet) | Discovery-first public main preset |
 
 ## Packages
 
@@ -55,3 +57,7 @@ Complete API reference for cantonjs.
 | [`cantonjs`](https://github.com/merged-one/cantonjs) | Core library |
 | [`cantonjs-codegen`](/packages/codegen) | DAR-to-TypeScript code generation CLI |
 | [`cantonjs-react`](/packages/react) | React hooks for Canton dApps |
+| [`cantonjs-splice-scan`](/guide/scan) | Public Scan client for Splice networks |
+| [`cantonjs-splice-validator`](/guide/validator-ans) | Validator ANS and public Scan Proxy clients |
+| [`cantonjs-splice-token-standard`](/guide/token-standard) | Ledger-centric Token Standard helpers |
+| [`cantonjs-wallet-adapters`](/guide/wallet-adapters) | Experimental CIP-0103 wallet boundary adapters |

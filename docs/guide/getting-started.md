@@ -89,9 +89,18 @@ cantonjs provides focused subpath imports for tree-shaking:
 import { createLedgerClient } from 'cantonjs/ledger'
 import { createAdminClient } from 'cantonjs/admin'
 import { createTestClient } from 'cantonjs/testing'
-import { localNet, devNet, testNet, mainNet } from 'cantonjs/chains'
+import { localNet, devNet, testNet, mainNet, withChainOverrides } from 'cantonjs/chains'
 import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
 ```
+
+## Splice Package Paths
+
+For Splice-specific work, combine the core package with the focused add-on packages:
+
+- [Public Scan](/guide/scan) for public network reads
+- [Validator ANS](/guide/validator-ans) for validator-facing ANS and filtered Scan Proxy routes
+- [Token Standard](/guide/token-standard) for stable CIP-0056 ledger helpers
+- [Wallet Adapters](/guide/wallet-adapters) for experimental CIP-0103 wallet interop
 
 ## What's Next?
 
@@ -100,4 +109,6 @@ import type { TemplateDescriptor, InferPayload } from 'cantonjs/codegen'
 - [Streaming](/guide/streaming) — Real-time subscriptions
 - [Codegen](/guide/codegen) — Generate TypeScript from Daml models
 - [React Hooks](/guide/react) — Build Canton dApps with React
+- [Public Scan](/guide/scan) — Read public Splice network state
+- [Token Standard](/guide/token-standard) — Query and submit stable token-standard flows
 - [Testing](/guide/testing) — Mock transports and sandbox fixtures
