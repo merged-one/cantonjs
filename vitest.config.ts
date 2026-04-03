@@ -6,8 +6,16 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     coverage: {
       provider: 'v8',
+      reporter: ['text', 'text-summary', 'lcov', 'json-summary'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.test-d.ts', 'src/**/index.ts'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.test-d.ts',
+        'src/**/index.ts',
+        'src/auth/types.ts',
+        'src/codegen/types.ts',
+        'src/types/**',
+      ],
       thresholds: {
         statements: 90,
         branches: 90,

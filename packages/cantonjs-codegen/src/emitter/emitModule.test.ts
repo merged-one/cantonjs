@@ -216,4 +216,117 @@ describe('emitModule', () => {
     expect(result.content).toContain("import type { Metadata } from './MetadataV1.js'")
     expect(result.content).toContain('readonly meta: Metadata')
   })
+
+  it('emits empty records, variants, and enums with explicit fallback types', () => {
+    const module: DamlModule = {
+      name: 'Main',
+      dataTypes: [
+        {
+          name: 'EmptyRecord',
+          typeParams: [],
+          definition: { kind: 'record', fields: [] },
+        },
+        {
+          name: 'EmptyVariant',
+          typeParams: [],
+          definition: { kind: 'variant', constructors: [] },
+        },
+        {
+          name: 'EmptyEnum',
+          typeParams: [],
+          definition: { kind: 'enum', constructors: [] },
+        },
+      ],
+      templates: [],
+    }
+
+    const result = emitModule(module, 'pkg')
+    expect(result.content).toContain('export type EmptyRecord = Record<string, never>')
+    expect(result.content).toContain('export type EmptyVariant = never')
+    expect(result.content).toContain('export type EmptyEnum = never')
+  })
+
+  it('quotes invalid field names and merges duplicate cross-module imports', () => {
+    const module: DamlModule = {
+      name: 'Splice.Api.Token.Composite',
+      dataTypes: [
+        {
+          name: 'CompositeView',
+          typeParams: [],
+          definition: {
+            kind: 'record',
+            fields: [
+              {
+                name: '1st-field',
+                type: {
+                  kind: 'con',
+                  module: 'Splice.Api.Token.MetadataV1',
+                  name: 'Metadata',
+                  args: [],
+                },
+              },
+            ],
+          },
+        },
+      ],
+      templates: [
+        {
+          name: 'CompositeTemplate',
+          choices: [
+            {
+              name: 'Publish',
+              consuming: true,
+              argType: {
+                kind: 'con',
+                module: 'Splice.Api.Token.MetadataV1',
+                name: 'Metadata',
+                args: [],
+              },
+              returnType: {
+                kind: 'con',
+                module: 'Splice.Api.Token.MetadataV1',
+                name: 'Metadata',
+                args: [],
+              },
+            },
+          ],
+        },
+      ],
+    }
+
+    const result = emitModule(module, 'pkg')
+    expect(result.content.match(/import type \{ Metadata \} from '\.\/MetadataV1\.js'/g)).toHaveLength(1)
+    expect(result.content).toContain("readonly '1st-field': Metadata")
+    expect(result.content).toContain('export type CompositeTemplate_Publish = Metadata')
+  })
+
+  it('prefixes top-level sibling imports with ./', () => {
+    const module: DamlModule = {
+      name: 'Main',
+      dataTypes: [
+        {
+          name: 'UsesSibling',
+          typeParams: [],
+          definition: {
+            kind: 'record',
+            fields: [
+              {
+                name: 'value',
+                type: {
+                  kind: 'con',
+                  module: 'Other',
+                  name: 'SiblingType',
+                  args: [],
+                },
+              },
+            ],
+          },
+        },
+      ],
+      templates: [],
+    }
+
+    const result = emitModule(module, 'pkg')
+    expect(result.content).toContain("import type { SiblingType } from './Other.js'")
+  })
 })

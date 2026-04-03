@@ -187,4 +187,51 @@ describe('token-standard history parsing', () => {
       }),
     ])
   })
+
+  it('ignores unsupported and ambiguous token-standard history events', () => {
+    const fixture = transactionFixture()
+    const createdEvent = fixture.events[0]
+    const archivedEvent = fixture.events[2]
+    const exercisedEvent = fixture.events[1]
+
+    if (
+      !createdEvent ||
+      !('CreatedEvent' in createdEvent) ||
+      !archivedEvent ||
+      !('ArchivedEvent' in archivedEvent) ||
+      !exercisedEvent ||
+      !('ExercisedEvent' in exercisedEvent)
+    ) {
+      throw new Error('Unexpected token-standard fixture shape')
+    }
+
+    const transaction: JsTransaction = {
+      ...fixture,
+      events: [
+        {
+          CreatedEvent: {
+            ...createdEvent.CreatedEvent,
+            interfaceViews: [
+              { interfaceId: '#unsupported:Pkg:Interface', viewValue: {} },
+            ],
+          },
+        },
+        {
+          ArchivedEvent: {
+            ...archivedEvent.ArchivedEvent,
+            implementedInterfaces: ['#unsupported:Pkg:Interface'],
+          },
+        },
+        {
+          ExercisedEvent: {
+            ...exercisedEvent.ExercisedEvent,
+            interfaceId: undefined,
+            implementedInterfaces: [HoldingV1.interfaceId, AllocationV1.interfaceId],
+          },
+        },
+      ],
+    }
+
+    expect(parseTokenStandardHistoryFromTransactionV1(transaction)).toEqual([])
+  })
 })

@@ -12,7 +12,7 @@ export default defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/**/index.ts',
-        'src/generated/**',
+        'src/dar/types.ts',
       ],
       thresholds: {
         statements: 90,

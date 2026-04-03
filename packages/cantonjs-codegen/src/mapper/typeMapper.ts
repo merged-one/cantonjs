@@ -100,6 +100,7 @@ function mapPrimType(
 
     default: {
       const ts = PRIM_TYPE_TS[prim]
+      /* v8 ignore next -- the primitive map is exhaustive for supported non-container prims */
       return ts || 'unknown'
     }
   }

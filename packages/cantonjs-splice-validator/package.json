@@ -23,6 +23,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
     "generate:types": "npm run generate:types:ans && npm run generate:types:scan-proxy && npm run generate:types:wallet",
     "generate:types:ans": "SPLICE_TAG=\"$(find ../../vendor/splice -mindepth 1 -maxdepth 1 -type d -exec basename {} \\; | sort -V | tail -n1)\" && mkdir -p ./src/generated && npx openapi-typescript \"../../vendor/splice/${SPLICE_TAG}/openapi/ans-external.yaml\" -o \"./src/generated/ans.types.ts\"",
@@ -52,6 +53,7 @@
     "cantonjs": "^0.2.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
     "@types/node": "^24.5.2",
     "cantonjs": "file:../..",
     "openapi-typescript": "^7.13.0",

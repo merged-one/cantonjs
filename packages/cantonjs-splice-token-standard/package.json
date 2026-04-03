@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },
@@ -43,6 +44,7 @@
     "cantonjs-splice-interfaces": "^0.2.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
     "@types/node": "^24.5.2",
     "cantonjs": "file:../..",
     "cantonjs-splice-interfaces": "file:../cantonjs-splice-interfaces",

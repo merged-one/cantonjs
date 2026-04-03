@@ -88,3 +88,47 @@ jobs:
 
       - name: Validate Splice packages
         run: npm run test:packages
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            packages/cantonjs-codegen/package-lock.json
+            packages/cantonjs-react/package-lock.json
+            packages/cantonjs-splice-interfaces/package-lock.json
+            packages/cantonjs-splice-scan/package-lock.json
+            packages/cantonjs-splice-token-standard/package-lock.json
+            packages/cantonjs-splice-validator/package-lock.json
+            packages/cantonjs-wallet-adapters/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install package dependencies
+        run: |
+          npm --prefix packages/cantonjs-codegen ci
+          npm --prefix packages/cantonjs-react ci
+          npm --prefix packages/cantonjs-splice-interfaces ci
+          npm --prefix packages/cantonjs-splice-scan ci
+          npm --prefix packages/cantonjs-splice-validator ci
+          npm --prefix packages/cantonjs-splice-token-standard ci
+          npm --prefix packages/cantonjs-wallet-adapters ci
+
+      - name: Typecheck package runtimes
+        run: |
+          npm --prefix packages/cantonjs-codegen run typecheck
+          npm --prefix packages/cantonjs-react run typecheck
+
+      - name: Enforce coverage gates
+        run: npm run test:coverage:all

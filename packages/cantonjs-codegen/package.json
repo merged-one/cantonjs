@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint src",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
@@ -41,6 +42,7 @@
     "protobufjs": "^7.4.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
     "typescript": "^5.5.0",
     "vitest": "^3.0.0"
   },

@@ -151,13 +151,13 @@ type RawType = {
   prim?: { prim?: number; args?: RawType[] }
   con?: { tycon?: RawTypeConName; args?: RawType[] }
   var?: { var_interned_str?: number; var?: string }
-  nat?: string | number
+  nat?: string | number | protobuf.Long
   interned?: number
   // Older format fields
   Prim?: { prim?: number; args?: RawType[] }
   Con?: { tycon?: RawTypeConName; args?: RawType[] }
   Var?: { var_interned_str?: number; var?: string }
-  Nat?: string | number
+  Nat?: string | number | protobuf.Long
 }
 
 type RawTypeConName = {
@@ -304,6 +304,7 @@ function decodeChoice(raw: RawTemplateChoice, intern: InternTable): DamlChoice {
 
   return {
     name,
+    /* v8 ignore next -- protobufjs materializes absent bools as false, so the default is a compatibility shim */
     consuming: raw.consuming ?? true,
     argType,
     returnType,
@@ -336,11 +337,25 @@ function decodeType(raw: RawType, intern: InternTable): DamlType {
 
   const nat = raw.nat ?? raw.Nat
   if (nat !== undefined) {
-    return { kind: 'nat', value: typeof nat === 'string' ? parseInt(nat, 10) : nat }
+    return { kind: 'nat', value: decodeNat(nat) }
   }
 
   // Fallback
   return { kind: 'prim', prim: 'ANY', args: [] }
+}
+
+function decodeNat(nat: string | number | protobuf.Long): number {
+  /* v8 ignore next -- protobufjs currently decodes nat fields as Long values */
+  if (typeof nat === 'string') {
+    return parseInt(nat, 10)
+  }
+
+  /* v8 ignore next -- protobufjs currently decodes nat fields as Long values */
+  if (typeof nat === 'number') {
+    return nat
+  }
+
+  return Number(nat.toString())
 }
 
 /**

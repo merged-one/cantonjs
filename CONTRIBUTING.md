@@ -13,17 +13,11 @@ npm install
 ### Running Tests
 
 ```bash
-# Core package (192 tests)
+# Root package
 npm test
-
-# Codegen package (29 tests)
-cd packages/cantonjs-codegen && npm test
-
-# React package (16 tests)
-cd packages/cantonjs-react && npm test
-
-# With coverage
 npm run test:coverage
+npm run test:coverage:all
+npm run verify:ci:pr
 ```
 
 ### Other Commands
@@ -88,7 +82,7 @@ These rules are non-negotiable. PRs that violate them will be asked to revise.
 
 3. **Run the full check suite** before submitting:
    ```bash
-   npm run typecheck && npm run lint && npm test && npm run build && npm run size
+   npm run verify:ci:pr
    ```
 
 4. **Keep PRs focused.** One feature or fix per PR. Separate refactoring from behavior changes.

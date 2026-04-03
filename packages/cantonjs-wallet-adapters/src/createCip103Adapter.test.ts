@@ -152,6 +152,39 @@ describe('createCip103Adapter', () => {
     expect(request).toHaveBeenCalledWith({ method: 'getActiveNetwork' })
   })
 
+  it('passes status, listAccounts, and ledgerApi through unchanged', async () => {
+    const { provider, request } = createMockProvider()
+    const adapter = createCip103Adapter(provider)
+
+    await expect(adapter.status()).resolves.toMatchObject({
+      connection: {
+        isConnected: true,
+      },
+    })
+    await expect(adapter.listAccounts()).resolves.toEqual([createWallet('Alice::wallet', true)])
+    await expect(
+      adapter.ledgerApi({
+        requestMethod: 'post',
+        resource: '/v2/commands',
+        body: { commands: [] },
+      }),
+    ).resolves.toEqual({
+      requestMethod: 'post',
+      resource: '/v2/commands',
+    })
+
+    expect(request).toHaveBeenNthCalledWith(1, { method: 'status' })
+    expect(request).toHaveBeenNthCalledWith(2, { method: 'listAccounts' })
+    expect(request).toHaveBeenNthCalledWith(3, {
+      method: 'ledgerApi',
+      params: {
+        requestMethod: 'post',
+        resource: '/v2/commands',
+        body: { commands: [] },
+      },
+    })
+  })
+
   it('passes prepareExecute and prepareExecuteAndWait through unchanged', async () => {
     const { provider, request } = createMockProvider()
     const adapter = createCip103Adapter(provider)
@@ -220,8 +253,54 @@ describe('createCip103Adapter', () => {
     expect(listener).toHaveBeenCalledTimes(1)
   })
 
-  it('accepts official SDK-style getProvider and getConnectedProvider sources', async () => {
+  it('subscribes to status and transaction change events', () => {
+    const { provider, emit } = createMockProvider()
+    const adapter = createCip103Adapter({ provider })
+    const statusListener = vi.fn()
+    const txListener = vi.fn()
+
+    const stopStatus = adapter.onStatusChanged(statusListener)
+    const stopTx = adapter.onTxChanged(txListener)
+
+    emit('statusChanged', {
+      provider: { id: 'splice-wallet' },
+      connection: { isConnected: true, isNetworkConnected: true },
+    })
+    emit('txChanged', {
+      status: 'pending',
+      commandId: 'cmd-1',
+    })
+
+    expect(statusListener).toHaveBeenCalledWith({
+      provider: { id: 'splice-wallet' },
+      connection: { isConnected: true, isNetworkConnected: true },
+    })
+    expect(txListener).toHaveBeenCalledWith({
+      status: 'pending',
+      commandId: 'cmd-1',
+    })
+
+    stopStatus()
+    stopTx()
+    emit('statusChanged', {
+      provider: { id: 'splice-wallet' },
+      connection: { isConnected: false, isNetworkConnected: false },
+    })
+    emit('txChanged', {
+      status: 'failed',
+      commandId: 'cmd-2',
+    })
+
+    expect(statusListener).toHaveBeenCalledTimes(1)
+    expect(txListener).toHaveBeenCalledTimes(1)
+  })
+
+  it('accepts provider wrapper, provider factory, getProvider, and getConnectedProvider sources', async () => {
     const { provider } = createMockProvider()
+    const fromWrapper = createCip103Adapter({ provider })
+    const fromProviderFactory = createCip103Adapter({
+      provider: () => provider,
+    })
 
     const fromClient = createCip103Adapter({
       getProvider: () => provider,
@@ -230,6 +309,8 @@ describe('createCip103Adapter', () => {
       getConnectedProvider: () => provider,
     })
 
+    expect(fromWrapper.getProvider()).toBe(provider)
+    expect(fromProviderFactory.getProvider()).toBe(provider)
     await expect(fromClient.listAccounts()).resolves.toEqual([createWallet('Alice::wallet', true)])
     await expect(fromSdk.status()).resolves.toMatchObject({
       connection: {
@@ -245,6 +326,20 @@ describe('createCip103Adapter', () => {
 
     expect(() => adapter.getProvider()).toThrow(
       'Expected a connected CIP-0103 provider, but getConnectedProvider() returned null or an invalid provider.',
+    )
+  })
+
+  it('rejects invalid provider wrappers and unsupported sources', () => {
+    expect(() =>
+      createCip103Adapter({
+        provider: () => ({ request: vi.fn() }) as unknown as Cip103Provider,
+      }).getProvider(),
+    ).toThrow(
+      'Unsupported CIP-0103 adapter source. Provide a raw provider or an object exposing provider(), getProvider(), or getConnectedProvider().',
+    )
+
+    expect(() => createCip103Adapter({ foo: 'bar' } as never).getProvider()).toThrow(
+      'Unsupported CIP-0103 adapter source. Provide a raw provider or an object exposing provider(), getProvider(), or getConnectedProvider().',
     )
   })
 })
