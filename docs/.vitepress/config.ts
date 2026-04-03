@@ -9,6 +9,7 @@ export default defineConfig({
     nav: [
       { text: 'Core SDK', link: '/guide/getting-started' },
       { text: 'Target Users', link: '/guide/target-users' },
+      { text: 'Architecture', link: '/guide/package-architecture' },
       { text: 'Ecosystem Fit', link: '/guide/ecosystem-fit' },
       { text: 'Positioning', link: '/positioning' },
       { text: 'Add-Ons', link: '/guide/scan' },
@@ -29,6 +30,7 @@ export default defineConfig({
           items: [
             { text: 'Positioning & Boundaries', link: '/positioning' },
             { text: 'Target Users', link: '/guide/target-users' },
+            { text: 'Package Architecture', link: '/guide/package-architecture' },
             { text: 'Ecosystem Fit', link: '/guide/ecosystem-fit' },
             { text: 'Getting Started', link: '/guide/getting-started' },
             { text: 'Why cantonjs?', link: '/guide/why-cantonjs' },
