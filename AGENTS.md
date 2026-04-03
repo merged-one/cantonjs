@@ -9,6 +9,7 @@ npm test              # Run all tests (core package)
 npm run test:coverage # Run enforced root coverage gate
 npm run test:coverage:all  # Run coverage gates for root and all packages
 npm run verify:ci:pr  # Run the full PR validation suite locally
+npm run verify:coverage-exclusions  # Fail on undocumented coverage exclusions
 npm run build         # Build ESM + CJS + types
 npm run typecheck     # Type-check without emitting
 npm run lint          # Lint source files
@@ -29,7 +30,7 @@ npm run size          # Check bundle size limits
 
 6. **Party-scoped clients** — `LedgerClient` is scoped to a party via JWT. `AdminClient` is for node management. `TestClient` extends both.
 
-7. **Test-first TDD** — Write the test, then the implementation. Target 90%+ coverage.
+7. **Test-first TDD** — Write the test, then the implementation. The included runtime surface should trend to 100% statements, branches, functions, and lines. Any coverage exclusion or inline `v8 ignore` must be documented in `EXCLUSIONS.md`.
 
 ## Error Code Ranges
 

@@ -20,6 +20,8 @@ cantonjs is a modern, type-safe TypeScript library for the [Canton Network](http
 
 **Companion CLI:** [cantonctl](https://github.com/merged-one/cantonctl) ("Hardhat for Canton")
 
+Development policy: the included runtime surface is expected to reach effectively full coverage over time, and every coverage exclusion or inline `v8 ignore` must be justified in [`EXCLUSIONS.md`](./EXCLUSIONS.md).
+
 ## Features
 
 - **Function exports, not classes** &mdash; tree-shakeable, ESM + CJS dual build

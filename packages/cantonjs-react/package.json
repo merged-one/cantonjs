@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "node ../../scripts/verify-coverage-exclusions.mjs && vitest run --coverage",
     "lint": "eslint src",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build"
