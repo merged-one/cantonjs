@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  ci:
+  core:
     name: Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
 
@@ -28,12 +28,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Verify vendored Splice artifacts
-        run: npm run verify:splice-artifacts
 
       - name: Typecheck
         run: npm run typecheck
@@ -49,3 +47,44 @@ jobs:
 
       - name: Size check
         run: npm run size
+
+  splice-packages:
+    name: Splice packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            packages/cantonjs-splice-interfaces/package-lock.json
+            packages/cantonjs-splice-scan/package-lock.json
+            packages/cantonjs-splice-token-standard/package-lock.json
+            packages/cantonjs-splice-validator/package-lock.json
+            packages/cantonjs-wallet-adapters/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Splice package dependencies
+        run: |
+          npm --prefix packages/cantonjs-splice-interfaces ci
+          npm --prefix packages/cantonjs-splice-scan ci
+          npm --prefix packages/cantonjs-splice-validator ci
+          npm --prefix packages/cantonjs-splice-token-standard ci
+          npm --prefix packages/cantonjs-wallet-adapters ci
+
+      - name: Verify vendored Splice artifacts
+        run: npm run verify:splice-artifacts
+
+      - name: Verify generated Splice artifacts
+        run: npm run verify:generated-artifacts
+
+      - name: Validate Splice packages
+        run: npm run test:packages

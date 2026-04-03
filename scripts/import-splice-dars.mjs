@@ -3,6 +3,7 @@ import {
   access,
   copyFile,
   mkdir,
+  mkdtemp,
   readdir,
   readFile,
   rm,
@@ -81,6 +82,8 @@ const descriptorsRoot = path.join(spliceInterfacesRoot, 'src', 'descriptors')
 
 function parseArgs(argv) {
   let tag
+  let source = 'release'
+  let verify = false
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]
@@ -96,10 +99,26 @@ function parseArgs(argv) {
       continue
     }
 
+    if (arg === '--source') {
+      source = argv[index + 1]
+
+      if (source !== 'release' && source !== 'vendor') {
+        throw new Error(`Unsupported --source value: ${String(source)}`)
+      }
+
+      index += 1
+      continue
+    }
+
+    if (arg === '--verify') {
+      verify = true
+      continue
+    }
+
     throw new Error(`Unknown argument: ${arg}`)
   }
 
-  return { tag }
+  return { tag, source, verify }
 }
 
 function normalizeTag(tag) {
@@ -169,9 +188,17 @@ async function listBundleEntries(bundlePath) {
 }
 
 function selectBundleArtifacts(entries) {
+  return selectArtifactFileNames(entries.map((entry) => path.posix.basename(entry))).map(
+    (artifact) => ({
+      ...artifact,
+      bundleEntry: `splice-node/dars/${artifact.fileName}`,
+    }),
+  )
+}
+
+function selectArtifactFileNames(fileNames) {
   return TARGETS.map((target) => {
-    const candidates = entries
-      .map((entry) => path.posix.basename(entry))
+    const candidates = fileNames
       .map((fileName) => {
         const match = target.pattern.exec(fileName)
         return match ? { fileName, version: match[1] } : null
@@ -179,7 +206,7 @@ function selectBundleArtifacts(entries) {
       .filter(Boolean)
 
     if (candidates.length === 0) {
-      throw new Error(`Unable to locate ${target.id} in the official release bundle`)
+      throw new Error(`Unable to locate ${target.id} in the selected DAR set`)
     }
 
     candidates.sort((left, right) => compareVersions(left.version, right.version))
@@ -190,7 +217,6 @@ function selectBundleArtifacts(entries) {
       ...target,
       fileName: selected.fileName,
       version: selected.version,
-      bundleEntry: `splice-node/dars/${selected.fileName}`,
     }
   })
 }
@@ -1453,15 +1479,15 @@ function renderDescriptorFile(moduleDescriptor) {
   return `${lines.join('\n').trimEnd()}\n`
 }
 
-async function writeGeneratedModules(moduleDescriptors) {
-  await rm(generatedRoot, { recursive: true, force: true })
-  await mkdir(generatedRoot, { recursive: true })
+async function writeGeneratedModules(moduleDescriptors, outputRoot = generatedRoot) {
+  await rm(outputRoot, { recursive: true, force: true })
+  await mkdir(outputRoot, { recursive: true })
 
   const registry = buildModuleRegistry(moduleDescriptors)
   const packageIndexLines = new Map()
 
   for (const moduleDescriptor of moduleDescriptors) {
-    const filePath = path.join(generatedRoot, moduleFilePath(moduleDescriptor))
+    const filePath = path.join(outputRoot, moduleFilePath(moduleDescriptor))
     await mkdir(path.dirname(filePath), { recursive: true })
     await writeFile(filePath, renderGeneratedModule(moduleDescriptor, registry))
 
@@ -1476,7 +1502,7 @@ async function writeGeneratedModules(moduleDescriptors) {
 
   for (const [packageName, lines] of packageIndexLines.entries()) {
     await writeFile(
-      path.join(generatedRoot, packageName, 'index.ts'),
+      path.join(outputRoot, packageName, 'index.ts'),
       `${lines.sort().join('\n')}\n`,
     )
   }
@@ -1485,19 +1511,24 @@ async function writeGeneratedModules(moduleDescriptors) {
     `export * as ${namespaceExportName(moduleDescriptor.moduleName)} from './${moduleFilePath(moduleDescriptor).replace(/\.ts$/, '.js')}'`,
   )
 
-  await writeFile(path.join(generatedRoot, 'index.ts'), `${barrelLines.sort().join('\n')}\n`)
+  await writeFile(path.join(outputRoot, 'index.ts'), `${barrelLines.sort().join('\n')}\n`)
 }
 
-async function writeDescriptorFiles(moduleDescriptors) {
-  await mkdir(descriptorsRoot, { recursive: true })
-  const filesToRemove = await readdir(descriptorsRoot)
+async function writeDescriptorFiles(moduleDescriptors, outputRoot = descriptorsRoot) {
+  await mkdir(outputRoot, { recursive: true })
+
+  if (outputRoot !== descriptorsRoot) {
+    await copyFile(path.join(descriptorsRoot, 'types.ts'), path.join(outputRoot, 'types.ts'))
+  }
+
+  const filesToRemove = await readdir(outputRoot)
 
   for (const fileName of filesToRemove) {
     if (fileName === 'types.ts') {
       continue
     }
 
-    await rm(path.join(descriptorsRoot, fileName), { force: true })
+    await rm(path.join(outputRoot, fileName), { force: true })
   }
 
   const barrelLines = ["export * from './types.js'"]
@@ -1508,11 +1539,11 @@ async function writeDescriptorFiles(moduleDescriptors) {
     }
 
     const fileName = descriptorFileName(moduleDescriptor.moduleName)
-    await writeFile(path.join(descriptorsRoot, fileName), renderDescriptorFile(moduleDescriptor))
+    await writeFile(path.join(outputRoot, fileName), renderDescriptorFile(moduleDescriptor))
     barrelLines.push(`export * from './${fileName.replace(/\.ts$/, '.js')}'`)
   }
 
-  await writeFile(path.join(descriptorsRoot, 'index.ts'), `${barrelLines.sort().join('\n')}\n`)
+  await writeFile(path.join(outputRoot, 'index.ts'), `${barrelLines.sort().join('\n')}\n`)
 }
 
 async function fileExists(filePath) {
@@ -1524,9 +1555,117 @@ async function fileExists(filePath) {
   }
 }
 
+async function listFilesRecursive(rootPath, currentPath = '.') {
+  const directoryPath = currentPath === '.' ? rootPath : path.join(rootPath, currentPath)
+  const entries = await readdir(directoryPath, { withFileTypes: true })
+  const files = []
+
+  for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+    const relativePath = currentPath === '.'
+      ? entry.name
+      : path.posix.join(currentPath, entry.name)
+
+    if (entry.isDirectory()) {
+      files.push(...await listFilesRecursive(rootPath, relativePath))
+      continue
+    }
+
+    files.push(relativePath)
+  }
+
+  return files
+}
+
+async function assertDirectoryMatches(actualRoot, expectedRoot, label) {
+  const actualFiles = await listFilesRecursive(actualRoot)
+  const expectedFiles = await listFilesRecursive(expectedRoot)
+
+  if (actualFiles.length !== expectedFiles.length) {
+    throw new Error(`${label} file set changed. Re-run scripts/import-splice-dars.mjs and commit the regenerated files.`)
+  }
+
+  for (let index = 0; index < actualFiles.length; index += 1) {
+    if (actualFiles[index] !== expectedFiles[index]) {
+      throw new Error(`${label} file set changed. Re-run scripts/import-splice-dars.mjs and commit the regenerated files.`)
+    }
+  }
+
+  for (const relativePath of actualFiles) {
+    const [actualContents, expectedContents] = await Promise.all([
+      readFile(path.join(actualRoot, relativePath), 'utf8'),
+      readFile(path.join(expectedRoot, relativePath), 'utf8'),
+    ])
+
+    if (actualContents !== expectedContents) {
+      throw new Error(`${label} is stale: ${relativePath}`)
+    }
+  }
+}
+
 async function main() {
-  const { tag: tagArg } = parseArgs(process.argv.slice(2))
+  const { tag: tagArg, source, verify } = parseArgs(process.argv.slice(2))
   const tag = await resolveTag(tagArg)
+
+  if (source === 'vendor') {
+    const vendorRoot = path.join(repoRoot, 'vendor', 'splice', tag, 'daml')
+    const selectedArtifacts = selectArtifactFileNames(
+      (await readdir(vendorRoot)).filter((entry) => entry.endsWith('.dar')),
+    )
+    const moduleDescriptors = []
+
+    for (const artifact of selectedArtifacts) {
+      const vendorPath = path.join(vendorRoot, artifact.fileName)
+      const metadata = await loadDarMetadata(vendorPath)
+      const selectedModules = metadata.modules.filter((moduleDescriptor) =>
+        artifact.moduleNames.includes(moduleDescriptor.moduleName),
+      )
+
+      if (selectedModules.length === 0) {
+        throw new Error(`Unable to locate expected source modules for ${artifact.id} in ${artifact.fileName}`)
+      }
+
+      for (const moduleDescriptor of selectedModules) {
+        moduleDescriptors.push({
+          ...moduleDescriptor,
+          artifactFileName: artifact.fileName,
+          packageName: metadata.packageName,
+          packageVersion: metadata.packageVersion,
+          packageId: metadata.packageId,
+        })
+      }
+    }
+
+    moduleDescriptors.sort((left, right) => left.moduleName.localeCompare(right.moduleName))
+
+    if (verify) {
+      const tempRoot = await mkdtemp(path.join(os.tmpdir(), `cantonjs-splice-verify-${tag}-`))
+      const tempGeneratedRoot = path.join(tempRoot, 'generated')
+      const tempDescriptorsRoot = path.join(tempRoot, 'descriptors')
+
+      try {
+        await writeGeneratedModules(moduleDescriptors, tempGeneratedRoot)
+        await writeDescriptorFiles(moduleDescriptors, tempDescriptorsRoot)
+        await assertDirectoryMatches(tempGeneratedRoot, generatedRoot, 'Generated interfaces')
+        await assertDirectoryMatches(tempDescriptorsRoot, descriptorsRoot, 'Descriptor files')
+      } finally {
+        await rm(tempRoot, { recursive: true, force: true })
+      }
+
+      console.log(`Verified Splice interface outputs against vendored DARs for ${tag}`)
+      return
+    }
+
+    await writeGeneratedModules(moduleDescriptors)
+    await writeDescriptorFiles(moduleDescriptors)
+
+    console.log(`Regenerated Splice interface outputs from vendored DARs for ${tag}`)
+    return
+  }
+
+  if (verify) {
+    throw new Error('--verify is supported only with --source vendor')
+  }
+
   const bundleUrl = releaseBundleUrl(tag)
   const tempRoot = path.join(os.tmpdir(), `cantonjs-splice-${tag}`)
   const bundlePath = path.join(tempRoot, `${tag}_splice-node.tar.gz`)
