@@ -115,6 +115,23 @@ The sandbox fixture handles:
 - JWT token generation when no `token`, `auth`, or `session` is provided
 - Cleanup on test completion
 
+## Coverage Policy
+
+Coverage gates apply only to the included runtime surface. Exclusions are allowed only for:
+- generated code
+- barrel re-exports
+- test files
+- pure type-only modules
+- narrowly documented, genuinely unreachable branches
+
+Every `coverage.exclude` entry and every inline `v8 ignore` comment must be listed in [`EXCLUSIONS.md`](../../EXCLUSIONS.md) with a concrete reason.
+
+Run the enforcement check directly when you touch tests, coverage config, or inline ignores:
+
+```bash
+npm run verify:coverage-exclusions
+```
+
 ## Local CI-equivalent checks
 
 This repo is not an npm workspace, so install the root and package dependencies explicitly before running the full offline validation set:
@@ -133,6 +150,7 @@ npm --prefix packages/cantonjs-wallet-adapters ci
 Then run the same default-safe checks used in CI:
 
 ```bash
+npm run verify:coverage-exclusions
 npm run verify:ci:pr
 npm run test:coverage:all
 ```

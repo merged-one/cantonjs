@@ -18,6 +18,7 @@ npm test
 npm run test:coverage
 npm run test:coverage:all
 npm run verify:ci:pr
+npm run verify:coverage-exclusions
 ```
 
 ### Other Commands
@@ -60,6 +61,9 @@ These rules are non-negotiable. PRs that violate them will be asked to revise.
 - Use `createMockTransport()` for unit tests, not `vi.mock()`
 - Test behavior, not implementation details
 - Each test file mirrors its source file: `foo.ts` -> `foo.test.ts`
+- Treat 100% coverage as the standard for the included runtime surface
+- Add a new exclusion only when the code is generated, type-only, a barrel re-export, or genuinely unreachable under current instrumentation
+- Every `coverage.exclude` entry and inline `v8 ignore` comment must be added to `EXCLUSIONS.md`
 
 ### Errors
 
@@ -83,6 +87,11 @@ These rules are non-negotiable. PRs that violate them will be asked to revise.
 3. **Run the full check suite** before submitting:
    ```bash
    npm run verify:ci:pr
+   ```
+
+   If you touched coverage configuration or added an inline ignore, run:
+   ```bash
+   npm run verify:coverage-exclusions
    ```
 
 4. **Keep PRs focused.** One feature or fix per PR. Separate refactoring from behavior changes.
