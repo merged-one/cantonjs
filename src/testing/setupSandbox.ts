@@ -37,7 +37,7 @@ export type SandboxConfig = {
   readonly auth?: AuthProvider
   /** Per-request session provider for participant calls. */
   readonly session?: SessionProvider
-  /** Party for the TestClient. Default: allocated via sandbox. */
+  /** Party for the TestClient. Default: `test-party`. */
   readonly party?: Party
   /** Custom fetch implementation (for testing the fixture itself). */
   readonly fetchFn?: typeof fetch
@@ -108,10 +108,12 @@ async function resolveSandboxTransportConfig(
   execFn: (cmd: string) => Promise<{ stdout: string; stderr: string }>,
   config: SandboxConfig,
 ): Promise<TransportConfig> {
+  const token = config.token?.trim() === '' ? undefined : config.token?.trim()
+
   const transportConfig = {
     url,
     fetchFn,
-    token: config.token,
+    token,
     auth: config.auth,
     session: config.session,
   } satisfies TransportConfig

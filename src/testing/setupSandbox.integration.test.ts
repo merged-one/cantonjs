@@ -82,6 +82,28 @@ describe('setupCantonSandbox integration', () => {
     expect(timeRequest?.headers.authorization).toBe('Bearer sandbox-session-token')
     expect(timeRequest?.headers['x-sandbox-session']).toBe('splice')
   })
+
+  it('treats empty tokens as missing auth and falls back to cantonctl auth token', async () => {
+    const server = await startSandboxServer()
+    const execFn = vi.fn()
+      .mockResolvedValueOnce({ stdout: 'cantonctl 0.1.0', stderr: '' })
+      .mockResolvedValueOnce({ stdout: '', stderr: '' })
+      .mockResolvedValueOnce({ stdout: 'fallback-sandbox-token', stderr: '' })
+      .mockResolvedValueOnce({ stdout: '', stderr: '' })
+
+    const sandbox = await setupCantonSandbox({
+      port: server.port,
+      token: '',
+      execFn,
+    })
+
+    await sandbox.client.getTime()
+    await sandbox.teardown()
+
+    expect(execFn).toHaveBeenCalledWith('cantonctl auth token')
+    expect(server.requests.find((request) => request.url === '/v2/time')?.headers.authorization)
+      .toBe('Bearer fallback-sandbox-token')
+  })
 })
 
 async function startSandboxServer(): Promise<{

@@ -56,6 +56,24 @@ describe('setupCantonSandbox', () => {
     expect(sandbox.transport).toBeDefined()
   })
 
+  it('treats an empty token as missing and falls back to cantonctl auth', async () => {
+    const execFn = vi.fn()
+      .mockResolvedValueOnce({ stdout: 'cantonctl 0.1.0', stderr: '' })
+      .mockResolvedValueOnce({ stdout: '', stderr: '' })
+      .mockResolvedValueOnce({ stdout: 'sandbox-jwt-token', stderr: '' })
+
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch
+
+    const sandbox = await setupCantonSandbox({
+      token: '',
+      execFn,
+      fetchFn,
+    })
+
+    expect(execFn).toHaveBeenCalledWith('cantonctl auth token')
+    expect(sandbox.transport).toBeDefined()
+  })
+
   it('uses an auth provider instead of cantonctl auth', async () => {
     const execFn = vi.fn()
       .mockResolvedValueOnce({ stdout: 'cantonctl 0.1.0', stderr: '' })

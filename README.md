@@ -230,7 +230,7 @@ Generate TypeScript types from Daml DAR files:
 ```bash
 npm install --save-dev cantonjs-codegen
 
-cantonjs-codegen --dar ./model.dar --output ./src/generated
+npx cantonjs-codegen --dar ./model.dar --output ./src/generated
 ```
 
 Records become type aliases, variants become discriminated unions, templates become companion const objects with `templateId` and choices. See [packages/cantonjs-codegen](./packages/cantonjs-codegen/).
@@ -244,7 +244,13 @@ npm install cantonjs-react @tanstack/react-query
 ```
 
 ```tsx
+import { createLedgerClient, jsonApi } from 'cantonjs'
 import { CantonProvider, useContracts, useCreateContract } from 'cantonjs-react'
+
+const client = createLedgerClient({
+  transport: jsonApi({ url: 'http://localhost:7575', token: 'your-jwt-token' }),
+  actAs: 'Alice::1234',
+})
 
 function App() {
   return (
@@ -267,7 +273,7 @@ function AssetList() {
 
   return (
     <div>
-      <button onClick={() => create({ createArguments: { owner: 'Alice', value: 100 } })}>
+      <button onClick={() => create({ createArguments: { owner: 'Alice', value: '100' } })}>
         Create
       </button>
       <ul>
@@ -296,6 +302,7 @@ See [packages/cantonjs-react](./packages/cantonjs-react/).
 cantonjs provides first-class testing utilities. No `vi.mock()` needed &mdash; all dependencies are injected:
 
 ```typescript
+import { createLedgerClient } from 'cantonjs'
 import { createMockTransport } from 'cantonjs/testing'
 
 const transport = createMockTransport({
@@ -311,9 +318,7 @@ Integration testing with a real Canton sandbox:
 ```typescript
 import { setupCantonSandbox } from 'cantonjs/testing'
 
-const sandbox = setupCantonSandbox({
-  cantonctlPath: 'cantonctl',
-})
+const sandbox = await setupCantonSandbox()
 // sandbox.client is a fully configured TestClient
 ```
 
@@ -334,7 +339,7 @@ cantonjs is designed for minimal footprint:
 
 | Entry Point       | Size (minified + brotli) |
 | ----------------- | ------------------------ |
-| `cantonjs`        | 5.08 KB                  |
+| `cantonjs`        | 5.78 kB                  |
 | `cantonjs/ledger` | 1.1 KB                   |
 
 ## Requirements
