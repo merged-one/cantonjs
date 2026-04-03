@@ -116,4 +116,20 @@ describe('useStreamContracts', () => {
     expect(result.current.error?.message).toBe('Stream error')
     expect(result.current.isLoading).toBe(false)
   })
+
+  it('wraps non-Error failures from polling', async () => {
+    const client = mockClient()
+    ;(client.queryContracts as ReturnType<typeof vi.fn>).mockRejectedValue('stream failed')
+    const { result } = renderHook(
+      () => useStreamContracts({ templateId: '#pkg:Mod:T' }),
+      { wrapper: createWrapper(client) },
+    )
+
+    await act(async () => {
+      await vi.runOnlyPendingTimersAsync()
+    })
+
+    expect(result.current.error?.message).toBe('stream failed')
+    expect(result.current.isLoading).toBe(false)
+  })
 })

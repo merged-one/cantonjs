@@ -117,7 +117,7 @@ The sandbox fixture handles:
 
 ## Coverage Policy
 
-Coverage gates apply only to the included runtime surface. Exclusions are allowed only for:
+Coverage gates apply only to the included runtime surface, and those gates are `100/100/100/100` for statements, branches, functions, and lines. Exclusions are allowed only for:
 - generated code
 - barrel re-exports
 - test files

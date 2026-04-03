@@ -162,4 +162,38 @@ describe('grpc', () => {
     const calls = (grpcTransportLike.unary as ReturnType<typeof vi.fn>).mock.calls[0]!
     expect(calls[1]).toEqual({ name: 'SubmitAndWaitForReassignment' })
   })
+
+  it('falls back to unknown service and the trailing path segment for unmapped routes', async () => {
+    const grpcTransportLike = mockGrpcTransport({})
+    const transport = grpc({
+      url: 'http://localhost:7575',
+      grpcTransport: grpcTransportLike,
+    })
+
+    await transport.request({
+      method: 'GET',
+      path: '/v2/custom-service/custom-route',
+    })
+
+    const calls = (grpcTransportLike.unary as ReturnType<typeof vi.fn>).mock.calls[0]!
+    expect(calls[0]).toEqual({ typeName: 'unknown' })
+    expect(calls[1]).toEqual({ name: 'custom-route' })
+  })
+
+  it('falls back to unknown service and method names for empty paths', async () => {
+    const grpcTransportLike = mockGrpcTransport({})
+    const transport = grpc({
+      url: 'http://localhost:7575',
+      grpcTransport: grpcTransportLike,
+    })
+
+    await transport.request({
+      method: 'GET',
+      path: '',
+    })
+
+    const calls = (grpcTransportLike.unary as ReturnType<typeof vi.fn>).mock.calls[0]!
+    expect(calls[0]).toEqual({ typeName: 'unknown' })
+    expect(calls[1]).toEqual({ name: 'unknown' })
+  })
 })

@@ -30,7 +30,7 @@ npm run size          # Check bundle size limits
 
 6. **Party-scoped clients** — `LedgerClient` is scoped to a party via JWT. `AdminClient` is for node management. `TestClient` extends both.
 
-7. **Test-first TDD** — Write the test, then the implementation. The included runtime surface should trend to 100% statements, branches, functions, and lines. Any coverage exclusion or inline `v8 ignore` must be documented in `EXCLUSIONS.md`.
+7. **Test-first TDD** — Write the test, then the implementation. The included runtime surface is gated at 100% statements, branches, functions, and lines. Any coverage exclusion or inline `v8 ignore` must be documented in `EXCLUSIONS.md`.
 
 ## Error Code Ranges
 

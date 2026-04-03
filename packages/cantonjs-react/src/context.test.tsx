@@ -47,6 +47,15 @@ describe('CantonProvider', () => {
       renderHook(() => useCantonClient(), { wrapper }),
     ).toThrow('useCantonClient must be used within a CantonProvider')
   })
+
+  it('creates and uses the default QueryClient when one is not provided', () => {
+    const client = mockClient()
+    const wrapper = ({ children }: { children: ReactNode }) =>
+      createElement(CantonProvider, { client }, children)
+
+    const { result } = renderHook(() => useCantonClient(), { wrapper })
+    expect(result.current).toBe(client)
+  })
 })
 
 describe('useParty', () => {

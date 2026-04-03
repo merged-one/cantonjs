@@ -74,4 +74,15 @@ describe('parseDar', () => {
     expect(parsed.mainDalf).toBe('pkg/main.dalf')
     expect(parsed.dalfs).toHaveLength(1)
   })
+
+  it('parses manifest headers without requiring a trailing newline', async () => {
+    const zip = new JSZip()
+    zip.file('META-INF/MANIFEST.MF', 'Manifest-Version: 1.0\nMain-Dalf: pkg/main.dalf')
+    zip.file('pkg/main.dalf', new Uint8Array([0x01, 0x02]))
+
+    const parsed = await parseDar(await zip.generateAsync({ type: 'uint8array' }))
+
+    expect(parsed.mainDalf).toBe('pkg/main.dalf')
+    expect(parsed.dalfs).toHaveLength(1)
+  })
 })

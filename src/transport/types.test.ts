@@ -72,6 +72,23 @@ describe('resolveTransportSession', () => {
     ).rejects.toThrow(AuthProviderError)
   })
 
+  it('wraps non-Error provider failures as AuthProviderError causes', async () => {
+    await expect(
+      resolveTransportSession(
+        {
+          auth: async () => {
+            throw 'oidc unavailable'
+          },
+        },
+        context,
+      ),
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        message: 'oidc unavailable',
+      }),
+    })
+  })
+
   it('preserves CantonjsError instances thrown by providers', async () => {
     const error = new CantonjsError('auth failed', { code: 'CJ2999' })
 

@@ -234,4 +234,55 @@ describe('token-standard history parsing', () => {
 
     expect(parseTokenStandardHistoryFromTransactionV1(transaction)).toEqual([])
   })
+
+  it('handles missing interface view and implemented interface collections', () => {
+    const transaction: JsTransaction = {
+      ...transactionFixture(),
+      events: [
+        {
+          CreatedEvent: {
+            ...transactionFixture().events[0]!.CreatedEvent,
+            interfaceViews: undefined,
+          },
+        },
+        {
+          ArchivedEvent: {
+            ...transactionFixture().events[2]!.ArchivedEvent,
+            implementedInterfaces: undefined,
+          },
+        },
+        {
+          ExercisedEvent: {
+            ...transactionFixture().events[1]!.ExercisedEvent,
+            interfaceId: AllocationV1.interfaceId,
+            implementedInterfaces: undefined,
+          },
+        },
+      ],
+    }
+
+    expect(parseTokenStandardHistoryFromTransactionV1(transaction)).toEqual([
+      expect.objectContaining({
+        kind: 'exercised',
+        interfaceId: AllocationV1.interfaceId,
+      }),
+    ])
+  })
+
+  it('ignores exercised events when implemented interfaces are absent and no direct interface id is present', () => {
+    const transaction: JsTransaction = {
+      ...transactionFixture(),
+      events: [
+        {
+          ExercisedEvent: {
+            ...transactionFixture().events[1]!.ExercisedEvent,
+            interfaceId: undefined,
+            implementedInterfaces: undefined,
+          },
+        },
+      ],
+    }
+
+    expect(parseTokenStandardHistoryFromTransactionV1(transaction)).toEqual([])
+  })
 })

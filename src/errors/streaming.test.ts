@@ -39,6 +39,11 @@ describe('StreamClosedError', () => {
     expect(error.metaMessages).toBeDefined()
     expect(error.metaMessages!.some(m => m.includes('1006'))).toBe(true)
   })
+
+  it('uses the empty-reason fallback message', () => {
+    const error = new StreamClosedError(1000, '')
+    expect(error.metaMessages).toContain('No reason provided by server.')
+  })
 })
 
 describe('ReconnectFailedError', () => {

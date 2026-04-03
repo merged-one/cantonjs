@@ -191,4 +191,59 @@ describe('token-standard common command helpers', () => {
       },
     })
   })
+
+  it('falls back to a deterministic command id format and forwards readAs/workflow fields', async () => {
+    const transport = {
+      request: vi.fn<Transport['request']>().mockResolvedValue({
+        preparedTransaction: 'prepared',
+        preparedTransactionHash: 'hash-2',
+        hashingSchemeVersion: 'V2',
+      } satisfies PrepareSubmissionResponse),
+    }
+    vi.stubGlobal('crypto', {})
+    vi.spyOn(Date, 'now').mockReturnValue(1_712_016_000_000)
+    vi.spyOn(Math, 'random').mockReturnValue(0.123456789)
+
+    await prepareTokenStandardChoice(
+      {
+        transport,
+        actAs: 'Alice::1234',
+        readAs: ['Bob::5678'],
+      },
+      WalletUserProxy,
+      {
+        contractId: 'factory-1',
+        choice: 'WalletUserProxy_PublicFetch',
+        choiceArgument: {} as never,
+        options: {
+          workflowId: 'workflow-1',
+          synchronizerId: 'sync-1',
+          submissionId: 'submission-1',
+        },
+      },
+    )
+
+    expect(transport.request).toHaveBeenCalledWith({
+      method: 'POST',
+      path: '/v2/interactive-submission/prepare',
+      body: {
+        commands: [
+          {
+            ExerciseCommand: {
+              templateId: WalletUserProxy.templateId,
+              contractId: 'factory-1',
+              choice: 'WalletUserProxy_PublicFetch',
+              choiceArgument: {},
+            },
+          },
+        ],
+        commandId: `token-standard-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+        actAs: ['Alice::1234'],
+        readAs: ['Bob::5678'],
+        workflowId: 'workflow-1',
+        synchronizerId: 'sync-1',
+        submissionId: 'submission-1',
+      },
+    })
+  })
 })

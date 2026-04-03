@@ -254,4 +254,37 @@ describe('streamUpdates', () => {
     await iter.return!()
     vi.useRealTimers()
   })
+
+  it('does not advance the resume cursor for updates without a transaction offset', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = streamUpdates({
+      url: 'http://localhost:7575',
+      WebSocket: MockWS,
+      beginExclusive: 12,
+      reconnect: { initialDelay: 50, jitter: 0, maxAttempts: 1 },
+    })
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+    instances[0]!.simulateMessage({
+      Reassignment: {
+        updateId: 'reassignment-1',
+        offset: 99,
+        events: [],
+        recordTime: '2025-01-01T00:00:00Z',
+      },
+    } as TaggedUpdate)
+    await iter.next()
+
+    instances[0]!.simulateClose(1006, '')
+    await vi.advanceTimersByTimeAsync(50)
+
+    instances[1]!.simulateOpen()
+    const request = JSON.parse(instances[1]!.sentMessages[0]!)
+    expect(request.beginExclusive).toBe(12)
+
+    await iter.return!()
+    vi.useRealTimers()
+  })
 })

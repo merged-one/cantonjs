@@ -215,6 +215,25 @@ describe('createStream', () => {
     vi.useRealTimers()
   })
 
+  it('resolves a pending next() call when the signal aborts', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const controller = new AbortController()
+    const stream = createStream<{ value: number }>(defaultConfig({
+      WebSocket: MockWS,
+      signal: controller.signal,
+    }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+
+    const pending = iter.next()
+    controller.abort()
+
+    await expect(pending).resolves.toEqual({ done: true, value: undefined })
+    vi.useRealTimers()
+  })
+
   it('returns done when signal is already aborted', async () => {
     const { MockWS } = createMockWebSocket()
     const controller = new AbortController()
@@ -312,6 +331,24 @@ describe('createStream', () => {
     vi.useRealTimers()
   })
 
+  it('rejects a pending next() call when reconnect is disabled and the stream closes', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = createStream(defaultConfig({
+      WebSocket: MockWS,
+      reconnect: false,
+    }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+
+    const pending = iter.next()
+    instances[0]!.simulateClose(1006, 'server timeout')
+
+    await expect(pending).rejects.toThrow('Stream closed unexpectedly')
+    vi.useRealTimers()
+  })
+
   it('completes bounded stream on normal close (code 1000)', async () => {
     const { MockWS, instances } = createMockWebSocket()
     const stream = createStream<{ value: number }>(defaultConfig({
@@ -332,6 +369,24 @@ describe('createStream', () => {
 
     const r2 = await iter.next()
     expect(r2.done).toBe(true)
+    vi.useRealTimers()
+  })
+
+  it('completes a pending next() call when a bounded stream closes normally', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = createStream<{ value: number }>(defaultConfig({
+      WebSocket: MockWS,
+      bounded: true,
+    }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+
+    const pending = iter.next()
+    instances[0]!.simulateClose(1000, '')
+
+    await expect(pending).resolves.toEqual({ done: true, value: undefined })
     vi.useRealTimers()
   })
 
@@ -389,6 +444,21 @@ describe('createStream', () => {
     }
   })
 
+  it('ignores onerror because close handling owns reconnection', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = createStream<{ value: number }>(defaultConfig({ WebSocket: MockWS }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+    instances[0]!.simulateError()
+    instances[0]!.simulateMessage({ value: 42 })
+
+    await expect(iter.next()).resolves.toEqual({ done: false, value: { value: 42 } })
+    await iter.return!()
+    vi.useRealTimers()
+  })
+
   it('skips non-JSON messages without error', async () => {
     const { MockWS, instances } = createMockWebSocket()
     const stream = createStream<{ value: number }>(defaultConfig({ WebSocket: MockWS }))
@@ -432,6 +502,55 @@ describe('createStream', () => {
     vi.useRealTimers()
   })
 
+  it('does not reconnect once the iterator has returned during a reconnect delay', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = createStream(defaultConfig({
+      WebSocket: MockWS,
+      reconnect: { initialDelay: 100, jitter: 0, maxAttempts: 5 },
+    }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+    instances[0]!.simulateClose(1006, '')
+
+    await iter.return!()
+    await vi.advanceTimersByTimeAsync(100)
+
+    expect(instances).toHaveLength(1)
+    vi.useRealTimers()
+  })
+
+  it('returns immediately when connect is invoked after the iterator is already done', async () => {
+    const { MockWS } = createMockWebSocket()
+    const stream = createStream(defaultConfig({ WebSocket: MockWS }))
+    const iter = stream[Symbol.asyncIterator]() as AsyncIterator<unknown> & { connect: () => void }
+
+    await iter.return!()
+    expect(() => iter.connect()).not.toThrow()
+    vi.useRealTimers()
+  })
+
+  it('ignores close events that arrive after the iterator is already done', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = createStream(defaultConfig({
+      WebSocket: MockWS,
+      reconnect: { initialDelay: 100, jitter: 0, maxAttempts: 1 },
+    }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+    const onclose = instances[0]!.onclose
+
+    await iter.return!()
+    onclose?.({ code: 1006, reason: 'late close' })
+    await vi.advanceTimersByTimeAsync(100)
+
+    expect(instances).toHaveLength(1)
+    vi.useRealTimers()
+  })
+
   it('handles WebSocket constructor throwing', async () => {
     const ThrowingWS = vi.fn().mockImplementation(() => {
       throw new Error('WebSocket not supported')
@@ -441,6 +560,35 @@ describe('createStream', () => {
     const iter = stream[Symbol.asyncIterator]()
 
     await expect(iter.next()).rejects.toThrow('WebSocket connection failed')
+    vi.useRealTimers()
+  })
+
+  it('wraps non-Error constructor failures as WebSocketError causes', async () => {
+    const ThrowingWS = vi.fn().mockImplementation(() => {
+      throw 'unsupported'
+    }) as unknown as WebSocketConstructor
+
+    const stream = createStream(defaultConfig({ WebSocket: ThrowingWS }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await expect(iter.next()).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        message: 'unsupported',
+      }),
+    })
+    vi.useRealTimers()
+  })
+
+  it('closes the socket and rethrows from iterator.throw()', async () => {
+    const { MockWS, instances } = createMockWebSocket()
+    const stream = createStream(defaultConfig({ WebSocket: MockWS }))
+    const iter = stream[Symbol.asyncIterator]()
+
+    await vi.advanceTimersByTimeAsync(0)
+    instances[0]!.simulateOpen()
+
+    await expect(iter.throw?.(new Error('boom'))).rejects.toThrow('boom')
+    expect(instances[0]!.closedWith).toBeDefined()
     vi.useRealTimers()
   })
 })

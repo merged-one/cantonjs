@@ -49,6 +49,12 @@ describe('GrpcError', () => {
     expect(error.grpcCode).toBe(7)
     expect(error.message).toContain('PERMISSION_DENIED')
   })
+
+  it('preserves the cause', () => {
+    const cause = new Error('transport failed')
+    const error = new GrpcError(14, 'UNAVAILABLE', { cause })
+    expect(error.cause).toBe(cause)
+  })
 })
 
 describe('TimeoutError', () => {
@@ -57,5 +63,11 @@ describe('TimeoutError', () => {
     expect(error.name).toBe('TimeoutError')
     expect(error.code).toBe('CJ1004')
     expect(error.message).toContain('30000ms')
+  })
+
+  it('preserves the cause', () => {
+    const cause = new Error('abort')
+    const error = new TimeoutError(1000, { cause })
+    expect(error.cause).toBe(cause)
   })
 })

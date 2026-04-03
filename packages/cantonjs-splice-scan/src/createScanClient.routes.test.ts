@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   PUBLIC_SCAN_OPERATIONS,
   createScanClient,
+  getNextUpdateCursor,
 } from './createScanClient.js'
 
 function jsonResponse(body: unknown): Response {
@@ -307,5 +308,75 @@ describe('createScanClient route contracts', () => {
     }
 
     expect(fetchFn).toHaveBeenCalledTimes(PUBLIC_SCAN_OPERATIONS.length)
+  })
+
+  it('stops iterating when a full page still cannot produce a follow-up cursor', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      jsonResponse({ transactions: [] }),
+    )
+    const client = createScanClient({
+      url: 'https://scan.example.com/api/scan',
+      fetchFn,
+    })
+
+    const items: unknown[] = []
+    for await (const update of client.iterateUpdates({ page_size: 0 } as never)) {
+      items.push(update)
+    }
+
+    expect(items).toEqual([])
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('forwards AbortSignal through iterateUpdates requests', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      jsonResponse({ transactions: [] }),
+    )
+    const client = createScanClient({
+      url: 'https://scan.example.com/api/scan',
+      fetchFn,
+    })
+    const controller = new AbortController()
+
+    for await (const _update of client.iterateUpdates({ page_size: 0 } as never, {
+      signal: controller.signal,
+    })) {
+      throw new Error('iterateUpdates should not yield for an empty page')
+    }
+
+    const init = fetchFn.mock.calls[0]?.[1]
+    expect(init?.signal).toBeInstanceOf(AbortSignal)
+    controller.abort()
+    expect((init?.signal as AbortSignal).aborted).toBe(true)
+  })
+
+  it('extracts the next update cursor from both direct and legacy event shapes', () => {
+    expect(
+      getNextUpdateCursor({
+        transactions: [
+          {
+            migration_id: 7,
+            record_time: '2026-04-02T00:00:00Z',
+          },
+        ],
+      } as never),
+    ).toEqual({
+      after_migration_id: 7,
+      after_record_time: '2026-04-02T00:00:00Z',
+    })
+
+    expect(
+      getNextUpdateCursor({
+        transactions: [
+          {
+            event: { migration_id: 8 },
+            record_time: '2026-04-02T00:01:00Z',
+          },
+        ],
+      } as never),
+    ).toEqual({
+      after_migration_id: 8,
+      after_record_time: '2026-04-02T00:01:00Z',
+    })
   })
 })

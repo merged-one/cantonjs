@@ -1,5 +1,8 @@
+import * as fs from 'node:fs/promises'
+import * as os from 'node:os'
+import * as path from 'node:path'
 import { describe, it, expect, vi } from 'vitest'
-import { setupCantonSandbox } from './setupSandbox.js'
+import { defaultExec, setupCantonSandbox } from './setupSandbox.js'
 
 describe('setupCantonSandbox', () => {
   it('throws when cantonctl is not available', async () => {
@@ -184,5 +187,48 @@ describe('setupCantonSandbox', () => {
     expect(typeof sandbox.client.allocateParty).toBe('function')
     expect(typeof sandbox.client.getTime).toBe('function')
     expect(typeof sandbox.client.advanceTime).toBe('function')
+  })
+
+  it('defaultExec resolves cantonctl through PATH', async () => {
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cantonctl-stub-'))
+    const cantonctlPath = path.join(tempDir, 'cantonctl')
+    const originalPath = process.env.PATH
+
+    await fs.writeFile(
+      cantonctlPath,
+      [
+        '#!/bin/sh',
+        'if [ "$1" = "--version" ]; then',
+        '  echo "cantonctl 0.1.0"',
+        '  exit 0',
+        'fi',
+        'if [ "$1" = "dev" ] && [ "$2" = "start" ]; then',
+        '  exit 0',
+        'fi',
+        'if [ "$1" = "auth" ] && [ "$2" = "token" ]; then',
+        '  echo "stub-jwt-token"',
+        '  exit 0',
+        'fi',
+        'if [ "$1" = "dev" ] && [ "$2" = "stop" ]; then',
+        '  exit 0',
+        'fi',
+        'echo "unexpected cantonctl invocation" >&2',
+        'exit 1',
+        '',
+      ].join('\n'),
+      { mode: 0o755 },
+    )
+    await fs.chmod(cantonctlPath, 0o755)
+
+    process.env.PATH = `${tempDir}${path.delimiter}${originalPath ?? ''}`
+
+    try {
+      await expect(defaultExec('cantonctl --version')).resolves.toMatchObject({
+        stdout: 'cantonctl 0.1.0\n',
+      })
+    } finally {
+      process.env.PATH = originalPath
+      await fs.rm(tempDir, { recursive: true, force: true })
+    }
   })
 })

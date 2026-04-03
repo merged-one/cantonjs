@@ -14,6 +14,18 @@ afterEach(() => {
 })
 
 describe('decodeDalf', () => {
+  it('reuses the cached protobuf root across repeated decodes', async () => {
+    const first = await buildDemoDalf({ packageId: 'pkg-cache-a' })
+    const second = await buildDemoDalf({ packageId: 'pkg-cache-b' })
+
+    await expect(decodeDalf(first, 'pkg-cache-a')).resolves.toMatchObject({
+      packageId: 'pkg-cache-a',
+    })
+    await expect(decodeDalf(second, 'pkg-cache-b')).resolves.toMatchObject({
+      packageId: 'pkg-cache-b',
+    })
+  })
+
   it('decodes interned package metadata, modules, data types, and templates', async () => {
     const dalfBytes = await buildDemoDalf({
       packageId: 'pkg-123',
@@ -374,5 +386,199 @@ describe('decodeDalf', () => {
         choices: [],
       },
     ])
+  })
+
+  it('decodes sparse intern tables, empty collections, and fallback type shapes', async () => {
+    const dalfBytes = await buildCustomDalf(
+      {
+        modules: [
+          {
+            name_interned_dname: 2,
+            data_types: [
+              {
+                name_interned_dname: 1,
+                params: [{ var_interned_str: 99 }],
+                record: {
+                  fields: [
+                    {
+                      field_interned_str: 0,
+                      type: { var: { var_interned_str: 0 } },
+                    },
+                    {
+                      field_interned_str: 0,
+                      type: { interned: 1 },
+                    },
+                    {
+                      field_interned_str: 0,
+                      type: { prim: {} },
+                    },
+                    {
+                      field_interned_str: 0,
+                      type: {},
+                    },
+                    {
+                      field_interned_str: 0,
+                      type: {
+                        con: {
+                          tycon: {
+                            name_interned_dname: 0,
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                name_interned_dname: 0,
+                variant: {},
+              },
+              {
+                name_interned_dname: 0,
+                enum: {},
+              },
+            ],
+            templates: [
+              {
+                tycon_interned_dname: 1,
+              },
+              {
+                tycon_interned_dname: 0,
+                choices: [
+                  {
+                    name_interned_str: 99,
+                    arg_binder: {
+                      type: {
+                        con: {
+                          tycon: {
+                            module_ref: { module_name_interned_dname: 1 },
+                            name_interned_dname: 0,
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            name_interned_dname: 99,
+          },
+        ],
+        interned_strings: ['LegacyRaw'],
+        interned_dotted_names: [
+          { segments_interned_str: [0] },
+          {},
+          { segments_interned_str: [99] },
+        ],
+      },
+      { packageId: 'pkg-raw' },
+    )
+
+    const pkg = await decodeDalf(dalfBytes, 'pkg-raw')
+
+    expect(pkg.modules[0]).toEqual({
+      name: '',
+      dataTypes: [
+        {
+          name: '',
+          typeParams: [''],
+          definition: {
+            kind: 'record',
+            fields: [
+              {
+                name: 'LegacyRaw',
+                type: {
+                  kind: 'var',
+                  name: 'LegacyRaw',
+                },
+              },
+              {
+                name: 'LegacyRaw',
+                type: {
+                  kind: 'prim',
+                  prim: 'ANY',
+                  args: [],
+                },
+              },
+              {
+                name: 'LegacyRaw',
+                type: {
+                  kind: 'prim',
+                  prim: 'UNIT',
+                  args: [],
+                },
+              },
+              {
+                name: 'LegacyRaw',
+                type: {
+                  kind: 'prim',
+                  prim: 'ANY',
+                  args: [],
+                },
+              },
+              {
+                name: 'LegacyRaw',
+                type: {
+                  kind: 'con',
+                  module: '',
+                  name: 'LegacyRaw',
+                  args: [],
+                },
+              },
+            ],
+          },
+        },
+        {
+          name: 'LegacyRaw',
+          typeParams: [],
+          definition: {
+            kind: 'variant',
+            constructors: [],
+          },
+        },
+        {
+          name: 'LegacyRaw',
+          typeParams: [],
+          definition: {
+            kind: 'enum',
+            constructors: [],
+          },
+        },
+      ],
+      templates: [
+        {
+          name: '',
+          choices: [],
+        },
+        {
+          name: 'LegacyRaw',
+          choices: [
+            {
+              name: '',
+              consuming: false,
+              argType: {
+                kind: 'con',
+                module: '',
+                name: 'LegacyRaw',
+                args: [],
+              },
+              returnType: {
+                kind: 'prim',
+                prim: 'UNIT',
+                args: [],
+              },
+            },
+          ],
+        },
+      ],
+    })
+
+    expect(pkg.modules[1]).toEqual({
+      name: '',
+      dataTypes: [],
+      templates: [],
+    })
   })
 })

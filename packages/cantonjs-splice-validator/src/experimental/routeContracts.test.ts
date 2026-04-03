@@ -133,6 +133,30 @@ describe('experimental route contracts', () => {
     expect(fetchFn).toHaveBeenCalledTimes(EXPERIMENTAL_SCAN_PROXY_OPERATIONS.length)
   })
 
+  it('validates experimental scan-proxy path params and serializes repeated query params', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(jsonResponse({}))
+    const client = createExperimentalScanProxyClient({
+      url: 'https://validator.example.com/api/validator',
+      fetchFn,
+    })
+
+    await expect(
+      client.lookupFeaturedAppRight({} as never),
+    ).rejects.toThrow('Missing required experimental Scan Proxy path parameter: provider_party_id')
+
+    await client.lookupTransferCommandStatus(
+      {
+        sender: ['Alice::validator', 'Bob::validator'],
+        nonce: 7,
+        ignored: null,
+      } as never,
+    )
+
+    expect(fetchFn.mock.calls[0]?.[0]).toBe(
+      'https://validator.example.com/api/validator/v0/scan-proxy/transfer-command/status?sender=Alice%3A%3Avalidator&sender=Bob%3A%3Avalidator&nonce=7',
+    )
+  })
+
   it('routes every validator-internal operation through the expected endpoint', async () => {
     const routeCases: Record<string, ValidatorCase> = {
       ready: {
@@ -354,5 +378,34 @@ describe('experimental route contracts', () => {
     }
 
     expect(fetchFn).toHaveBeenCalledTimes(VALIDATOR_INTERNAL_OPERATIONS.length)
+  })
+
+  it('validates experimental validator path params and serializes repeated query params', async () => {
+    const fetchFn = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({})))
+    const client = createExperimentalValidatorInternalClient({
+      url: 'https://validator.example.com/api/validator',
+      fetchFn,
+    })
+
+    await expect(
+      client.lookupTransferPreapprovalByParty({} as never),
+    ).rejects.toThrow('Missing required experimental validator path parameter: receiver-party')
+
+    await client.listExternalPartySetupProposals({ signal: undefined })
+
+    expect(fetchFn.mock.calls[0]?.[0]).toBe(
+      'https://validator.example.com/api/validator/v0/admin/external-party/setup-proposal',
+    )
+
+    await client.getValidatorDomainDataSnapshot(
+      {
+        timestamp: ['2026-04-02T00:00:00Z', '2026-04-03T00:00:00Z'],
+        ignored: null,
+      } as never,
+    )
+
+    expect(fetchFn.mock.calls[1]?.[0]).toBe(
+      'https://validator.example.com/api/validator/v0/admin/domain/data-snapshot?timestamp=2026-04-02T00%3A00%3A00Z&timestamp=2026-04-03T00%3A00%3A00Z',
+    )
   })
 })

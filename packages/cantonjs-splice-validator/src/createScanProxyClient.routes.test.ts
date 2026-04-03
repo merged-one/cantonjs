@@ -117,4 +117,29 @@ describe('createScanProxyClient route contracts', () => {
 
     expect(fetchFn).toHaveBeenCalledTimes(GA_SCAN_PROXY_OPERATIONS.length)
   })
+
+  it('throws for missing path params and serializes array query params', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(jsonResponse({}))
+    const client = createScanProxyClient({
+      url: 'https://validator.example.com/api/validator',
+      fetchFn,
+    })
+
+    await expect(
+      client.lookupAnsEntryByParty({} as never),
+    ).rejects.toThrow('Missing required Scan Proxy path parameter: party')
+
+    await client.listAnsEntries(
+      {
+        page_size: 25,
+        provider: ['alice', 'bob'],
+        skipped: undefined,
+        ignored: null,
+      } as never,
+    )
+
+    expect(fetchFn.mock.calls[0]?.[0]).toBe(
+      'https://validator.example.com/api/validator/v0/scan-proxy/ans-entries?page_size=25&provider=alice&provider=bob',
+    )
+  })
 })
