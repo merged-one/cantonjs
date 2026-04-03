@@ -187,10 +187,22 @@ jobs:
 
       - name: Publish GA Splice packages
         run: |
-          npm --prefix packages/cantonjs-splice-interfaces publish --access public --provenance
-          npm --prefix packages/cantonjs-splice-scan publish --access public --provenance
-          npm --prefix packages/cantonjs-splice-validator publish --access public --provenance
-          npm --prefix packages/cantonjs-splice-token-standard publish --access public --provenance
+          (
+            cd packages/cantonjs-splice-interfaces
+            npm publish --access public --provenance
+          )
+          (
+            cd packages/cantonjs-splice-scan
+            npm publish --access public --provenance
+          )
+          (
+            cd packages/cantonjs-splice-validator
+            npm publish --access public --provenance
+          )
+          (
+            cd packages/cantonjs-splice-token-standard
+            npm publish --access public --provenance
+          )
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -198,7 +210,11 @@ jobs:
         run: npm --prefix packages/cantonjs-wallet-adapters run build
 
       - name: Publish experimental wallet adapters
-        run: npm --prefix packages/cantonjs-wallet-adapters publish --access public --provenance
+        run: |
+          (
+            cd packages/cantonjs-wallet-adapters
+            npm publish --access public --provenance
+          )
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
