@@ -108,4 +108,4 @@ Core packages define the main product story. Optional convenience packages make 
 
 ## Naming Note
 
-Use `CIP-0103` in prose and docs. Do not spell it as `CIP-103`.
+Use `CIP-0103` in prose and docs. Do not use the older missing-zero spelling.

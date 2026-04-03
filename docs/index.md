@@ -26,3 +26,5 @@ features:
   - title: Explicit Wallet Boundaries
     details: CIP-0103 support lives in experimental edge adapters while the official wallet stack continues to own connection and provider responsibilities.
 ---
+
+Start with [Scope & Boundaries](/positioning), [Target Users](/guide/target-users), [Package Architecture](/guide/package-architecture), and [Ecosystem Fit](/guide/ecosystem-fit).

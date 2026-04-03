@@ -39,6 +39,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Verify positioning
+        if: matrix.node-version == 22
+        run: npm run verify:positioning
+
+      - name: Build docs
+        if: matrix.node-version == 22
+        run: npm run docs:build
+
       - name: Test
         run: npm test
 
