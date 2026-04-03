@@ -1,11 +1,19 @@
-# React dApp
+# Participant-Private React App
 
-This example demonstrates a Splice-style React application that keeps public Scan reads separate from participant-private ledger reads.
+| Example profile | |
+| --- | --- |
+| Audience | Participant-private React app teams |
+| Data scope | Participant-private |
+| Depends on | Participant Ledger API V2 plus party auth |
+
+This example shows a React app that reads and writes participant-private ledger state through `cantonjs-react`.
+
+It does not use public Scan, and it does not own wallet discovery or connection UX. If your app needs public network-visible data, keep it separate and see [Public Scan Dashboard](/examples/public-scan-dashboard). If your app is wallet-connected, start with [Wallet Interop With dApp SDK](/examples/wallet-interop-with-dapp-sdk).
 
 ## Setup
 
 ```bash
-npm install cantonjs cantonjs-react cantonjs-splice-scan react @tanstack/react-query
+npm install cantonjs cantonjs-react react @tanstack/react-query
 ```
 
 ## Network Setup
@@ -13,14 +21,10 @@ npm install cantonjs cantonjs-react cantonjs-splice-scan react @tanstack/react-q
 ```tsx
 // src/network.ts
 import { createLedgerClient, jsonApi, testNet, withChainOverrides } from 'cantonjs'
-import { createScanClient } from 'cantonjs-splice-scan'
 
 const chain = withChainOverrides(testNet, {
   participant: {
     jsonApiUrl: import.meta.env.VITE_CANTON_JSON_API_URL,
-  },
-  scan: {
-    url: import.meta.env.VITE_SPLICE_SCAN_URL,
   },
 })
 
@@ -36,10 +40,6 @@ export const ledgerClient = createLedgerClient({
   }),
   actAs: import.meta.env.VITE_CANTON_PARTY,
 })
-
-export const scanClient = chain.scan.url
-  ? createScanClient({ url: chain.scan.url })
-  : undefined
 ```
 
 ## App Entry Point
@@ -63,32 +63,19 @@ export function App() {
 
 ```tsx
 // src/AssetDashboard.tsx
-import { useQuery } from '@tanstack/react-query'
 import { useContracts, useParty } from 'cantonjs-react'
 import { CreateAssetForm } from './CreateAssetForm'
-import { scanClient } from './network'
 
 export function AssetDashboard() {
   const party = useParty()
   const { data: assets, isLoading, error } = useContracts({
     templateId: '#my-pkg:Main:Asset',
   })
-  const { data: dsoInfo } = useQuery({
-    queryKey: ['scan', 'dso'],
-    queryFn: async () => {
-      if (!scanClient) {
-        throw new Error('Set VITE_SPLICE_SCAN_URL to enable public Scan queries.')
-      }
-      return await scanClient.getDsoInfo()
-    },
-    enabled: scanClient !== undefined,
-  })
 
   return (
     <div>
       <h1>Asset Dashboard</h1>
       <p>Acting as: {party}</p>
-      <p>Public DSO info: {JSON.stringify(dsoInfo ?? null)}</p>
 
       <CreateAssetForm />
 
@@ -165,10 +152,10 @@ export function CreateAssetForm() {
 
 ## Public Vs Private Data
 
-This split is the important part:
+This page is intentionally participant-private only:
 
-- `scanClient.getDsoInfo()` reads public network state from Scan
 - `useContracts()` reads party-visible contracts from the participant ledger API
 - `useCreateContract()` writes through the participant ledger API
+- `CantonProvider` shares the participant-scoped client across the app
 
-That separation keeps React examples aligned with the package boundaries in this repo.
+If you need public network-visible data such as DSO info, public updates, or public ANS lookups, query it separately with `cantonjs-splice-scan` in [Public Scan Dashboard](/examples/public-scan-dashboard).

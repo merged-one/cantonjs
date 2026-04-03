@@ -1,69 +1,36 @@
-# Streaming Updates
+# Participant Stream Worker
 
-This example demonstrates real-time contract subscriptions using cantonjs streaming.
+| Example profile | |
+| --- | --- |
+| Audience | Integration and data teams with participant access |
+| Data scope | Participant-private |
+| Depends on | Participant Ledger API V2 streams |
 
-## Basic Update Stream
+This example shows how to build a long-running worker that projects participant-private ledger events into another system.
 
-Subscribe to all transaction updates:
+Use this when your team owns participant access and needs streaming, replay, and completion monitoring. If your use case is public network history rather than participant-private events, use [Public Scan Dashboard](/examples/public-scan-dashboard) instead.
+
+## Create A Shared Transport
 
 ```typescript
-import { createLedgerClient, jsonApi, streamUpdates } from 'cantonjs'
+import { jsonApi } from 'cantonjs'
 
 const transport = jsonApi({
-  url: 'http://localhost:7575',
-  token: jwt,
+  url: process.env.CANTON_JSON_API_URL ?? 'http://localhost:7575',
+  token: process.env.CANTON_JWT ?? 'your-jwt-token',
 })
-
-const controller = new AbortController()
-
-// Stream from the beginning
-const stream = streamUpdates(transport, {
-  beginExclusive: '0',
-  signal: controller.signal,
-})
-
-for await (const update of stream) {
-  console.log(`Transaction ${update.updateId} at offset ${update.offset}`)
-
-  for (const event of update.events) {
-    if ('Created' in event) {
-      console.log(`  + Created ${event.Created.templateId}`)
-      console.log(`    Contract: ${event.Created.contractId}`)
-    }
-    if ('Archived' in event) {
-      console.log(`  - Archived ${event.Archived.contractId}`)
-    }
-  }
-}
 ```
 
-## Filtered Stream
-
-Subscribe to a specific template and party:
-
-```typescript
-const stream = streamUpdates(transport, {
-  beginExclusive: '0',
-  filter: {
-    party: 'Alice::1234',
-    templateIds: ['#my-pkg:Main:Asset'],
-  },
-  signal: controller.signal,
-})
-
-for await (const update of stream) {
-  // Only receives Asset template events visible to Alice
-}
-```
-
-## Active Contract Snapshot
-
-Get all currently active contracts:
+## Load A Snapshot First
 
 ```typescript
 import { streamContracts } from 'cantonjs'
 
-const stream = streamContracts(transport, {
+const controller = new AbortController()
+const contracts = new Map<string, unknown>()
+
+let latestOffset = '0'
+const snapshot = streamContracts(transport, {
   filter: {
     party: 'Alice::1234',
     templateIds: ['#my-pkg:Main:Asset'],
@@ -71,19 +38,44 @@ const stream = streamContracts(transport, {
   signal: controller.signal,
 })
 
-const allContracts = []
-
-for await (const batch of stream) {
-  allContracts.push(...batch.activeContracts)
-  console.log(`Received batch of ${batch.activeContracts.length} contracts`)
+for await (const batch of snapshot) {
+  for (const contract of batch.activeContracts) {
+    contracts.set(contract.createdEvent.contractId, contract.createdEvent.createArgument)
+  }
+  latestOffset = batch.offset
 }
-
-console.log(`Total active contracts: ${allContracts.length}`)
 ```
 
-## Command Completions
+## Follow Live Updates
 
-Monitor command completion status:
+```typescript
+import { streamUpdates } from 'cantonjs'
+
+const live = streamUpdates(transport, {
+  beginExclusive: latestOffset,
+  filter: {
+    party: 'Alice::1234',
+    templateIds: ['#my-pkg:Main:Asset'],
+  },
+  signal: controller.signal,
+})
+
+for await (const update of live) {
+  for (const event of update.events) {
+    if ('Created' in event) {
+      contracts.set(event.Created.contractId, event.Created.createArgument)
+    }
+    if ('Archived' in event) {
+      contracts.delete(event.Archived.contractId)
+    }
+  }
+
+  console.log('projected asset count', contracts.size)
+  console.log('last processed update', update.updateId)
+}
+```
+
+## Monitor Command Completions Separately
 
 ```typescript
 import { streamCompletions } from 'cantonjs'
@@ -96,88 +88,30 @@ const completions = streamCompletions(transport, {
 
 for await (const completion of completions) {
   if (completion.status === 'SUCCEEDED') {
-    console.log(`Command ${completion.commandId} succeeded`)
+    console.log(`command ${completion.commandId} succeeded`)
   } else {
-    console.log(`Command ${completion.commandId} failed: ${completion.status}`)
+    console.log(`command ${completion.commandId} failed: ${completion.status}`)
   }
 }
 ```
 
-## Live Dashboard Pattern
-
-Combine initial snapshot with live updates for a dashboard:
+## Shut Down Cleanly
 
 ```typescript
-import { streamContracts, streamUpdates } from 'cantonjs'
+process.on('SIGINT', () => controller.abort())
+process.on('SIGTERM', () => controller.abort())
+```
 
-const controller = new AbortController()
-let contracts: Map<string, ActiveContract> = new Map()
+## Tune Reconnect Behavior
 
-// Step 1: Load initial state
-let latestOffset = '0'
-const snapshot = streamContracts(transport, {
-  filter: { party: 'Alice::1234', templateIds: ['#my-pkg:Main:Asset'] },
-  signal: controller.signal,
-})
-
-for await (const batch of snapshot) {
-  for (const contract of batch.activeContracts) {
-    contracts.set(contract.createdEvent.contractId, contract)
-  }
-  latestOffset = batch.offset
-}
-
-console.log(`Loaded ${contracts.size} contracts, now streaming live...`)
-
-// Step 2: Subscribe to live updates from the snapshot offset
+```typescript
 const live = streamUpdates(transport, {
   beginExclusive: latestOffset,
-  filter: { party: 'Alice::1234', templateIds: ['#my-pkg:Main:Asset'] },
-  signal: controller.signal,
-})
-
-for await (const update of live) {
-  for (const event of update.events) {
-    if ('Created' in event) {
-      contracts.set(event.Created.contractId, {
-        createdEvent: event.Created,
-        synchronizerId: '',
-        reassignmentCounter: 0,
-      })
-    }
-    if ('Archived' in event) {
-      contracts.delete(event.Archived.contractId)
-    }
-  }
-
-  console.log(`Active contracts: ${contracts.size}`)
-}
-```
-
-## Graceful Shutdown
-
-```typescript
-// Handle process shutdown
-process.on('SIGINT', () => {
-  console.log('Shutting down...')
-  controller.abort()
-})
-
-process.on('SIGTERM', () => {
-  controller.abort()
-})
-```
-
-## Custom Reconnect Config
-
-```typescript
-const stream = streamUpdates(transport, {
-  beginExclusive: '0',
   reconnect: {
-    initialDelayMs: 500,     // Start with 500ms delay
-    maxDelayMs: 60_000,      // Cap at 60 seconds
-    factor: 3,               // Triple the delay each attempt
-    jitter: 0.1,             // +/-10% randomization
+    initialDelayMs: 500,
+    maxDelayMs: 60_000,
+    factor: 3,
+    jitter: 0.1,
   },
   signal: controller.signal,
 })
