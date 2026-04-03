@@ -347,16 +347,15 @@ git clone https://github.com/merged-one/cantonjs.git
 cd cantonjs
 npm install
 
-npm test              # Run tests (192 core tests)
+npm test              # Run root tests
+npm run test:coverage # Enforced root coverage gate
+npm run test:coverage:all # Root + package coverage gates
+npm run verify:ci:pr  # Full PR validation suite
 npm run typecheck     # Type-check
 npm run lint          # Lint
 npm run build         # Build ESM + CJS + types
 npm run size          # Bundle size audit
 npm run docs:dev      # Start docs dev server
-
-# Packages
-cd packages/cantonjs-codegen && npm test   # 29 codegen tests
-cd packages/cantonjs-react && npm test     # 16 React tests
 ```
 
 ## Contributing

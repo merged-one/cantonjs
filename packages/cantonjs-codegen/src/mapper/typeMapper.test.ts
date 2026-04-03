@@ -82,6 +82,20 @@ describe('mapType', () => {
       ]}
       expect(mapType(type)).toBe('string /* ContractId<Asset> */')
     })
+
+    it('falls back to unknown container element types when args are missing', () => {
+      expect(mapType({ kind: 'prim', prim: 'OPTIONAL', args: [] })).toBe('unknown | null')
+      expect(mapType({ kind: 'prim', prim: 'LIST', args: [] })).toBe('readonly unknown[]')
+      expect(mapType({ kind: 'prim', prim: 'TEXTMAP', args: [] })).toBe(
+        'Readonly<Record<string, unknown>>',
+      )
+      expect(mapType({ kind: 'prim', prim: 'GENMAP', args: [] })).toBe(
+        'ReadonlyArray<readonly [unknown, unknown]>',
+      )
+      expect(mapType({ kind: 'prim', prim: 'CONTRACT_ID', args: [] })).toBe(
+        'string /* ContractId<unknown> */',
+      )
+    })
   })
 
   describe('type constructors', () => {
@@ -116,6 +130,13 @@ describe('mapType', () => {
     it('maps nat to number', () => {
       const type: DamlType = { kind: 'nat', value: 10 }
       expect(mapType(type)).toBe('number')
+    })
+  })
+
+  describe('fallback primitive mappings', () => {
+    it('maps unsupported runtime primitives to unknown', () => {
+      expect(mapType({ kind: 'prim', prim: 'ANY', args: [] })).toBe('unknown')
+      expect(mapType({ kind: 'prim', prim: 'ARROW', args: [] })).toBe('unknown')
     })
   })
 })

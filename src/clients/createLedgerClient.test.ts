@@ -125,6 +125,32 @@ describe('createLedgerClient', () => {
       expect(requestBody.commands.commands[0].ExerciseCommand.choice).toBe('Transfer')
       expect(requestBody.commands.commands[0].ExerciseCommand.contractId).toBe('contract-1')
     })
+
+    it('forwards AbortSignal when exercising a choice', async () => {
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-2',
+          events: [],
+          offset: 2,
+          synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:01Z',
+          recordTime: '2026-04-01T00:00:01Z',
+        },
+      })
+      const signal = new AbortController().signal
+
+      const client = createLedgerClient({ transport, actAs: alice })
+      await client.exerciseChoice(
+        templateId,
+        'contract-1',
+        'Transfer',
+        { newOwner: 'Bob' },
+        { signal },
+      )
+
+      const request = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(request.signal).toBe(signal)
+    })
   })
 
   describe('queryContracts', () => {
@@ -212,6 +238,37 @@ describe('createLedgerClient', () => {
         requestBody.eventFormat.filtersByParty['Alice::1234'].cumulative[0].identifierFilter
       expect(filter.TemplateFilter.value.templateId).toBe(templateId)
     })
+
+    it('allows callers to override the event format, offset, and signal', async () => {
+      const transport = mockTransport([])
+      const signal = new AbortController().signal
+      const eventFormat = {
+        filtersByParty: {
+          'Alice::1234': {
+            cumulative: [
+              {
+                identifierFilter: {
+                  WildcardFilter: { value: { includeCreatedEventBlob: true } },
+                },
+              },
+            ],
+          },
+        },
+        verbose: false,
+      } as const
+
+      const client = createLedgerClient({ transport, actAs: alice })
+      await client.queryContracts(templateId, {
+        activeAtOffset: 42,
+        eventFormat,
+        signal,
+      })
+
+      const request = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(request.signal).toBe(signal)
+      expect(request.body.activeAtOffset).toBe(42)
+      expect(request.body.eventFormat).toEqual(eventFormat)
+    })
   })
 
   describe('getLedgerEnd', () => {
@@ -286,6 +343,74 @@ describe('createLedgerClient', () => {
       const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
       expect(body.commands.commandId).toBe('my-cmd-id')
       expect(body.commands.workflowId).toBe('my-workflow')
+    })
+
+    it('falls back to crypto.getRandomValues when randomUUID is unavailable', async () => {
+      const createdEvent = {
+        offset: 1, nodeId: 0, contractId: 'c-1', templateId,
+        packageName: 'my-pkg', representativePackageId: 'abc',
+        createArgument: {}, signatories: ['Alice::1234'],
+        witnessParties: ['Alice::1234'], acsDelta: true,
+        createdAt: '2026-04-01T00:00:00Z',
+      }
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-1', events: [{ CreatedEvent: createdEvent }],
+          offset: 1, synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:00Z', recordTime: '2026-04-01T00:00:00Z',
+        },
+      })
+      const getRandomValues = vi.fn((bytes: Uint8Array) => {
+        for (let i = 0; i < bytes.length; i++) {
+          bytes[i] = i + 1
+        }
+        return bytes
+      })
+
+      vi.stubGlobal('crypto', { getRandomValues })
+
+      try {
+        const client = createLedgerClient({ transport, actAs: alice })
+        await client.createContract(templateId, { value: 1 })
+
+        const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
+        expect(getRandomValues).toHaveBeenCalledOnce()
+        expect(body.commands.commandId).toBe('01020304-0506-4708-890a-0b0c0d0e0f10')
+      } finally {
+        vi.unstubAllGlobals()
+      }
+    })
+
+    it('falls back to Math.random when crypto randomness is unavailable', async () => {
+      const createdEvent = {
+        offset: 1, nodeId: 0, contractId: 'c-1', templateId,
+        packageName: 'my-pkg', representativePackageId: 'abc',
+        createArgument: {}, signatories: ['Alice::1234'],
+        witnessParties: ['Alice::1234'], acsDelta: true,
+        createdAt: '2026-04-01T00:00:00Z',
+      }
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-1', events: [{ CreatedEvent: createdEvent }],
+          offset: 1, synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:00Z', recordTime: '2026-04-01T00:00:00Z',
+        },
+      })
+      const random = vi.spyOn(Math, 'random').mockReturnValue(0.123456789)
+
+      vi.stubGlobal('crypto', undefined)
+
+      try {
+        const client = createLedgerClient({ transport, actAs: alice })
+        await client.createContract(templateId, { value: 1 })
+
+        const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
+        expect(body.commands.commandId).toBe('1f1f1f1f-1f1f-4f1f-9f1f-1f1f1f1f1f1f')
+        expect(random).toHaveBeenCalledTimes(16)
+      } finally {
+        random.mockRestore()
+        vi.unstubAllGlobals()
+      }
     })
   })
 
@@ -384,6 +509,28 @@ describe('createLedgerClient', () => {
       const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
       expect(req.body.reassignmentCommand.AssignCommand.unassignId).toBe('unassign-1')
     })
+
+    it('forwards command options when submitting reassignments', async () => {
+      const transport = mockTransport({
+        reassignment: { updateId: 'r-3', offset: 7, events: [], recordTime: '2026-04-01T00:00:00Z' },
+      })
+      const signal = new AbortController().signal
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      await client.submitReassignment(
+        { AssignCommand: { unassignId: 'unassign-2', source: 'sync-1', target: 'sync-2' } },
+        {
+          commandId: 'reassign-cmd',
+          workflowId: 'workflow-1',
+          signal,
+        },
+      )
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.signal).toBe(signal)
+      expect(req.body.commandId).toBe('reassign-cmd')
+      expect(req.body.workflowId).toBe('workflow-1')
+    })
   })
 
   describe('prepareSubmission', () => {
@@ -408,6 +555,23 @@ describe('createLedgerClient', () => {
         { CreateCommand: { templateId, createArguments: { owner: 'Alice', value: 100 } } },
       ])
       expect(req.body.actAs).toEqual(['Alice::1234'])
+    })
+
+    it('includes readAs parties and forwards signals for prepared submissions', async () => {
+      const bob = 'Bob::5678' as Party
+      const transport = mockTransport({
+        preparedTransaction: 'prepared',
+        preparedTransactionHash: 'hash',
+        hashingSchemeVersion: 'V2',
+      })
+      const signal = new AbortController().signal
+      const client = createLedgerClient({ transport, actAs: alice, readAs: [bob] })
+
+      await client.prepareSubmission(templateId, { owner: 'Alice' }, { signal })
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.signal).toBe(signal)
+      expect(req.body.readAs).toEqual(['Bob::5678'])
     })
   })
 
@@ -440,6 +604,39 @@ describe('createLedgerClient', () => {
       expect(req.body.preparedTransaction).toBe('base64-prepared-tx')
       expect(req.body.partySignatures).toHaveLength(1)
       expect(req.body.partySignatures[0].party).toBe('Alice::1234')
+    })
+
+    it('forwards submission options when executing prepared transactions', async () => {
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-2',
+          events: [],
+          offset: 11,
+          synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:00Z',
+          recordTime: '2026-04-01T00:00:00Z',
+        },
+      })
+      const signal = new AbortController().signal
+      const client = createLedgerClient({ transport, actAs: alice })
+
+      await client.executeSubmission(
+        'prepared',
+        [
+          {
+            party: 'Alice::1234',
+            signatures: [{ format: 'RAW' as const, signature: 'sig-data', signedBy: 'key-1' }],
+          },
+        ],
+        {
+          submissionId: 'submission-1',
+          signal,
+        },
+      )
+
+      const req = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(req.signal).toBe(signal)
+      expect(req.body.submissionId).toBe('submission-1')
     })
   })
 

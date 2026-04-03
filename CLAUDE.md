@@ -6,18 +6,13 @@ TypeScript interface for the Canton Network Ledger API V2.
 
 ```bash
 npm test              # Run all tests (core package)
+npm run test:coverage # Run enforced root coverage gate
+npm run test:coverage:all  # Run coverage gates for root and all packages
+npm run verify:ci:pr  # Run the full PR validation suite locally
 npm run build         # Build ESM + CJS + types
 npm run typecheck     # Type-check without emitting
 npm run lint          # Lint source files
 npm run size          # Check bundle size limits
-
-# Codegen package (packages/cantonjs-codegen/)
-cd packages/cantonjs-codegen && npx vitest run   # Run codegen tests
-cd packages/cantonjs-codegen && npx tsc --noEmit  # Typecheck codegen
-
-# React package (packages/cantonjs-react/)
-cd packages/cantonjs-react && npx vitest run      # Run React hook tests
-cd packages/cantonjs-react && npx tsc --noEmit    # Typecheck React package
 ```
 
 ## Architecture Rules

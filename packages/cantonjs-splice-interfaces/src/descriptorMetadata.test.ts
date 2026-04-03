@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  AllocationRequestV1,
   AllocationFactoryV1,
   AllocationInstructionV1,
+  AllocationV1,
   AnyContractV1,
+  FeaturedAppActivityMarkerV2,
   FeaturedAppRightV2,
   HoldingV1,
+  TransferFactoryV1,
   TransferInstructionV1,
   WalletUserProxy,
 } from './index.js'
@@ -85,5 +89,62 @@ describe('stable descriptor metadata', () => {
     expect(Object.keys(AnyContractV1.choices)).toEqual([])
 
     expect(AllocationInstructionV1.packageId).toContain('splice-api-token-allocation-instruction-v1-1.0.0-')
+  })
+
+  it('keeps every maintained descriptor wrapper aligned with stable metadata', () => {
+    const descriptors = [
+      [HoldingV1, 'interface', '#splice-api-token-holding-v1:Splice.Api.Token.HoldingV1:Holding', []],
+      [AnyContractV1, 'interface', '#splice-api-token-metadata-v1:Splice.Api.Token.MetadataV1:AnyContract', []],
+      [TransferInstructionV1, 'interface', '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferInstruction', [
+        'TransferInstruction_Accept',
+        'TransferInstruction_Reject',
+        'TransferInstruction_Withdraw',
+        'TransferInstruction_Update',
+      ]],
+      [TransferFactoryV1, 'interface', '#splice-api-token-transfer-instruction-v1:Splice.Api.Token.TransferInstructionV1:TransferFactory', [
+        'TransferFactory_Transfer',
+        'TransferFactory_PublicFetch',
+      ]],
+      [AllocationV1, 'interface', '#splice-api-token-allocation-v1:Splice.Api.Token.AllocationV1:Allocation', [
+        'Allocation_ExecuteTransfer',
+        'Allocation_Cancel',
+        'Allocation_Withdraw',
+      ]],
+      [AllocationRequestV1, 'interface', '#splice-api-token-allocation-request-v1:Splice.Api.Token.AllocationRequestV1:AllocationRequest', [
+        'AllocationRequest_Reject',
+        'AllocationRequest_Withdraw',
+      ]],
+      [AllocationInstructionV1, 'interface', '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationInstruction', [
+        'AllocationInstruction_Withdraw',
+        'AllocationInstruction_Update',
+      ]],
+      [AllocationFactoryV1, 'interface', '#splice-api-token-allocation-instruction-v1:Splice.Api.Token.AllocationInstructionV1:AllocationFactory', [
+        'AllocationFactory_Allocate',
+        'AllocationFactory_PublicFetch',
+      ]],
+      [FeaturedAppRightV2, 'interface', '#splice-api-featured-app-v2:Splice.Api.FeaturedAppRightV2:FeaturedAppRight', [
+        'FeaturedAppRight_CreateActivityMarker',
+      ]],
+      [FeaturedAppActivityMarkerV2, 'interface', '#splice-api-featured-app-v2:Splice.Api.FeaturedAppRightV2:FeaturedAppActivityMarker', []],
+      [WalletUserProxy, 'template', WalletUserProxy.templateId, [
+        'WalletUserProxy_PublicFetch',
+        'WalletUserProxy_TransferFactory_Transfer',
+        'WalletUserProxy_TransferInstruction_Accept',
+        'WalletUserProxy_TransferInstruction_Reject',
+        'WalletUserProxy_TransferInstruction_Withdraw',
+        'WalletUserProxy_AllocationFactory_Allocate',
+        'WalletUserProxy_Allocation_Withdraw',
+        'WalletUserProxy_BatchTransfer',
+      ]],
+    ] as const
+
+    for (const [descriptor, kind, id, choices] of descriptors) {
+      expect(descriptor.kind).toBe(kind)
+      expect('interfaceId' in descriptor ? descriptor.interfaceId : descriptor.templateId).toBe(id)
+      expect(Object.keys(descriptor.choices)).toEqual(choices)
+      expect(descriptor.packageName).not.toHaveLength(0)
+      expect(descriptor.packageVersion).not.toHaveLength(0)
+      expect(descriptor.packageId).toContain(`${descriptor.packageName}-${descriptor.packageVersion}-`)
+    }
   })
 })

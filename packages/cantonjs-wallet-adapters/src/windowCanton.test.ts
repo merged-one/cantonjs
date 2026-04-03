@@ -33,4 +33,14 @@ describe('window canton helpers', () => {
       'No CIP-0103 provider found on window.canton. Use the official dApp SDK or inject a compatible provider first.',
     )
   })
+
+  it('returns the injected provider when a provider is required', () => {
+    const provider = createProvider()
+
+    expect(
+      requireWindowCantonProvider({
+        canton: provider,
+      }),
+    ).toBe(provider)
+  })
 })

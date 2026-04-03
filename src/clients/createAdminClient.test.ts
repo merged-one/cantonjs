@@ -239,6 +239,13 @@ describe('createAdminClient', () => {
       const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
       expect(body.rights).toEqual(rights)
     })
+
+    it('returns an empty array when the server omits newly granted rights', async () => {
+      const transport = mockTransport({})
+      const client = createAdminClient({ transport })
+
+      await expect(client.grantRights('alice-user', [])).resolves.toEqual([])
+    })
   })
 
   describe('revokeRights', () => {
@@ -256,6 +263,13 @@ describe('createAdminClient', () => {
 
       const body = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
       expect(body.revoke).toBe(true)
+    })
+
+    it('returns an empty array when the server omits newly revoked rights', async () => {
+      const transport = mockTransport({})
+      const client = createAdminClient({ transport })
+
+      await expect(client.revokeRights('alice-user', [])).resolves.toEqual([])
     })
   })
 

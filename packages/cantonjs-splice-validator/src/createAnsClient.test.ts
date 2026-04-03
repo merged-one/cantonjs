@@ -28,23 +28,27 @@ describe('createAnsClient', () => {
       token: 'validator-jwt',
       fetchFn,
     })
+    const controller = new AbortController()
 
     const response = await client.createAnsEntry({
       name: 'app.unverified.ans',
       url: 'https://app.example.com',
       description: 'Validator app',
-    })
+    }, { signal: controller.signal })
 
     expect(response.subscriptionRequestCid).toBe('#subscription')
     expect(fetchFn).toHaveBeenCalledTimes(1)
     expect(fetchFn.mock.calls[0]?.[0]).toBe('https://validator.example.com/api/validator/v0/entry/create')
     expect(fetchFn.mock.calls[0]?.[1]?.method).toBe('POST')
     expect(fetchFn.mock.calls[0]?.[1]?.headers['Authorization']).toBe('Bearer validator-jwt')
+    expect(fetchFn.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
     expect(JSON.parse(String(fetchFn.mock.calls[0]?.[1]?.body))).toEqual({
       name: 'app.unverified.ans',
       url: 'https://app.example.com',
       description: 'Validator app',
     })
+    controller.abort()
+    expect((fetchFn.mock.calls[0]?.[1]?.signal as AbortSignal).aborted).toBe(true)
   })
 
   it('lists ANS entries owned by the authenticated user', async () => {
@@ -67,11 +71,15 @@ describe('createAnsClient', () => {
       url: 'https://validator.example.com/api/validator',
       fetchFn,
     })
+    const controller = new AbortController()
 
-    const response = await client.listAnsEntries()
+    const response = await client.listAnsEntries({ signal: controller.signal })
 
     expect(response.entries).toHaveLength(1)
     expect(fetchFn.mock.calls[0]?.[0]).toBe('https://validator.example.com/api/validator/v0/entry/all')
     expect(fetchFn.mock.calls[0]?.[1]?.method).toBe('GET')
+    expect(fetchFn.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal)
+    controller.abort()
+    expect((fetchFn.mock.calls[0]?.[1]?.signal as AbortSignal).aborted).toBe(true)
   })
 })

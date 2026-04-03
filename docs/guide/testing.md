@@ -121,6 +121,8 @@ This repo is not an npm workspace, so install the root and package dependencies 
 
 ```bash
 npm ci
+npm --prefix packages/cantonjs-codegen ci
+npm --prefix packages/cantonjs-react ci
 npm --prefix packages/cantonjs-splice-interfaces ci
 npm --prefix packages/cantonjs-splice-scan ci
 npm --prefix packages/cantonjs-splice-validator ci
@@ -131,12 +133,8 @@ npm --prefix packages/cantonjs-wallet-adapters ci
 Then run the same default-safe checks used in CI:
 
 ```bash
-npm test
-npm run typecheck
-npm run build
-npm run verify:splice-artifacts
-npm run verify:generated-artifacts
-npm run test:packages
+npm run verify:ci:pr
+npm run test:coverage:all
 ```
 
 `npm run verify:generated-artifacts` regenerates the OpenAPI and DAR-derived outputs against the vendored Splice artifacts only. It does not reach live upstream endpoints.

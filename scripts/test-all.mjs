@@ -24,6 +24,29 @@ const COMMAND_SETS = {
     ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'test']],
     ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'run', 'build']],
   ],
+  coverage: [
+    ['npm', ['run', 'build']],
+    ['npm', ['--prefix', 'packages/cantonjs-splice-interfaces', 'run', 'test:coverage']],
+    ['npm', ['--prefix', 'packages/cantonjs-splice-scan', 'run', 'test:coverage']],
+    ['npm', ['--prefix', 'packages/cantonjs-splice-validator', 'run', 'test:coverage']],
+    ['npm', ['--prefix', 'packages/cantonjs-splice-token-standard', 'run', 'test:coverage']],
+    ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'run', 'test:coverage']],
+  ],
+  'ci-pr': [
+    ['npm', ['run', 'typecheck']],
+    ['npm', ['run', 'lint']],
+    ['npm', ['test']],
+    ['npm', ['run', 'build']],
+    ['npm', ['run', 'size']],
+    ['npm', ['run', 'verify:splice-artifacts']],
+    ['npm', ['run', 'verify:generated-artifacts']],
+    ['npm', ['run', 'test:packages']],
+    ['npm', ['--prefix', 'packages/cantonjs-codegen', 'run', 'typecheck']],
+    ['npm', ['--prefix', 'packages/cantonjs-codegen', 'test']],
+    ['npm', ['--prefix', 'packages/cantonjs-react', 'run', 'typecheck']],
+    ['npm', ['--prefix', 'packages/cantonjs-react', 'test']],
+    ['npm', ['run', 'test:coverage:all']],
+  ],
   live: [
     ['node', ['scripts/splice-live-smoke.mjs']],
   ],
@@ -53,8 +76,8 @@ async function run(command, args) {
 async function main() {
   const mode = process.argv[2]
 
-  if (mode !== 'packages' && mode !== 'live') {
-    throw new Error('Usage: node scripts/test-all.mjs <packages|live>')
+  if (!(mode in COMMAND_SETS)) {
+    throw new Error('Usage: node scripts/test-all.mjs <packages|coverage|ci-pr|live>')
   }
 
   for (const [command, args] of COMMAND_SETS[mode]) {
