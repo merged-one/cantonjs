@@ -115,7 +115,8 @@ function pathToService(path: string): { typeName: string } {
     dars: 'com.daml.ledger.api.v2.PackageManagementService',
     version: 'com.daml.ledger.api.v2.VersionService',
   }
-  const serviceName = serviceMap[segments[0] ?? ''] ?? 'unknown'
+  const serviceKey = segments.find((segment) => segment.length > 0)
+  const serviceName = serviceKey === undefined ? 'unknown' : (serviceMap[serviceKey] ?? 'unknown')
   return { typeName: serviceName }
 }
 
@@ -137,6 +138,7 @@ function pathToMethod(path: string): { name: string } {
     '/v2/events/events-by-contract-id': 'GetEventsByContractId',
     '/v2/version': 'GetLedgerApiVersion',
   }
-  const methodName = methodMap[path] ?? path.split('/').pop() ?? 'unknown'
+  const fallbackMethodName = path.split('/').filter((segment) => segment.length > 0).at(-1)
+  const methodName = methodMap[path] ?? fallbackMethodName ?? 'unknown'
   return { name: methodName }
 }

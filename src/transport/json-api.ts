@@ -49,7 +49,11 @@ export function jsonApi(config: TransportConfig): Transport {
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
 
       if (args.signal !== undefined) {
-        args.signal.addEventListener('abort', () => controller.abort(), { once: true })
+        if (args.signal.aborted) {
+          controller.abort()
+        } else {
+          args.signal.addEventListener('abort', () => controller.abort(), { once: true })
+        }
       }
 
       try {

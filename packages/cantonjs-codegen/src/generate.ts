@@ -55,12 +55,7 @@ export async function generateFromDar(options: GenerateOptions): Promise<Generat
 
   // Find the main package
   const mainPackageId = path.basename(mainDalf, '.dalf')
-  const mainPackage = packages.find((p) => p.packageId === mainPackageId) ?? packages[0]
-
-  /* v8 ignore next -- parseDar guarantees at least one DALF, so decode always yields at least one package */
-  if (!mainPackage) {
-    throw new Error('No packages found in DAR')
-  }
+  const mainPackage = packages.find((p) => p.packageId === mainPackageId) ?? packages[0]!
 
   const packageName = mainPackage.name ?? mainPackage.packageId
 

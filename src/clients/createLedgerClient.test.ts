@@ -85,6 +85,44 @@ describe('createLedgerClient', () => {
         client.createContract(templateId, { owner: 'Alice' }),
       ).rejects.toThrow('No created event')
     })
+
+    it('forwards readAs and AbortSignal when creating a contract', async () => {
+      const bob = 'Bob::5678' as Party
+      const signal = new AbortController().signal
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-3',
+          events: [
+            {
+              CreatedEvent: {
+                offset: 3,
+                nodeId: 0,
+                contractId: 'contract-3',
+                templateId,
+                packageName: 'my-pkg',
+                representativePackageId: 'abc123',
+                createArgument: { owner: 'Alice' },
+                signatories: ['Alice::1234'],
+                witnessParties: ['Alice::1234', 'Bob::5678'],
+                acsDelta: true,
+                createdAt: '2026-04-01T00:00:02Z',
+              },
+            },
+          ],
+          offset: 3,
+          synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:02Z',
+          recordTime: '2026-04-01T00:00:02Z',
+        },
+      })
+
+      const client = createLedgerClient({ transport, actAs: alice, readAs: [bob] })
+      await client.createContract(templateId, { owner: 'Alice' }, { signal })
+
+      const request = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
+      expect(request.signal).toBe(signal)
+      expect(request.body.commands.readAs).toEqual([bob])
+    })
   })
 
   describe('exerciseChoice', () => {
@@ -150,6 +188,31 @@ describe('createLedgerClient', () => {
 
       const request = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0]
       expect(request.signal).toBe(signal)
+    })
+
+    it('includes readAs parties when exercising a choice', async () => {
+      const bob = 'Bob::5678' as Party
+      const transport = mockTransport({
+        transaction: {
+          updateId: 'u-4',
+          events: [],
+          offset: 4,
+          synchronizerId: 'sync-1',
+          effectiveAt: '2026-04-01T00:00:03Z',
+          recordTime: '2026-04-01T00:00:03Z',
+        },
+      })
+
+      const client = createLedgerClient({ transport, actAs: alice, readAs: [bob] })
+      await client.exerciseChoice(
+        templateId,
+        'contract-1',
+        'Transfer',
+        { newOwner: 'Bob' },
+      )
+
+      const requestBody = (transport.request as ReturnType<typeof vi.fn>).mock.calls[0]![0].body
+      expect(requestBody.commands.readAs).toEqual([bob])
     })
   })
 

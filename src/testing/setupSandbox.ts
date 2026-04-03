@@ -58,12 +58,10 @@ export type SandboxContext = {
 }
 
 /** Default exec using child_process (Node.js only). */
-async function defaultExec(cmd: string): Promise<{ stdout: string; stderr: string }> {
-  // Dynamic import to avoid bundling Node.js modules in browser builds
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cp = await (Function('return import("node:child_process")')() as Promise<any>)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const util = await (Function('return import("node:util")')() as Promise<any>)
+export async function defaultExec(cmd: string): Promise<{ stdout: string; stderr: string }> {
+  // Dynamic import keeps Node-only modules out of browser-oriented consumers.
+  const cp = await import('node:child_process')
+  const util = await import('node:util')
   const execAsync = util.promisify(cp.exec)
   return execAsync(cmd) as Promise<{ stdout: string; stderr: string }>
 }

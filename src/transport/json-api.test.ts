@@ -216,6 +216,64 @@ describe('jsonApi transport', () => {
     )
   })
 
+  it('rethrows caller-triggered aborts instead of wrapping them as timeouts', async () => {
+    const fetchFn = vi.fn().mockImplementation((_url: string, init: { signal: AbortSignal }) => {
+      return new Promise((_resolve, reject) => {
+        const rejectForAbort = () => {
+          reject(new DOMException('The operation was aborted.', 'AbortError'))
+        }
+
+        if (init.signal.aborted) {
+          rejectForAbort()
+          return
+        }
+
+        init.signal.addEventListener('abort', rejectForAbort, { once: true })
+      })
+    })
+
+    const transport = jsonApi({
+      url: 'http://localhost:7575',
+      timeout: 5000,
+      fetchFn,
+    })
+    const controller = new AbortController()
+
+    const pending = transport.request({
+      method: 'GET',
+      path: '/v2/version',
+      signal: controller.signal,
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    controller.abort()
+
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('propagates an already-aborted caller signal to the fetch controller', async () => {
+    const fetchFn = vi.fn().mockImplementation((_url: string, init: { signal: AbortSignal }) => {
+      expect(init.signal.aborted).toBe(true)
+      return Promise.reject(new DOMException('The operation was aborted.', 'AbortError'))
+    })
+
+    const transport = jsonApi({
+      url: 'http://localhost:7575',
+      timeout: 5000,
+      fetchFn,
+    })
+    const controller = new AbortController()
+
+    controller.abort()
+
+    await expect(
+      transport.request({
+        method: 'GET',
+        path: '/v2/version',
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
   it('throws ConnectionError on network failure', async () => {
     const fetchFn = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'))
 
@@ -224,6 +282,20 @@ describe('jsonApi transport', () => {
     await expect(transport.request({ method: 'GET', path: '/v2/version' })).rejects.toThrow(
       ConnectionError,
     )
+  })
+
+  it('wraps non-Error network failures as ConnectionError causes', async () => {
+    const fetchFn = vi.fn().mockRejectedValue('ECONNRESET')
+
+    const transport = jsonApi({ url: 'http://localhost:7575', fetchFn })
+
+    await expect(
+      transport.request({ method: 'GET', path: '/v2/version' }),
+    ).rejects.toMatchObject({
+      cause: expect.objectContaining({
+        message: 'ECONNRESET',
+      }),
+    })
   })
 
   it('returns text response when content-type is not JSON', async () => {

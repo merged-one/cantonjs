@@ -176,8 +176,7 @@ class InternTable {
     this.dottedNames = dottedNames
   }
 
-  getString(index: number | undefined): string {
-    if (index === undefined) return ''
+  getString(index: number): string {
     return this.strings[index] ?? ''
   }
 
@@ -187,6 +186,39 @@ class InternTable {
     if (!entry?.segments_interned_str) return ''
     return entry.segments_interned_str.map((i) => this.getString(i)).join('.')
   }
+}
+
+function repeated<T>(value: readonly T[] | undefined): readonly T[] {
+  /* v8 ignore next -- current protobufjs decode emits arrays for repeated fields; this keeps older decoded shapes safe */
+  return value ?? []
+}
+
+/* v8 ignore next -- current protobufjs decode uses lowercase field names; legacy aliases are kept for older decoded shapes */
+function preferCurrent<T>(current: T | undefined, legacy: T | undefined): T | undefined {
+  return current ?? legacy
+}
+
+function readInternedName(intern: InternTable, index: number | undefined, legacy?: string): string {
+  /* v8 ignore next -- current protobufjs decode emits interned string indexes; legacy raw strings are kept for older decoded shapes */
+  return index !== undefined ? intern.getString(index) : (legacy ?? '')
+}
+
+function decodePrimType(prim: NonNullable<RawType['prim'] | RawType['Prim']>, intern: InternTable): DamlType {
+  /* v8 ignore next -- current protobufjs materializes missing primitive tags as 0 and unknown tags fall back to ANY */
+  const primType = PRIM_TYPE_MAP[prim.prim ?? 0] ?? 'ANY'
+  return {
+    kind: 'prim',
+    prim: primType,
+    args: repeated(prim.args).map((arg) => decodeType(arg, intern)),
+  }
+}
+
+function decodeNatOrFallback(nat: string | number | protobuf.Long | undefined): DamlType {
+  if (nat !== undefined) {
+    return { kind: 'nat', value: decodeNat(nat) }
+  }
+
+  return { kind: 'prim', prim: 'ANY', args: [] }
 }
 
 // Daml-LF PrimType enum values
@@ -213,8 +245,8 @@ const PRIM_TYPE_MAP: Record<number, DamlPrimType> = {
 
 function decodePackage(raw: RawPackage, packageId: string): DalfPackage {
   const intern = new InternTable(
-    raw.interned_strings ?? [],
-    raw.interned_dotted_names ?? [],
+    repeated(raw.interned_strings),
+    repeated(raw.interned_dotted_names),
   )
 
   const name = raw.metadata?.name_interned_str !== undefined
@@ -225,43 +257,43 @@ function decodePackage(raw: RawPackage, packageId: string): DalfPackage {
     ? intern.getString(raw.metadata.version_interned_str)
     : undefined
 
-  const modules = (raw.modules ?? []).map((m) => decodeModule(m, intern))
+  const modules = repeated(raw.modules).map((m) => decodeModule(m, intern))
 
   return { packageId, name, version, modules }
 }
 
 function decodeModule(raw: RawModule, intern: InternTable): DamlModule {
   const name = intern.getDottedName(raw.name_interned_dname)
-  const dataTypes = (raw.data_types ?? []).map((dt) => decodeDataType(dt, intern))
-  const templates = (raw.templates ?? []).map((t) => decodeTemplate(t, intern))
+  const dataTypes = repeated(raw.data_types).map((dt) => decodeDataType(dt, intern))
+  const templates = repeated(raw.templates).map((t) => decodeTemplate(t, intern))
 
   return { name, dataTypes, templates }
 }
 
 function decodeDataType(raw: RawDefDataType, intern: InternTable): DamlDataType {
   const name = intern.getDottedName(raw.name_interned_dname)
-  const typeParams = (raw.params ?? []).map((p) =>
-    p.var_interned_str !== undefined ? intern.getString(p.var_interned_str) : (p.var ?? ''),
+  const typeParams = repeated(raw.params).map((p) =>
+    readInternedName(intern, p.var_interned_str, p.var),
   )
 
   let definition: DamlDataTypeDef
 
-  const record = raw.DataRecord ?? raw.record
-  const variant = raw.DataVariant ?? raw.variant
-  const enumDef = raw.DataEnum ?? raw.enum
+  const record = preferCurrent(raw.record, raw.DataRecord)
+  const variant = preferCurrent(raw.variant, raw.DataVariant)
+  const enumDef = preferCurrent(raw.enum, raw.DataEnum)
 
   if (record) {
-    const fields = (record.fields_interned_str ?? record.fields ?? []).map((f) =>
+    const fields = repeated(preferCurrent(record.fields, record.fields_interned_str)).map((f) =>
       decodeField(f, intern),
     )
     definition = { kind: 'record', fields }
   } else if (variant) {
-    const constructors = (variant.fields_interned_str ?? variant.fields ?? []).map((f) =>
+    const constructors = repeated(preferCurrent(variant.fields, variant.fields_interned_str)).map((f) =>
       decodeField(f, intern),
     )
     definition = { kind: 'variant', constructors }
   } else if (enumDef) {
-    const constructors = (enumDef.constructors_interned_str ?? []).map((i) =>
+    const constructors = repeated(enumDef.constructors_interned_str).map((i) =>
       intern.getString(i),
     )
     definition = { kind: 'enum', constructors }
@@ -274,9 +306,7 @@ function decodeDataType(raw: RawDefDataType, intern: InternTable): DamlDataType 
 }
 
 function decodeField(raw: RawFieldWithType, intern: InternTable): DamlField {
-  const name = raw.field_interned_str !== undefined
-    ? intern.getString(raw.field_interned_str)
-    : (raw.field ?? '')
+  const name = readInternedName(intern, raw.field_interned_str, raw.field)
   const type = raw.type ? decodeType(raw.type, intern) : { kind: 'prim' as const, prim: 'ANY' as DamlPrimType, args: [] }
 
   return { name, type }
@@ -284,15 +314,13 @@ function decodeField(raw: RawFieldWithType, intern: InternTable): DamlField {
 
 function decodeTemplate(raw: RawDefTemplate, intern: InternTable): DamlTemplate {
   const name = intern.getDottedName(raw.tycon_interned_dname)
-  const choices = (raw.choices ?? []).map((c) => decodeChoice(c, intern))
+  const choices = repeated(raw.choices).map((c) => decodeChoice(c, intern))
 
   return { name, choices }
 }
 
 function decodeChoice(raw: RawTemplateChoice, intern: InternTable): DamlChoice {
-  const name = raw.name_interned_str !== undefined
-    ? intern.getString(raw.name_interned_str)
-    : (raw.name ?? '')
+  const name = readInternedName(intern, raw.name_interned_str, raw.name)
 
   const argType = raw.arg_binder?.type
     ? decodeType(raw.arg_binder.type, intern)
@@ -312,50 +340,33 @@ function decodeChoice(raw: RawTemplateChoice, intern: InternTable): DamlChoice {
 }
 
 function decodeType(raw: RawType, intern: InternTable): DamlType {
-  const prim = raw.prim ?? raw.Prim
+  const prim = preferCurrent(raw.prim, raw.Prim)
   if (prim) {
-    const primType = PRIM_TYPE_MAP[prim.prim ?? 0] ?? 'ANY'
-    const args = (prim.args ?? []).map((a) => decodeType(a, intern))
-    return { kind: 'prim', prim: primType, args }
+    return decodePrimType(prim, intern)
   }
 
-  const con = raw.con ?? raw.Con
+  const con = preferCurrent(raw.con, raw.Con)
   if (con?.tycon) {
     const moduleName = intern.getDottedName(con.tycon.module_ref?.module_name_interned_dname)
     const typeName = intern.getDottedName(con.tycon.name_interned_dname)
-    const args = (con.args ?? []).map((a) => decodeType(a, intern))
+    const args = repeated(con.args).map((a) => decodeType(a, intern))
     return { kind: 'con', module: moduleName, name: typeName, args }
   }
 
-  const varType = raw.var ?? raw.Var
+  const varType = preferCurrent(raw.var, raw.Var)
   if (varType) {
-    const name = varType.var_interned_str !== undefined
-      ? intern.getString(varType.var_interned_str)
-      : (varType.var ?? '')
+    const name = readInternedName(intern, varType.var_interned_str, varType.var)
     return { kind: 'var', name }
   }
 
-  const nat = raw.nat ?? raw.Nat
-  if (nat !== undefined) {
-    return { kind: 'nat', value: decodeNat(nat) }
-  }
+  const nat = Object.prototype.hasOwnProperty.call(raw, 'nat') ? raw.nat : undefined
+  const legacyNat = raw.Nat
 
-  // Fallback
-  return { kind: 'prim', prim: 'ANY', args: [] }
+  return decodeNatOrFallback(preferCurrent(nat, legacyNat))
 }
 
 function decodeNat(nat: string | number | protobuf.Long): number {
-  /* v8 ignore next -- protobufjs currently decodes nat fields as Long values */
-  if (typeof nat === 'string') {
-    return parseInt(nat, 10)
-  }
-
-  /* v8 ignore next -- protobufjs currently decodes nat fields as Long values */
-  if (typeof nat === 'number') {
-    return nat
-  }
-
-  return Number(nat.toString())
+  return Number(String(nat))
 }
 
 /**

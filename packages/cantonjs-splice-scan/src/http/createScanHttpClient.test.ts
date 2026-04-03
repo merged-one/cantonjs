@@ -84,6 +84,28 @@ describe('createScanHttpClient', () => {
     await expect(client.getText('/readyz')).resolves.toBe('ready')
   })
 
+  it('copies custom headers for getText requests', async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      new Response('ready', {
+        status: 200,
+        headers: { 'content-type': 'text/plain' },
+      }),
+    )
+    const headers = { 'x-request-id': 'req-1' }
+    const client = createScanHttpClient({
+      url: 'https://scan.example.com/api/scan',
+      fetchFn,
+    })
+
+    await client.getText('/readyz', { headers })
+
+    expect(headers).toEqual({ 'x-request-id': 'req-1' })
+    expect(fetchFn.mock.calls[0]?.[1]?.headers).toEqual({
+      'Content-Type': 'application/json',
+      'x-request-id': 'req-1',
+    })
+  })
+
   it('throws when required path params are missing', async () => {
     const client = createScanHttpClient({
       url: 'https://scan.example.com/api/scan',

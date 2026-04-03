@@ -158,18 +158,28 @@ Rules:
   "inlineIgnores": [
     {
       "file": "packages/cantonjs-codegen/src/dar/decode.ts",
-      "line": 307,
+      "line": 192,
+      "reason": "current protobufjs decode emits arrays for repeated fields; this keeps older decoded shapes safe"
+    },
+    {
+      "file": "packages/cantonjs-codegen/src/dar/decode.ts",
+      "line": 196,
+      "reason": "current protobufjs decode uses lowercase field names; legacy aliases are kept for older decoded shapes"
+    },
+    {
+      "file": "packages/cantonjs-codegen/src/dar/decode.ts",
+      "line": 202,
+      "reason": "current protobufjs decode emits interned string indexes; legacy raw strings are kept for older decoded shapes"
+    },
+    {
+      "file": "packages/cantonjs-codegen/src/dar/decode.ts",
+      "line": 207,
+      "reason": "current protobufjs materializes missing primitive tags as 0 and unknown tags fall back to ANY"
+    },
+    {
+      "file": "packages/cantonjs-codegen/src/dar/decode.ts",
+      "line": 335,
       "reason": "protobufjs materializes absent bools as false, so the default is a compatibility shim"
-    },
-    {
-      "file": "packages/cantonjs-codegen/src/dar/decode.ts",
-      "line": 348,
-      "reason": "protobufjs currently decodes nat fields as Long values"
-    },
-    {
-      "file": "packages/cantonjs-codegen/src/dar/decode.ts",
-      "line": 353,
-      "reason": "protobufjs currently decodes nat fields as Long values"
     },
     {
       "file": "packages/cantonjs-codegen/src/emitter/emitModule.ts",
@@ -185,11 +195,6 @@ Rules:
       "file": "packages/cantonjs-codegen/src/emitter/emitModule.ts",
       "line": 273,
       "reason": "sibling and nested import paths are asserted in tests; this remains partially uncovered under V8 branch instrumentation"
-    },
-    {
-      "file": "packages/cantonjs-codegen/src/generate.ts",
-      "line": 60,
-      "reason": "parseDar guarantees at least one DALF, so decode always yields at least one package"
     },
     {
       "file": "packages/cantonjs-codegen/src/mapper/typeMapper.ts",
