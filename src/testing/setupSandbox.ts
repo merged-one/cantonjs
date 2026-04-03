@@ -19,9 +19,10 @@
  * ```
  */
 
+import type { AuthProvider, SessionProvider } from '../auth/types.js'
 import { jsonApi } from '../transport/json-api.js'
 import { createTestClient, type TestClient } from '../clients/createTestClient.js'
-import type { Transport } from '../transport/types.js'
+import type { Transport, TransportConfig } from '../transport/types.js'
 import type { Party } from '../types/party.js'
 
 /** Configuration for sandbox setup. */
@@ -32,6 +33,10 @@ export type SandboxConfig = {
   readonly timeout?: number
   /** JWT token. If not provided, attempts to use cantonctl auth. */
   readonly token?: string
+  /** Per-request bearer token provider for participant calls. */
+  readonly auth?: AuthProvider
+  /** Per-request session provider for participant calls. */
+  readonly session?: SessionProvider
   /** Party for the TestClient. Default: allocated via sandbox. */
   readonly party?: Party
   /** Custom fetch implementation (for testing the fixture itself). */
@@ -99,6 +104,35 @@ async function waitForHealth(
   )
 }
 
+async function resolveSandboxTransportConfig(
+  url: string,
+  fetchFn: typeof fetch,
+  execFn: (cmd: string) => Promise<{ stdout: string; stderr: string }>,
+  config: SandboxConfig,
+): Promise<TransportConfig> {
+  const transportConfig = {
+    url,
+    fetchFn,
+    token: config.token,
+    auth: config.auth,
+    session: config.session,
+  } satisfies TransportConfig
+
+  if (
+    transportConfig.token === undefined &&
+    transportConfig.auth === undefined &&
+    transportConfig.session === undefined
+  ) {
+    const result = await execFn('cantonctl auth token')
+    return {
+      ...transportConfig,
+      token: result.stdout.trim(),
+    }
+  }
+
+  return transportConfig
+}
+
 /**
  * Set up a Canton sandbox for integration testing.
  *
@@ -135,15 +169,9 @@ export async function setupCantonSandbox(
   // Wait for health
   await waitForHealth(url, timeout, fetchFn)
 
-  // Get or generate token
-  let token = config.token
-  if (!token) {
-    const result = await execFn('cantonctl auth token')
-    token = result.stdout.trim()
-  }
-
-  // Create transport and client
-  const transport = jsonApi({ url, token, fetchFn })
+  const transport = jsonApi(
+    await resolveSandboxTransportConfig(url, fetchFn, execFn, config),
+  )
 
   const party = config.party ?? ('test-party' as Party)
   const client = createTestClient({ transport, party })

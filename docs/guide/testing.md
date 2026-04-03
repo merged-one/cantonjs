@@ -82,27 +82,29 @@ console.log(recording.exchanges)
 
 ## Canton Sandbox Fixture
 
-Integration testing with a real Canton sandbox via cantonctl:
+Default CI keeps integration coverage local: fixture-backed HTTP servers for the Splice packages and a sandbox helper integration test that exercises request-scoped auth/session wiring without calling public endpoints.
+
+When you want participant-style integration locally, use `setupCantonSandbox()` directly:
 
 ```typescript
 import { setupCantonSandbox } from 'cantonjs/testing'
 import { describe, it, expect } from 'vitest'
 
 describe('integration tests', () => {
-  const sandbox = setupCantonSandbox({
-    cantonctlPath: 'cantonctl',  // or full path
-    timeout: 60_000,
-  })
-
-  it('creates a contract on the sandbox', async () => {
-    const client = sandbox.client
-
-    const created = await client.createContract('#pkg:Mod:T', {
-      owner: client.actAs,
-      value: '100',
+  it('connects through a request-scoped session', async () => {
+    const sandbox = await setupCantonSandbox({
+      timeout: 60_000,
+      session: async () => ({
+        token: await getFreshParticipantJwt(),
+      }),
     })
 
-    expect(created.contractId).toBeDefined()
+    try {
+      const currentTime = await sandbox.client.getTime()
+      expect(currentTime).toBeInstanceOf(Date)
+    } finally {
+      await sandbox.teardown()
+    }
   })
 })
 ```
@@ -110,8 +112,54 @@ describe('integration tests', () => {
 The sandbox fixture handles:
 - Starting Canton sandbox via `cantonctl dev`
 - Health check polling until ready
-- JWT token generation
+- JWT token generation when no `token`, `auth`, or `session` is provided
 - Cleanup on test completion
+
+## Local CI-equivalent checks
+
+This repo is not an npm workspace, so install the root and package dependencies explicitly before running the full offline validation set:
+
+```bash
+npm ci
+npm --prefix packages/cantonjs-splice-interfaces ci
+npm --prefix packages/cantonjs-splice-scan ci
+npm --prefix packages/cantonjs-splice-validator ci
+npm --prefix packages/cantonjs-splice-token-standard ci
+npm --prefix packages/cantonjs-wallet-adapters ci
+```
+
+Then run the same default-safe checks used in CI:
+
+```bash
+npm test
+npm run typecheck
+npm run build
+npm run verify:splice-artifacts
+npm run verify:generated-artifacts
+npm run test:packages
+```
+
+`npm run verify:generated-artifacts` regenerates the OpenAPI and DAR-derived outputs against the vendored Splice artifacts only. It does not reach live upstream endpoints.
+
+## Live And Localnet Smoke Checks
+
+Default CI never depends on public Scan, validator, or participant endpoints.
+
+For opt-in smoke coverage against live or localnet environments, use the manual/nightly GitHub workflow at `.github/workflows/integration-splice.yml` or run the same smoke script locally:
+
+```bash
+SPLICE_SCAN_URL=https://scan.example.com/api/scan npm run test:live:splice
+
+CANTON_JSON_API_URL=http://localhost:7575 \
+CANTON_JWT=... \
+npm run test:live:splice
+
+SPLICE_VALIDATOR_URL=https://validator.example.com/api/validator \
+SPLICE_VALIDATOR_TOKEN=... \
+npm run test:live:splice
+```
+
+Any unset target is skipped, so you can point the smoke run at only the environments you actually want to exercise.
 
 ## No `vi.mock()`
 

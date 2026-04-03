@@ -1,0 +1,53 @@
+name: Splice Integration
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  live-smoke:
+    name: Live smoke
+    runs-on: ubuntu-latest
+    env:
+      CANTON_ACT_AS: ${{ vars.CANTON_ACT_AS }}
+      CANTON_JSON_API_URL: ${{ vars.CANTON_JSON_API_URL }}
+      CANTON_JWT: ${{ secrets.CANTON_JWT }}
+      SPLICE_SCAN_URL: ${{ vars.SPLICE_SCAN_URL }}
+      SPLICE_SCAN_TOKEN: ${{ secrets.SPLICE_SCAN_TOKEN }}
+      SPLICE_VALIDATOR_URL: ${{ vars.SPLICE_VALIDATOR_URL }}
+      SPLICE_VALIDATOR_TOKEN: ${{ secrets.SPLICE_VALIDATOR_TOKEN }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            packages/cantonjs-splice-scan/package-lock.json
+            packages/cantonjs-splice-validator/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install live smoke package dependencies
+        run: |
+          npm --prefix packages/cantonjs-splice-scan ci
+          npm --prefix packages/cantonjs-splice-validator ci
+
+      - name: Build live smoke packages
+        run: |
+          npm run build
+          npm --prefix packages/cantonjs-splice-scan run build
+          npm --prefix packages/cantonjs-splice-validator run build
+
+      - name: Run live smoke checks
+        run: npm run test:live:splice

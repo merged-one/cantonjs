@@ -53,6 +53,45 @@ describe('setupCantonSandbox', () => {
     expect(sandbox.transport).toBeDefined()
   })
 
+  it('uses an auth provider instead of cantonctl auth', async () => {
+    const execFn = vi.fn()
+      .mockResolvedValueOnce({ stdout: 'cantonctl 0.1.0', stderr: '' })
+      .mockResolvedValueOnce({ stdout: '', stderr: '' })
+    const auth = vi.fn().mockResolvedValue('fresh-auth-token')
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch
+
+    const sandbox = await setupCantonSandbox({
+      auth,
+      execFn,
+      fetchFn,
+    })
+
+    expect(execFn).not.toHaveBeenCalledWith('cantonctl auth token')
+    expect(auth).not.toHaveBeenCalled()
+    expect(sandbox.transport).toBeDefined()
+  })
+
+  it('uses a session provider instead of cantonctl auth', async () => {
+    const execFn = vi.fn()
+      .mockResolvedValueOnce({ stdout: 'cantonctl 0.1.0', stderr: '' })
+      .mockResolvedValueOnce({ stdout: '', stderr: '' })
+    const session = vi.fn().mockResolvedValue({
+      token: 'fresh-session-token',
+      headers: { 'x-session-source': 'sandbox' },
+    })
+    const fetchFn = vi.fn().mockResolvedValue({ ok: true }) as unknown as typeof fetch
+
+    const sandbox = await setupCantonSandbox({
+      session,
+      execFn,
+      fetchFn,
+    })
+
+    expect(execFn).not.toHaveBeenCalledWith('cantonctl auth token')
+    expect(session).not.toHaveBeenCalled()
+    expect(sandbox.transport).toBeDefined()
+  })
+
   it('uses default port 7575', async () => {
     const execFn = vi.fn()
       .mockResolvedValueOnce({ stdout: 'cantonctl 0.1.0', stderr: '' })
