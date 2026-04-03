@@ -1,6 +1,6 @@
 # Design Decisions
 
-> Foundational architecture decisions for cantonjs — "viem for Canton."
+> Foundational architecture decisions for cantonjs as an application-side TypeScript SDK for participant Ledger API V2.
 > Each decision is backed by research from the blockchain client library analysis and Canton Ledger API V2 research.
 
 **Date:** 2026-04-01

@@ -1,6 +1,6 @@
 # cantonjs Roadmap
 
-> Development plan for cantonjs — "viem for Canton."
+> Development plan for cantonjs as an application-side TypeScript SDK for participant Ledger API V2.
 > Phases are sequenced to deliver value incrementally while building toward full Canton Ledger API V2 coverage.
 
 **Date:** 2026-04-01
