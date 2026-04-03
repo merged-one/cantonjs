@@ -1,6 +1,6 @@
 {
   "name": "cantonjs-wallet-adapters",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Experimental CIP-0103 wallet and dApp interop adapters for cantonjs",
   "type": "module",
   "main": "./dist/index.js",

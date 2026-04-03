@@ -1,6 +1,6 @@
 {
   "name": "cantonjs-splice-interfaces",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Stable Splice Daml interface descriptors and generated TypeScript types for cantonjs",
   "type": "module",
   "main": "./dist/index.js",
@@ -41,11 +41,11 @@
     "directory": "packages/cantonjs-splice-interfaces"
   },
   "peerDependencies": {
-    "cantonjs": "^0.2.0"
+    "cantonjs": "^0.3.0"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^3.0.0",
     "@types/node": "^24.5.2",
+    "@vitest/coverage-v8": "^3.0.0",
     "cantonjs": "file:../..",
     "typescript": "^5.5.0",
     "vitest": "^3.0.0"

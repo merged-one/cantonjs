@@ -1,6 +1,6 @@
 {
   "name": "cantonjs",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "TypeScript interface for the Canton Network — viem for Canton",
   "type": "module",
   "sideEffects": false,

@@ -4,21 +4,37 @@ All notable changes to cantonjs are documented in this file.
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-04-02
+## [0.3.0] - 2026-04-03
 
 ### Added
 
-- **Documentation site** — VitePress-powered docs with getting started guide, API reference, examples, and migration guide from `@daml/ledger`
-- Bundle size audit: core 5.08 KB, ledger subpath 1.1 KB (minified + brotli)
 - Splice package architecture: `cantonjs-splice-scan`, `cantonjs-splice-validator`, `cantonjs-splice-interfaces`, `cantonjs-splice-token-standard`, and `cantonjs-wallet-adapters`
+- Public Splice support packages for Scan, validator, interfaces, token-standard helpers, and wallet adapters
 - Explicit stability tiers for Splice support: GA, legacy compatibility, and experimental
 - Migration notes and compatibility policy pinned to Canton `3.4.x` and Splice `0.5.x`, with vendored Splice artifacts at `0.5.17`
+- Auth provider abstraction for core transports
+- Expanded network presets and Splice-focused documentation examples
+- README snippet validation to keep documented TypeScript examples syntax-checked in CI
 
 ### Changed
 
 - The core `cantonjs` package remains the GA Canton Ledger API V2 foundation while Splice-specific APIs live in focused add-on packages
 - Legacy `wallet-external` validator flows are now documented as legacy compatibility only and are not recommended for new transfer flows
 - The release workflow now explicitly publishes the new Splice packages instead of limiting release automation to the root, codegen, and React packages
+- CI parity is tighter across packages with enforced documented coverage exclusions and repo-wide 100% coverage gates
+
+### Fixed
+
+- Token-standard package tests now resolve sibling sources on fresh checkouts instead of requiring prebuilt `dist/` artifacts
+- `setupCantonSandbox()` now treats blank auth tokens as missing and falls back to `cantonctl auth token`
+- README examples now match the current codegen, mock transport, React, and sandbox testing APIs
+
+## [0.2.0] - 2026-04-02
+
+### Added
+
+- **Documentation site** — VitePress-powered docs with getting started guide, API reference, examples, and migration guide from `@daml/ledger`
+- Bundle size audit: core 5.08 KB, ledger subpath 1.1 KB (minified + brotli)
 
 ## [0.0.1] - 2026-04-01
 
