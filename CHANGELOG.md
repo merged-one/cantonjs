@@ -4,6 +4,18 @@ All notable changes to cantonjs are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Positioning reset: the repo is now documented explicitly as the application-side TypeScript SDK for direct Canton participant Ledger API V2 work, with named target users, package-boundary docs, persona-led examples, and CI guards against messaging drift
+- The package mental model is now explicit: `cantonjs` is the core SDK, `cantonjs-react` and `cantonjs-codegen` are optional convenience packages, public/stable Splice surfaces live in focused add-ons, and `cantonjs-wallet-adapters` remains experimental edge interop
+- Selected stable/public Splice support is now documented as add-on scope only; internal validator routes, wallet-internal flows, and other private operator surfaces remain outside the main GA story
+- Existing users now have dedicated migration notes for the positioning reset, including the canonical role of DPM, Quickstart, the official dApp SDK / dApp API / Wallet Gateway, and the official Wallet SDK
+
+### Unchanged
+
+- No runtime API names changed as part of the positioning reset
+- Existing package entrypoints remain the same; this milestone changes repo story, package boundaries, examples, and release guidance rather than expanding the runtime surface
+
 ## [0.3.1] - 2026-04-03
 
 ### Fixed

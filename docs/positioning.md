@@ -2,6 +2,8 @@
 
 This document is the canonical scope and positioning note for subsequent docs and messaging edits on `feat/reposition-cantonjs-as-ledger-app-sdk`.
 
+Existing users: this positioning reset changes the repo story and package boundaries, not the runtime API names. See [Migration notes](./MIGRATING_TO_SPLICE_SUPPORT.md) for the transition summary.
+
 ## One-Sentence Positioning
 
 `cantonjs` is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2, with optional React, codegen, and selected ecosystem add-ons around that core.
