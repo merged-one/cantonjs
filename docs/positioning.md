@@ -8,6 +8,8 @@ This document is the canonical scope and positioning note for subsequent docs an
 
 For the concrete tool-by-tool boundary guide, see [Ecosystem Fit](/guide/ecosystem-fit).
 
+For named personas, jobs to be done, buyer messaging, and explicit anti-pitch guidance, see [Target Users](/guide/target-users).
+
 ## Scope Decision
 
 The core story for this repo is participant-connected application development:
@@ -37,6 +39,8 @@ The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK own wallet-conne
 
 ## Users And Non-Goals
 
+This repo should not market itself as the answer for every Canton buyer. The target-user detail lives in [Target Users](/guide/target-users); the summary below keeps the positioning note aligned with that page.
+
 ### Primary Users
 
 - application teams building directly against participant Ledger API V2
@@ -47,9 +51,9 @@ The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK own wallet-conne
 ### Secondary Users
 
 - teams adding public Splice reads through focused add-on packages
+- teams using selected stable external Validator or published Splice interfaces around participant-connected app code
 - teams using stable Splice token-standard helpers on top of participant ledger access
-- developers who need validator-facing ANS or filtered Scan Proxy support
-- integrators who need boundary adapters to bridge official wallet tooling into `cantonjs`
+- integrators who need narrow boundary adapters to bridge official wallet tooling into `cantonjs`
 
 ### Non-Goals
 
@@ -59,6 +63,7 @@ The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK own wallet-conne
 - owning wallet connection, wallet discovery, custody, or wallet-provider APIs
 - presenting `cantonjs` as the single SDK for every Canton, Splice, validator, or wallet workflow
 - moving operator-specific, validator-private, or wallet-internal concerns into the core package story
+- pitching unstable, private, or legacy compatibility surfaces as the reason the repo exists
 
 ## Package Map
 
