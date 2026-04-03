@@ -22,6 +22,8 @@ The repo is aimed first at backend or full-stack participant services, participa
 
 Start with [target users](./docs/guide/target-users.md) if you need the explicit personas, jobs to be done, current alternatives, buyer messaging, and non-goals. Scope and ecosystem boundaries: see [docs/positioning.md](./docs/positioning.md) and the [ecosystem-fit guide](./docs/guide/ecosystem-fit.md). DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack and reference-app path. The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK remain the canonical wallet-connected and wallet-provider stacks.
 
+Existing users: the current positioning reset changes the repo mental model and package-boundary guidance, not the runtime API names. See [CHANGELOG.md](./CHANGELOG.md) and the [migration notes](./docs/MIGRATING_TO_SPLICE_SUPPORT.md).
+
 Development policy: the included runtime surface is gated at 100% statements, branches, functions, and lines, and every coverage exclusion or inline `v8 ignore` must be justified in [`EXCLUSIONS.md`](./EXCLUSIONS.md).
 
 ## Features
@@ -47,8 +49,8 @@ The repo centers on an app-side Ledger API V2 core plus focused add-ons and adap
 | Tier | Package | Stability | Purpose |
 | ---- | ------- | --------- | ------- |
 | Core | `cantonjs` | GA | Application-side Ledger, Admin, and Test clients; transports; streaming; errors; chains; and runtime typing helpers |
-| Core | `cantonjs-react` | GA | Participant-private React hooks for application code |
-| Core | `cantonjs-codegen` | GA | Optional DAR-to-TypeScript convenience from existing Daml artifacts |
+| Optional Convenience | `cantonjs-react` | GA | Participant-private React hooks for application code |
+| Optional Convenience | `cantonjs-codegen` | GA | Optional DAR-to-TypeScript convenience from existing Daml artifacts |
 | Add-On | `cantonjs-splice-scan` | GA | Public Scan reads for DSO metadata, update history, and public ANS lookups |
 | Add-On | `cantonjs-splice-validator` | GA + legacy compatibility | Selected stable external validator support: ANS, filtered Scan Proxy reads, and legacy compatibility flows |
 | Add-On | `cantonjs-splice-interfaces` | GA | Stable published Splice interface descriptors and generated types |

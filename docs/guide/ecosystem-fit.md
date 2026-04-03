@@ -5,6 +5,7 @@
 This repo complements the official stack. It does not try to replace the canonical tools for Daml build workflows, full-stack onboarding, wallet-connected dApps, or wallet-provider infrastructure.
 
 If you are still deciding whether your team is a primary, secondary, or non-primary audience for this repo, start with [Target Users](/guide/target-users).
+If you are an existing user trying to understand the repositioning reset, see [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT).
 
 ## Choose Quickly
 

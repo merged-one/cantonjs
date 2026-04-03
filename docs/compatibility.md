@@ -2,6 +2,8 @@
 
 This document defines the release-line promise for the current cantonjs package set.
 
+The current positioning reset changes how the repo explains package boundaries and target users. It does not rename runtime APIs. For the story and migration framing behind that reset, see [Migration notes](./MIGRATING_TO_SPLICE_SUPPORT.md).
+
 ## Pinned Release Lines
 
 - **Canton GA line:** `3.4.x`
@@ -16,7 +18,7 @@ Anything outside those lines may still work, but it is not part of the compatibi
 
 ### GA
 
-GA packages follow the normal semver promise for the pinned release line. Bug-fix and additive changes are expected to remain backward-compatible inside the active `0.2.x` line.
+GA packages follow the normal semver promise for the pinned release line. Bug-fix and additive changes are expected to remain backward-compatible inside the active `0.3.x` line.
 
 ### Legacy Compatibility
 
