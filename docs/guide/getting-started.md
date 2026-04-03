@@ -2,7 +2,7 @@
 
 cantonjs is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2.
 
-Use it when your app or service already has participant access and you want typed Ledger, Admin, and Test clients; injected transports; streaming; and optional React or codegen support. For the canonical scope note, see [Positioning](/positioning).
+Use it when your app or service already has participant access and you want typed Ledger, Admin, and Test clients; injected transports; streaming; and optional React or codegen support. For the canonical scope note, see [Positioning](/positioning). For the tool-by-tool boundary guide, see [Ecosystem Fit](/guide/ecosystem-fit).
 
 DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack path. The official wallet stack remains the right place for wallet-connected UX and provider responsibilities.
 

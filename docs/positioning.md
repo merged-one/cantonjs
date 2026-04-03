@@ -6,6 +6,8 @@ This document is the canonical scope and positioning note for subsequent docs an
 
 `cantonjs` is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2, with optional React, codegen, and selected ecosystem add-ons around that core.
 
+For the concrete tool-by-tool boundary guide, see [Ecosystem Fit](/guide/ecosystem-fit).
+
 ## Scope Decision
 
 The core story for this repo is participant-connected application development:

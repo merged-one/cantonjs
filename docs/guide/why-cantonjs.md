@@ -2,7 +2,7 @@
 
 cantonjs exists for application teams that want direct, typed access to a Canton participant's Ledger API V2 from TypeScript. It focuses on the runtime layer inside app code: Ledger, Admin, and Test clients; transports; streaming; errors; testing; and optional React or codegen support.
 
-It is intentionally not the canonical Daml build, test, or codegen toolchain, not the official full-stack reference-app path, and not the official wallet-connected stack. Those roles remain with DPM, Quickstart, and the official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK.
+It is intentionally not the canonical Daml build, test, or codegen toolchain, not the official full-stack reference-app path, and not the official wallet-connected stack. Those roles remain with DPM, Quickstart, and the official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK. For the detailed "when to use what" matrix, see [Ecosystem Fit](/guide/ecosystem-fit).
 
 ## What Direct Participant App Teams Need
 
@@ -88,4 +88,4 @@ await client.createContract(Asset.templateId, {
 | Official wallet stack | Wallet-connected UX, wallet-provider integration, custody, and gateway responsibilities |
 | [cantonctl](https://github.com/merged-one/cantonctl) | CLI companion for sandbox, admin, and test workflows |
 
-These boundaries are captured in the canonical [Positioning note](/positioning).
+These boundaries are captured in the canonical [Positioning note](/positioning) and expanded in the [Ecosystem Fit guide](/guide/ecosystem-fit).
