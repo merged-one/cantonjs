@@ -294,7 +294,7 @@ function AssetList() {
 
 See [packages/cantonjs-react](./packages/cantonjs-react/).
 
-`cantonjs-react` stays focused on participant-private ledger state. For public Splice data, use TanStack Query directly with `cantonjs-splice-scan`; see [docs/examples/react.md](./docs/examples/react.md).
+`cantonjs-react` stays focused on participant-private ledger state. For public Splice data, use TanStack Query directly with `cantonjs-splice-scan`; see [docs/examples/react.md](./docs/examples/react.md) and [docs/examples/public-scan-dashboard.md](./docs/examples/public-scan-dashboard.md).
 
 ### Splice Packages
 

@@ -197,7 +197,8 @@ See:
 
 - [Package Architecture](/guide/package-architecture)
 - [Public Scan](/guide/scan)
-- [React dApp Example](/examples/react)
+- [Participant-Private React App Example](/examples/react)
+- [Public Scan Dashboard Example](/examples/public-scan-dashboard)
 - [Wallet Adapters](/guide/wallet-adapters)
 
 ## Cache Invalidation
