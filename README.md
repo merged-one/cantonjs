@@ -16,13 +16,21 @@
 
 ---
 
-cantonjs is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2. It provides tree-shakeable Ledger, Admin, and Test clients; injected transports; real-time streaming; structured errors; and first-class testing support for participant-connected app code.
+cantonjs is the application-side TypeScript SDK for teams building directly against a Canton participant's Ledger API V2.
+It provides tree-shakeable Ledger, Admin, and Test clients; injected transports; real-time streaming; structured errors; and first-class testing support for participant-connected app code.
 
-The repo is aimed first at backend or full-stack participant services, participant-private React apps, and integration or data teams with participant access. Public Scan consumers and advanced stable/public Splice integrators are secondary users. It is not a generic answer for Daml lifecycle, wallet discovery and provider UX, or wallet and custody infrastructure.
+The repo is aimed first at backend or full-stack participant services, participant-private React apps, and integration or data teams with participant access.
+Public Scan consumers and advanced stable/public Splice integrators are secondary users.
+It is not a generic answer for Daml lifecycle, wallet discovery and provider UX, or wallet and custody infrastructure.
 
-Start with [target users](./docs/guide/target-users.md) if you need the explicit personas, jobs to be done, current alternatives, buyer messaging, and non-goals. Scope and ecosystem boundaries: see [docs/positioning.md](./docs/positioning.md) and the [ecosystem-fit guide](./docs/guide/ecosystem-fit.md). DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack and reference-app path. The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK remain the canonical wallet-connected and wallet-provider stacks.
+Start with [target users](./docs/guide/target-users.md) if you need the explicit personas, jobs to be done, current alternatives, buyer messaging, and non-goals.
+Scope and ecosystem boundaries: see [docs/positioning.md](./docs/positioning.md) and the [ecosystem-fit guide](./docs/guide/ecosystem-fit.md).
+DPM remains canonical for Daml build, test, and codegen workflows.
+Quickstart remains the official full-stack and reference-app path.
+The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK remain the canonical wallet-connected and wallet-provider stacks.
 
-Existing users: the current positioning reset changes the repo mental model and package-boundary guidance, not the runtime API names. See [CHANGELOG.md](./CHANGELOG.md) and the [migration notes](./docs/MIGRATING_TO_SPLICE_SUPPORT.md).
+Existing users: the current positioning reset changes the repo mental model and package-boundary guidance, not the runtime API names.
+See [CHANGELOG.md](./CHANGELOG.md) and the [migration notes](./docs/MIGRATING_TO_SPLICE_SUPPORT.md).
 
 Development policy: the included runtime surface is gated at 100% statements, branches, functions, and lines, and every coverage exclusion or inline `v8 ignore` must be justified in [`EXCLUSIONS.md`](./EXCLUSIONS.md).
 
@@ -57,7 +65,8 @@ The repo centers on an app-side Ledger API V2 core plus focused add-ons and adap
 | Add-On | `cantonjs-splice-token-standard` | GA | Participant-first CIP-0056 helpers for new token transfer and allocation flows |
 | Adapter | `cantonjs-wallet-adapters` | Experimental | CIP-0103 edge adapters for official wallet-stack interop |
 
-For the canonical scope note that drives this package map, see [docs/positioning.md](./docs/positioning.md). For a tool-by-tool "when to use what" guide, see [docs/guide/ecosystem-fit.md](./docs/guide/ecosystem-fit.md).
+For the canonical scope note that drives this package map, see [docs/positioning.md](./docs/positioning.md).
+For a tool-by-tool "when to use what" guide, see [docs/guide/ecosystem-fit.md](./docs/guide/ecosystem-fit.md).
 For the persona and anti-pitch version of that same story, see [docs/guide/target-users.md](./docs/guide/target-users.md).
 
 ## Stability Tiers
@@ -296,14 +305,21 @@ function AssetList() {
 
 See [packages/cantonjs-react](./packages/cantonjs-react/).
 
-`cantonjs-react` stays focused on participant-private ledger state. For public Splice data, use TanStack Query directly with `cantonjs-splice-scan`; see [docs/examples/react.md](./docs/examples/react.md) and [docs/examples/public-scan-dashboard.md](./docs/examples/public-scan-dashboard.md).
+`cantonjs-react` stays focused on participant-private ledger state.
+For public Splice data, use TanStack Query directly with `cantonjs-splice-scan`; see [docs/examples/react.md](./docs/examples/react.md) and [docs/examples/public-scan-dashboard.md](./docs/examples/public-scan-dashboard.md).
 
 ### Splice Packages
 
-- `cantonjs-splice-scan` &mdash; GA public Scan reads for DSO metadata, updates, and public ANS lookups. Experimental Scan routes stay behind `cantonjs-splice-scan/experimental`. See [docs/guide/scan.md](./docs/guide/scan.md).
-- `cantonjs-splice-validator` &mdash; selected stable external validator support for ANS and the filtered GA Scan Proxy subset. `createLegacyWalletClient()` is legacy compatibility only and is not recommended for new transfer flows. See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
-- `cantonjs-splice-token-standard` and `cantonjs-splice-interfaces` &mdash; GA stable CIP-0056 descriptors and ledger-centric helpers for new transfer and allocation flows. See [docs/guide/token-standard.md](./docs/guide/token-standard.md).
-- `cantonjs-wallet-adapters` &mdash; experimental CIP-0103 edge adapters for browser and SDK interop with the official wallet stack. See [docs/guide/wallet-adapters.md](./docs/guide/wallet-adapters.md).
+- **`cantonjs-splice-scan`** &mdash; GA public Scan reads for DSO metadata, updates, and public ANS lookups.
+  Experimental Scan routes stay behind `cantonjs-splice-scan/experimental`.
+  See [docs/guide/scan.md](./docs/guide/scan.md).
+- **`cantonjs-splice-validator`** &mdash; selected stable external validator support for ANS and the filtered GA Scan Proxy subset.
+  `createLegacyWalletClient()` is legacy compatibility only and is not recommended for new transfer flows.
+  See [docs/guide/validator-ans.md](./docs/guide/validator-ans.md).
+- **`cantonjs-splice-token-standard`** and **`cantonjs-splice-interfaces`** &mdash; GA stable CIP-0056 descriptors and ledger-centric helpers for new transfer and allocation flows.
+  See [docs/guide/token-standard.md](./docs/guide/token-standard.md).
+- **`cantonjs-wallet-adapters`** &mdash; experimental CIP-0103 edge adapters for browser and SDK interop with the official wallet stack.
+  See [docs/guide/wallet-adapters.md](./docs/guide/wallet-adapters.md).
 
 ## Testing
 
