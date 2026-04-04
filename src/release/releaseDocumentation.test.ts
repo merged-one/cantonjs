@@ -28,8 +28,9 @@ describe('release documentation and workflow', () => {
     expect(compatibility).toContain('0.3.1')
 
     expect(migration).toContain('What Stayed in Core')
-    expect(migration).toContain('Breaking changes for the next major release')
+    expect(migration).toContain('Breaking changes introduced in `0.4.0`')
     expect(migration).toContain('0.3.1')
+    expect(migration).toContain('0.4.0')
     expect(migration).toContain('cantonjs-wallet-adapters')
     expect(migration).toContain('createLegacyWalletClient')
     expect(migration).toContain('cantonjs-splice-token-standard')

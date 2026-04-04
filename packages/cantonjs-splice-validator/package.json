@@ -1,6 +1,6 @@
 {
   "name": "cantonjs-splice-validator",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Selected stable external validator clients for ANS and filtered Scan Proxy reads",
   "type": "module",
   "main": "./dist/index.js",
@@ -44,7 +44,7 @@
     "directory": "packages/cantonjs-splice-validator"
   },
   "peerDependencies": {
-    "cantonjs": "^0.3.1"
+    "cantonjs": "^0.4.0"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",

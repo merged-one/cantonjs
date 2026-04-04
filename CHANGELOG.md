@@ -4,9 +4,11 @@ All notable changes to cantonjs are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-04-04
+
 ### Breaking
 
-- This change set is intended for the next major release. `0.3.1` is the last pre-prune line for the removed wallet and validator-overlap surfaces.
+- `0.4.0` is the ownership-prune release. `0.3.1` is the last pre-prune line for the removed wallet and validator-overlap surfaces.
 - Removed the `cantonjs-wallet-adapters` package from the repo, release flow, and active docs.
 - Removed `createLegacyWalletClient()` and the validator experimental subpath from `cantonjs-splice-validator`.
 

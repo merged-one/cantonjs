@@ -1,12 +1,12 @@
 # Migrating to the Pruned Splice Package Set
 
-This note is for existing `cantonjs` users moving onto the post-prune package set intended for the next major release.
+This note is for existing `cantonjs` users moving from the last legacy line onto the current post-prune package set introduced in `0.4.0`.
 
-## Breaking changes for the next major release
+## Breaking changes introduced in `0.4.0`
 
 `0.3.1` is the last pre-prune legacy line.
 
-The next major release removes repo-owned surfaces that blurred ownership with the official wallet stack or private/legacy validator routes:
+The `0.4.0` release removes repo-owned surfaces that blurred ownership with the official wallet stack or private/legacy validator routes:
 
 - the `cantonjs-wallet-adapters` package
 - `createLegacyWalletClient()` and its `LegacyWallet*` types from `cantonjs-splice-validator`

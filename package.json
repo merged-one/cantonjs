@@ -1,6 +1,6 @@
 {
   "name": "cantonjs",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Application-side TypeScript SDK for Canton participant Ledger API V2",
   "type": "module",
   "sideEffects": false,

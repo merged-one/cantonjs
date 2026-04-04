@@ -16,7 +16,7 @@ npm install cantonjs-react react @tanstack/react-query
 |---------|---------|
 | `react` | ^18.0.0 \|\| ^19.0.0 |
 | `@tanstack/react-query` | ^5.0.0 |
-| `cantonjs` | ^0.3.1 (optional) |
+| `cantonjs` | ^0.4.0 (optional) |
 
 ## Hooks
 
