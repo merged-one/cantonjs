@@ -2,6 +2,8 @@
 
 This guide helps you migrate from `@daml/ledger` (Daml SDK) to `cantonjs`.
 
+`@daml/ledger` and `@daml/react` are deprecated for Canton 3.3+ releases. Community-maintained replacements exist as `@c7/ledger` and `@c7/react`, but this guide is specifically for teams moving to `cantonjs`.
+
 ## Why Migrate?
 
 | Feature | @daml/ledger | cantonjs |
@@ -12,7 +14,7 @@ This guide helps you migrate from `@daml/ledger` (Daml SDK) to `cantonjs`.
 | Streaming | Polling only | WebSocket + auto-reconnect |
 | Testing | `vi.mock()` | Dependency injection |
 | Bundle format | CJS only | ESM + CJS dual |
-| React | `@daml/react` | `cantonjs-react` (TanStack Query) |
+| React | `@daml/react` (deprecated) | `cantonjs-react` (TanStack Query) |
 
 ## Client Creation
 
@@ -202,6 +204,6 @@ try {
 2. Replace client creation with `createLedgerClient` + `jsonApi`
 3. Update contract operations to use the new method signatures
 4. Replace polling with `streamUpdates` for real-time subscriptions
-5. If using React, replace `@daml/react` with `cantonjs-react`
+5. If using React, replace deprecated `@daml/react` with `cantonjs-react`
 6. Run `cantonjs-codegen` to generate type-safe template definitions
-7. Remove `@daml/ledger`, `@daml/react`, and `@daml.js/*` packages
+7. Remove deprecated `@daml/ledger`, `@daml/react`, and `@daml.js/*` packages
