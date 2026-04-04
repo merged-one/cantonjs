@@ -10,7 +10,7 @@ Canton's fundamental identity unit is the **party**, not the account or address.
 
 viem separates clients by capability (PublicClient for reads, WalletClient for writes, TestClient for dev). Canton needs a different separation aligned with its party-based model.
 
-The existing `@daml/ledger` library scopes to a party via JWT — this is the correct abstraction that cantonjs should follow.
+The existing `@daml/ledger` library is deprecated upstream for Canton 3.3+ releases, with `@c7/ledger` as the community-maintained replacement. Its party-scoped JWT model is still the correct abstraction that cantonjs should follow.
 
 ## Decision
 
@@ -35,6 +35,6 @@ Three client types, each created via factory functions:
 
 ## References
 
-- [@daml/ledger API](https://www.npmjs.com/package/@daml/ledger) — Existing party-scoped pattern
+- [@daml/ledger API](https://www.npmjs.com/package/@daml/ledger) — Deprecated historical reference for the party-scoped pattern
 - [viem clients](https://viem.sh/docs/clients/intro) — Public/Wallet/Test separation
 - [canton-ledger-api-research.md](../research/canton-ledger-api-research.md) — Section 6: Authentication Model
