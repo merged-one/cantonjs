@@ -9,7 +9,7 @@ They show `cantonjs` as an application-side Ledger API V2 SDK:
 - Public network dashboards use `cantonjs-splice-scan`
 - Wallet-connected examples start with the official dApp SDK, then hand participant connection details into `cantonjs`
 
-They do not replace Quickstart, and they do not turn `cantonjs` into the official wallet/dApp stack.
+They do not replace Quickstart, and they do not turn `cantonjs` into the official wallet-connected stack.
 
 ## Example Matrix
 

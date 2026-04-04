@@ -2,7 +2,7 @@
 
 This document is the canonical scope and positioning note for subsequent docs and messaging edits on `feat/reposition-cantonjs-as-ledger-app-sdk`.
 
-Existing users: this positioning reset changes the repo story and package boundaries, not the runtime API names. See [Migration notes](./MIGRATING_TO_SPLICE_SUPPORT.md) for the transition summary.
+Existing users: this positioning reset changes the repo story and package boundaries, and it removes the legacy wallet and validator-overlap surfaces from the current package set. See [Migration notes](./MIGRATING_TO_SPLICE_SUPPORT.md) for the transition summary.
 
 ## One-Sentence Positioning
 

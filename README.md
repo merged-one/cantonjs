@@ -25,7 +25,7 @@ It starts after Daml lifecycle, full-stack onboarding, and wallet connection are
 
 Start with [docs/positioning.md](./docs/positioning.md), the [target users guide](./docs/guide/target-users.md), and the [ecosystem-fit guide](./docs/guide/ecosystem-fit.md) for the detailed scope and boundary story.
 
-Existing users: the current positioning reset changes the repo mental model and package-boundary guidance, not the runtime API names.
+Existing users: the current positioning reset changes the repo mental model and package boundaries, and it removes the legacy wallet and validator-overlap surfaces from the current package set.
 See [CHANGELOG.md](./CHANGELOG.md) and the [migration notes](./docs/MIGRATING_TO_SPLICE_SUPPORT.md).
 
 Development policy: the included runtime surface is gated at 100% statements, branches, functions, and lines, and every coverage exclusion or inline `v8 ignore` must be justified in [`EXCLUSIONS.md`](./EXCLUSIONS.md).

@@ -5,7 +5,7 @@ It is built first for participant-connected application teams, with public Scan 
 The right tool depends on which boundary you own.
 
 This repo complements the official stack.
-It does not try to replace the canonical tools for Daml build workflows, full-stack onboarding, wallet-connected dApps, or wallet-provider infrastructure.
+It does not try to replace the canonical tools for Daml build workflows, full-stack onboarding, wallet-connected apps, or wallet-provider infrastructure.
 
 If you are still deciding whether your team is a primary, secondary, or non-primary audience for this repo, start with [Target Users](/guide/target-users).
 If you are an existing user trying to understand the repositioning reset, see [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT).
@@ -16,7 +16,7 @@ If you are an existing user trying to understand the repositioning reset, see [M
 | --- | --- | --- |
 | Build, test, and package Daml | DPM | Canonical Daml toolchain |
 | Learn the platform through a full-stack reference flow | CN Quickstart | Official end-to-end onboarding path |
-| Build a wallet-connected dApp | Official dApp SDK / dApp API / Wallet Gateway | Canonical wallet-connected boundary |
+| Build a wallet-connected app | Official dApp SDK / dApp API / Wallet Gateway | Canonical wallet-connected boundary |
 | Build a wallet, validator integration, or exchange integration | Official Wallet SDK | Canonical wallet-provider boundary |
 | Generate a thin client directly from the participant HTTP spec | JSON Ledger API + OpenAPI-generated clients | Closest to the wire |
 | Read public Splice network state | Splice public Scan APIs | Canonical public network-read boundary |
@@ -64,7 +64,7 @@ Use Quickstart when you want the official full-stack learning and reference-app 
 Use the official wallet-connected stack when your app needs wallet discovery, connection, provider semantics, and custody-aware signing flows.
 
 - **What it already does:**
-  The official dApp SDK and dApp API define the wallet-connected dApp boundary, and Wallet Gateway bridges validator-side execution to external signing and custody providers.
+  The official dApp SDK and dApp API define the wallet-connected app boundary, and Wallet Gateway bridges validator-side execution to external signing and custody providers.
   This remains the canonical stack for CIP-0103 wallet-connected flows.
 - **Where it stops:**
   That stack is not the general-purpose app runtime for participant-private backend logic, direct participant service code, or broad Ledger API V2 ergonomics outside wallet-mediated flows.

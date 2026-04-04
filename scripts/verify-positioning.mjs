@@ -57,7 +57,28 @@ const BANNED_ACTIVE_PRODUCT_DOC_PHRASES = [
   { label: 'removed experimental validator internal helper', pattern: /\bcreateExperimentalValidatorInternalClient\b/ },
   { label: 'validator internal ownership', pattern: /\bvalidator-internal\b/i },
   { label: 'react dapps wording', pattern: /\bReact hooks for Canton(?: Network)? dApps\b/i },
+  { label: 'wallet slash dapp umbrella wording', pattern: /\bwallet\/dApp stack\b/i },
+  { label: 'generic wallet-connected dapp wording', pattern: /\bwallet-connected dApps?\b/i },
+  { label: 'outdated no-runtime-api-change claim', pattern: /\bnot the runtime API names\b/i },
 ]
+
+const FILE_SPECIFIC_BANNED_PHRASES = new Map([
+  ['docs/compatibility/splice-upstream-artifacts.md', [
+    { label: 'outdated no-generated-clients milestone note', pattern: /\bNo runtime clients are generated in this milestone\b/ },
+    { label: 'outdated ans future-client wording', pattern: /\bEligible for future stable client generation\b/ },
+    { label: 'outdated scan-proxy pre-ga wording', pattern: /\bfirst-wave GA client target\b/ },
+  ]],
+])
+
+const FILE_SPECIFIC_REQUIRED_SNIPPETS = new Map([
+  ['docs/api/index.md', [
+    { label: 'splice interfaces package listing', snippet: 'cantonjs-splice-interfaces' },
+  ]],
+  ['docs/compatibility/splice-upstream-artifacts.md', [
+    { label: 'ans client provenance note', snippet: 'createAnsClient()' },
+    { label: 'scan proxy provenance note', snippet: 'createScanProxyClient()' },
+  ]],
+])
 
 const ALLOWED_BANNED_MATCHES = new Map([
   ['legacy tagline', new Set()],
@@ -187,6 +208,43 @@ function main() {
         `Active product docs reintroduced ${phrase.label} in ${relativePath}${lines ? ` (lines ${lines})` : ''}`,
       )
     }
+  }
+
+  for (const [relativePath, phrases] of FILE_SPECIFIC_BANNED_PHRASES.entries()) {
+    const content = readText(relativePath)
+
+    for (const phrase of phrases) {
+      if (!phrase.pattern.test(content)) {
+        continue
+      }
+
+      const lines = findMatchingLines(content, phrase.pattern).join(', ')
+      errors.push(
+        `${relativePath} reintroduced ${phrase.label}${lines ? ` (lines ${lines})` : ''}`,
+      )
+    }
+  }
+
+  for (const [relativePath, requiredSnippets] of FILE_SPECIFIC_REQUIRED_SNIPPETS.entries()) {
+    const content = readText(relativePath)
+
+    for (const requirement of requiredSnippets) {
+      if (content.includes(requirement.snippet)) {
+        continue
+      }
+
+      errors.push(`${relativePath} is missing ${requirement.label}`)
+    }
+  }
+
+  const experimentalDoc = readText('docs/experimental/splice-internal-apis.md')
+  if (
+    experimentalDoc.includes('cantonjs-splice-validator/experimental')
+    && !/removed from the current package set/i.test(experimentalDoc)
+  ) {
+    errors.push(
+      'docs/experimental/splice-internal-apis.md must explicitly mark cantonjs-splice-validator/experimental as removed from the current package set',
+    )
   }
 
   const discoveredPackageJsons = [

@@ -3,6 +3,7 @@
 The Splice support in this repo is intentionally split by stability boundary.
 
 Stable imports target Ledger API V2, stable Token Standard interfaces, or documented public/external HTTP APIs. Experimental imports are reserved for still-moving surfaces that are explicitly outside the GA promise.
+In the current package set, the only experimental import path is `cantonjs-splice-scan/experimental`.
 
 ## Current Boundary
 
@@ -14,6 +15,8 @@ Stable imports target Ledger API V2, stable Token Standard interfaces, or docume
 | Token Standard helpers and stable descriptors | GA | `cantonjs-splice-token-standard`, `cantonjs-splice-interfaces` | Participant-first, ledger-centric |
 | Validator ANS external API | GA | `cantonjs-splice-validator` | Selected stable external Validator support only |
 | Filtered public Scan Proxy subset | GA | `cantonjs-splice-validator` | `createScanProxyClient()` only for Scan-backed external routes |
+
+Validator support has no experimental import path in the current line.
 
 ## Rules
 
@@ -41,6 +44,12 @@ Stable validator ANS:
 
 ```ts
 import { createAnsClient } from 'cantonjs-splice-validator'
+```
+
+Stable validator Scan Proxy subset:
+
+```ts
+import { createScanProxyClient } from 'cantonjs-splice-validator'
 ```
 
 ## Related Docs

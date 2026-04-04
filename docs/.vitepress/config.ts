@@ -12,11 +12,19 @@ export default defineConfig({
       { text: 'Architecture', link: '/guide/package-architecture' },
       { text: 'Ecosystem Fit', link: '/guide/ecosystem-fit' },
       { text: 'Positioning', link: '/positioning' },
-      { text: 'Add-Ons', link: '/guide/scan' },
+      {
+        text: 'Splice Add-Ons',
+        items: [
+          { text: 'Public Scan', link: '/guide/scan' },
+          { text: 'Validator ANS', link: '/guide/validator-ans' },
+          { text: 'Token Standard', link: '/guide/token-standard' },
+          { text: 'GA vs Experimental', link: '/guide/ga-vs-experimental' },
+        ],
+      },
       { text: 'API', link: '/api/' },
       { text: 'Examples', link: '/examples/' },
       {
-        text: 'Packages',
+        text: 'Convenience',
         items: [
           { text: 'cantonjs-codegen', link: '/packages/codegen' },
           { text: 'cantonjs-react', link: '/packages/react' },

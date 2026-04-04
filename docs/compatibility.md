@@ -23,6 +23,7 @@ GA packages follow the normal semver promise for the pinned release line.
 ### Experimental
 
 Experimental packages and `/experimental` entrypoints may break in minor releases. They are intentionally outside the GA promise because the upstream surface is internal, deprecated, pre-alpha, or still settling.
+The only current experimental import path is `cantonjs-splice-scan/experimental`.
 
 ## Support Matrix
 

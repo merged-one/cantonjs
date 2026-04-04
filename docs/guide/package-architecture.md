@@ -10,9 +10,9 @@ This split is intentional.
 The repo is not trying to wrap every Canton, Splice, validator, or wallet surface under one promise.
 
 If you used `cantonjs` before this reset, read [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT) first.
-The package story changed; runtime API names did not.
+The package story changed, and older wallet/validator-overlap exports were removed from the current line.
 
-## Official Wallet And dApp Interop Strategy
+## Official Wallet Interop Strategy
 
 `cantonjs` does not compete with the official wallet-connected stack.
 

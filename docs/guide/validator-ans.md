@@ -54,9 +54,9 @@ If your operator publishes Scan Proxy on a distinct host, override `scanProxyBas
 
 ```ts
 const created = await ans.createAnsEntry({
-  name: 'wallet.unverified.ans',
-  url: 'https://wallet.example.com',
-  description: 'Wallet entry',
+  name: 'app.unverified.ans',
+  url: 'https://app.example.com',
+  description: 'Application entry',
 })
 
 const entries = await ans.listAnsEntries()
@@ -71,7 +71,7 @@ Use Scan Proxy for public lookups that your validator exposes locally:
 
 ```ts
 const dso = await scanProxy.getDsoInfo()
-const byName = await scanProxy.lookupAnsEntryByName({ name: 'wallet.unverified.ans' })
+const byName = await scanProxy.lookupAnsEntryByName({ name: 'app.unverified.ans' })
 const byParty = await scanProxy.lookupAnsEntryByParty({ party: 'Alice::validator' })
 const listed = await scanProxy.listAnsEntries({})
 
