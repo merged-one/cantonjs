@@ -23,13 +23,15 @@ describe('release documentation and workflow', () => {
     expect(readme).toContain('./docs/MIGRATING_TO_SPLICE_SUPPORT.md')
 
     expect(compatibility).toContain('## Support Matrix')
-    expect(compatibility).toContain('Legacy compatibility')
     expect(compatibility).toContain('Experimental')
-    expect(compatibility).toContain('createLegacyWalletClient()')
-    expect(compatibility).toContain('not recommended for new transfer flows')
+    expect(compatibility).toContain('Last pre-prune legacy line')
+    expect(compatibility).toContain('0.3.1')
 
     expect(migration).toContain('What Stayed in Core')
-    expect(migration).toContain('legacy compatibility only')
+    expect(migration).toContain('Breaking changes for the next major release')
+    expect(migration).toContain('0.3.1')
+    expect(migration).toContain('cantonjs-wallet-adapters')
+    expect(migration).toContain('createLegacyWalletClient')
     expect(migration).toContain('cantonjs-splice-token-standard')
   })
 
@@ -42,7 +44,6 @@ describe('release documentation and workflow', () => {
     expect(releaseWorkflow).toContain('cd packages/cantonjs-splice-scan')
     expect(releaseWorkflow).toContain('cd packages/cantonjs-splice-validator')
     expect(releaseWorkflow).toContain('cd packages/cantonjs-splice-token-standard')
-    expect(releaseWorkflow).toContain('cd packages/cantonjs-wallet-adapters')
     expect(releaseWorkflow).toContain('npm publish --access public --provenance')
   })
 })

@@ -1,6 +1,7 @@
 # Splice Upstream Artifacts
 
-This repo vendors only official raw Splice OpenAPI specs pinned to a release tag. No runtime clients are generated in this milestone.
+This repo vendors official raw Splice OpenAPI specs pinned to a release tag.
+The current package set derives a narrow set of GA and experimental wrappers from those artifacts and keeps the remaining specs only for provenance, classification, and future review.
 
 - Upstream repository: `hyperledger-labs/splice`
 - Resolved tag: `0.5.17`
@@ -14,16 +15,18 @@ The vendored sources come directly from `raw.githubusercontent.com` at the resol
 
 | File | Upstream signal | cantonjs classification | Client-generation policy |
 | --- | --- | --- | --- |
-| `scan.yaml` | The raw spec declares `external`, `internal`, `deprecated`, and `pre-alpha` tags in one file. | `legacy` | Keep as provenance and source inventory only. Do not generate a stable client from the monolithic file until a filtering/splitting step exists. |
-| `scan-proxy.yaml` | Validator-local `scan-proxy` endpoints with no explicit `external` marker in the raw file. | `legacy` | Treat as a compatibility proxy, not a first-wave GA client target. This classification is an inference from the raw spec's proxy role and overlap with Scan data. |
-| `ans-external.yaml` | The raw filename is `ans-external.yaml` and operations use `external.ans`. | `external` | Eligible for future stable client generation once typed coverage and compatibility tests exist. |
-| `wallet-external.yaml` | The raw filename is `wallet-external.yaml` and operations use `external.wallet`. | `legacy` | Official public artifact, but cantonjs treats these wallet transfer-offer workflows as legacy relative to token-standard-first support. |
-| `validator-internal.yaml` | The raw filename is `validator-internal.yaml`. | `internal/experimental` | Vendored for provenance only. No stable client generation; assume no backward-compatibility guarantee. |
+| `scan.yaml` | The raw spec declares `external`, `internal`, `deprecated`, and `pre-alpha` tags in one file. | `mixed inventory` | Source inventory for `cantonjs-splice-scan`. The GA entrypoint exposes the public subset; `cantonjs-splice-scan/experimental` keeps the internal, deprecated, and pre-alpha routes behind an explicit instability fence. |
+| `scan-proxy.yaml` | Validator-local `scan-proxy` endpoints with no explicit `external` marker in the raw file. | `filtered external subset` | Source inventory for the filtered `createScanProxyClient()` GA surface. Only routes whose backing Scan semantics resolve to the external/public boundary stay in the current package set. |
+| `ans-external.yaml` | The raw filename is `ans-external.yaml` and operations use `external.ans`. | `external` | Source inventory for the GA `createAnsClient()` surface in `cantonjs-splice-validator`. |
+| `wallet-external.yaml` | The raw filename is `wallet-external.yaml` and operations use `external.wallet`. | `legacy` | Vendored for provenance only. The current package set does not publish a client for these wallet-oriented routes. |
+| `validator-internal.yaml` | The raw filename is `validator-internal.yaml`. | `internal/provenance` | Vendored for provenance only. The current package set does not export a client or subpath for validator-internal routes. |
 
 ## Policy
 
-- `external` means the upstream raw artifact is treated as the candidate stable boundary and is expected to remain backward-compatible.
-- `legacy` means the artifact is official and may still be public, but cantonjs will not treat it as the primary GA integration target.
-- `internal/experimental` means no compatibility guarantee; any future use must stay behind explicit experimental APIs.
+- `external` means the upstream raw artifact maps cleanly to a stable, documented boundary in the current package set.
+- `filtered external subset` means the raw artifact mixes proxy mechanics with public data semantics, so only the externally justified subset is exposed.
+- `mixed inventory` means one raw artifact contains both GA and non-GA operations, and the package surface splits those concerns explicitly.
+- `legacy` means the artifact is official but is no longer part of the current repo-owned package story.
+- `internal/provenance` means the artifact is vendored only so the repo can pin, classify, and review it without promising a client surface.
 
 This document complements [ADR 0009](../adr/0009-splice-full-support-architecture.md) and the pinned provenance in `vendor/splice/manifest.json`.

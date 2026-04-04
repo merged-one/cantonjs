@@ -1,6 +1,8 @@
 # cantonjs-react
 
-React hooks for Canton Network dApps, powered by TanStack Query.
+Participant-private React hooks for Canton ledger applications, powered by TanStack Query.
+
+Use this package only once your React app already has participant access. If that access comes from the official wallet stack, construct `createLedgerClient(...)` first and then pass it into `CantonProvider`.
 
 ## Installation
 
@@ -14,7 +16,7 @@ npm install cantonjs-react react @tanstack/react-query
 |---------|---------|
 | `react` | ^18.0.0 \|\| ^19.0.0 |
 | `@tanstack/react-query` | ^5.0.0 |
-| `cantonjs` | ^0.0.1 (optional) |
+| `cantonjs` | ^0.3.1 (optional) |
 
 ## Hooks
 

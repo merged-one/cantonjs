@@ -2,7 +2,7 @@
 
 This document defines the release-line promise for the current cantonjs package set.
 
-The current positioning reset changes how the repo explains package boundaries and target users. It does not rename runtime APIs. For the story and migration framing behind that reset, see [Migration notes](./MIGRATING_TO_SPLICE_SUPPORT.md).
+The current package set reflects the ownership prune described in [Migration notes](./MIGRATING_TO_SPLICE_SUPPORT.md): participant-runtime core, optional convenience packages, and selected stable/public Splice add-ons only.
 
 ## Pinned Release Lines
 
@@ -18,15 +18,12 @@ Anything outside those lines may still work, but it is not part of the compatibi
 
 ### GA
 
-GA packages follow the normal semver promise for the pinned release line. Bug-fix and additive changes are expected to remain backward-compatible inside the active `0.3.x` line.
-
-### Legacy Compatibility
-
-Legacy compatibility APIs remain supported so existing integrations keep working, but they are not the recommended starting point for new projects and may receive a narrower scope of future enhancements.
+GA packages follow the normal semver promise for the pinned release line.
 
 ### Experimental
 
 Experimental packages and `/experimental` entrypoints may break in minor releases. They are intentionally outside the GA promise because the upstream surface is internal, deprecated, pre-alpha, or still settling.
+The only current experimental import path is `cantonjs-splice-scan/experimental`.
 
 ## Support Matrix
 
@@ -36,17 +33,22 @@ Experimental packages and `/experimental` entrypoints may break in minor release
 | `cantonjs-codegen` | GA | N/A | N/A | DAR-to-TypeScript codegen, not tied to a specific Splice bundle |
 | `cantonjs-react` | GA | `3.4.x` | N/A | Participant-private ledger hooks only |
 | `cantonjs-splice-scan` | GA | `3.4.x`-backed Splice deployments | `0.5.x` | Main entrypoint is limited to public Scan semantics; `/experimental` is outside the GA promise |
-| `cantonjs-splice-validator` | GA + legacy compatibility | `3.4.x`-backed Splice deployments | `0.5.x` | GA for ANS external and the filtered Scan Proxy subset; `createLegacyWalletClient()` is legacy compatibility only |
+| `cantonjs-splice-validator` | GA | `3.4.x`-backed Splice deployments | `0.5.x` | GA for ANS external and the filtered Scan Proxy subset only |
 | `cantonjs-splice-interfaces` | GA | N/A | `0.5.x` | Generated from the official `0.5.17` Splice release bundle |
 | `cantonjs-splice-token-standard` | GA | `3.4.x` | `0.5.x` | Recommended package for new transfer and allocation flows |
-| `cantonjs-wallet-adapters` | Experimental | `3.4.x`-era wallet ecosystems | `0.5.x` ecosystem | Useful for boundary interop, but not yet a GA compatibility promise |
+
+## Last pre-prune legacy line
+
+`0.3.1` is the last release line that still carried the removed wallet and validator-overlap surfaces.
+
+Use that line only while migrating older integrations. New work should stay on the current package set: official wallet tooling for connection, `cantonjs` for participant runtime, and Token Standard helpers for new transfer flows.
 
 ## Policy Rules
 
 1. A release-line promise exists only for packages listed as GA in the matrix above.
 2. Splice package compatibility is pinned to the named `0.5.x` line and the vendored `0.5.17` artifacts in this repo.
-3. Experimental imports such as `cantonjs-splice-scan/experimental` and `cantonjs-splice-validator/experimental` may break in minor releases.
-4. Legacy wallet APIs remain available for compatibility, but they are not recommended for new transfer flows. Prefer `cantonjs-splice-token-standard`.
+3. Experimental imports such as `cantonjs-splice-scan/experimental` may break in minor releases.
+4. Older wallet-style or private validator flows are not part of the current package promise. Prefer `cantonjs-splice-token-standard` for new transfer flows.
 5. New Canton or Splice release lines are not implicitly supported. The matrix must be updated first.
 
 ## Related Docs

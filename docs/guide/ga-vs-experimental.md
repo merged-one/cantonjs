@@ -2,7 +2,8 @@
 
 The Splice support in this repo is intentionally split by stability boundary.
 
-Stable imports target Ledger API V2, stable Token Standard interfaces, or documented public/external HTTP APIs. Experimental imports isolate internal, deprecated, legacy, or still-moving surfaces. In wallet interop, "experimental" means thin boundary wrappers around an upstream ecosystem that is still settling, not a competing wallet stack.
+Stable imports target Ledger API V2, stable Token Standard interfaces, or documented public/external HTTP APIs. Experimental imports are reserved for still-moving surfaces that are explicitly outside the GA promise.
+In the current package set, the only experimental import path is `cantonjs-splice-scan/experimental`.
 
 ## Current Boundary
 
@@ -14,17 +15,16 @@ Stable imports target Ledger API V2, stable Token Standard interfaces, or docume
 | Token Standard helpers and stable descriptors | GA | `cantonjs-splice-token-standard`, `cantonjs-splice-interfaces` | Participant-first, ledger-centric |
 | Validator ANS external API | GA | `cantonjs-splice-validator` | Selected stable external Validator support only |
 | Filtered public Scan Proxy subset | GA | `cantonjs-splice-validator` | `createScanProxyClient()` only for Scan-backed external routes |
-| Legacy wallet-external compatibility | Legacy compatibility | `cantonjs-splice-validator` | `createLegacyWalletClient()`, prefer Token Standard for new flows |
-| Validator internal and internal Scan Proxy routes | Experimental | `cantonjs-splice-validator/experimental` | Never root-exported |
-| CIP-0103 wallet adapters | Experimental | `cantonjs-wallet-adapters` | Thin edge adapters for official wallet/provider output, not wallet discovery or provider ownership |
+
+Validator support has no experimental import path in the current line.
 
 ## Rules
 
 1. Use GA imports when the upstream surface is stable and public.
 2. Treat `/experimental` imports as minor-release-breakable unless the docs say otherwise.
-3. Prefer Token Standard integrations over older wallet-external transfer flows for new work.
+3. Prefer Token Standard integrations over older validator-hosted wallet-style flows for new work.
 4. Keep validator-private assumptions and operator-specific URLs out of shared presets.
-5. Use the official dApp SDK for provider discovery and connection UX even when you later adapt the connected provider into `cantonjs`.
+5. Use the official dApp SDK for provider discovery and connection UX; `cantonjs` starts only after participant connection details already exist.
 
 ## Import Examples
 
@@ -46,18 +46,16 @@ Stable validator ANS:
 import { createAnsClient } from 'cantonjs-splice-validator'
 ```
 
-Explicitly experimental validator internals:
+Stable validator Scan Proxy subset:
 
 ```ts
-import { createExperimentalValidatorInternalClient } from 'cantonjs-splice-validator/experimental'
+import { createScanProxyClient } from 'cantonjs-splice-validator'
 ```
 
 ## Related Docs
 
 - [ADR 0009](/adr/0009-splice-full-support-architecture)
 - [Package Architecture](/guide/package-architecture)
-- [Splice Internal APIs](/experimental/splice-internal-apis)
 - [Public Scan](/guide/scan)
 - [Validator ANS](/guide/validator-ans)
 - [Token Standard](/guide/token-standard)
-- [Wallet Adapters](/guide/wallet-adapters)

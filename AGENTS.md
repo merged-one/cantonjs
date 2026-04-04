@@ -65,7 +65,7 @@ Complementary to cantonctl's E1xxx-E8xxx:
 | Package | Purpose |
 |---------|---------|
 | `packages/cantonjs-codegen/` | CLI tool: DAR → TypeScript codegen (`cantonjs-codegen --dar <path> --output <dir>`) |
-| `packages/cantonjs-react/` | React hooks for Canton dApps (CantonProvider, useContracts, useCreateContract, useExercise, useStreamContracts) |
+| `packages/cantonjs-react/` | Participant-private React hooks (CantonProvider, useContracts, useCreateContract, useExercise, useStreamContracts) |
 
 ## Test Patterns
 

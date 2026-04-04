@@ -7,7 +7,7 @@ The GA surface is intentionally narrow:
 - `createAnsClient()` for `ans-external`
 - `createScanProxyClient()` for the filtered public subset of `scan-proxy`
 
-It is not a wrapper for the full validator API, and it does not turn validator-private routes into part of the main repo promise. `validator-internal` stays behind the experimental subpath and is documented separately in the [GA vs Experimental guide](/guide/ga-vs-experimental).
+It is not a wrapper for the full validator API, and it does not turn validator-private routes into part of the main repo promise.
 
 ## Install
 
@@ -54,9 +54,9 @@ If your operator publishes Scan Proxy on a distinct host, override `scanProxyBas
 
 ```ts
 const created = await ans.createAnsEntry({
-  name: 'wallet.unverified.ans',
-  url: 'https://wallet.example.com',
-  description: 'Wallet entry',
+  name: 'app.unverified.ans',
+  url: 'https://app.example.com',
+  description: 'Application entry',
 })
 
 const entries = await ans.listAnsEntries()
@@ -71,7 +71,7 @@ Use Scan Proxy for public lookups that your validator exposes locally:
 
 ```ts
 const dso = await scanProxy.getDsoInfo()
-const byName = await scanProxy.lookupAnsEntryByName({ name: 'wallet.unverified.ans' })
+const byName = await scanProxy.lookupAnsEntryByName({ name: 'app.unverified.ans' })
 const byParty = await scanProxy.lookupAnsEntryByParty({ party: 'Alice::validator' })
 const listed = await scanProxy.listAnsEntries({})
 
@@ -81,6 +81,6 @@ console.log(byParty)
 console.log(listed)
 ```
 
-For new app flows, keep ANS and public Scan Proxy reads distinct from legacy `wallet-external` compatibility flows. Reach for `createLegacyWalletClient()` only when you must interoperate with older transfer-offer integrations.
+For new app flows, keep ANS and public Scan Proxy reads distinct from token transfer and allocation flows. Use Token Standard helpers for new transfer work instead of older validator-hosted wallet-style routes.
 
-See [Package Architecture](/guide/package-architecture) for the exact place of validator support relative to public Scan, Token Standard helpers, stable interfaces, and adapters.
+See [Package Architecture](/guide/package-architecture) for the exact place of validator support relative to public Scan, Token Standard helpers, and stable interfaces.

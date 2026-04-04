@@ -1,5 +1,8 @@
 # Design Decisions
 
+> [!NOTE]
+> Historical design document. It may discuss package shapes or ecosystem boundaries that predate the current ownership-pruned product story. For current guidance, start with [Positioning](/positioning), [Package Architecture](/guide/package-architecture), and [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT).
+
 > Foundational architecture decisions for cantonjs as an application-side TypeScript SDK for participant Ledger API V2.
 > Each decision is backed by research from the blockchain client library analysis and Canton Ledger API V2 research.
 

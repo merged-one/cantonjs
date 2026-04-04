@@ -1,5 +1,8 @@
 # ADR 0009: Splice Full-Support Architecture
 
+> [!NOTE]
+> Historical ADR. It may reference experimental or legacy package surfaces that are no longer part of the current package set. For current guidance, see [Positioning](/positioning), [Package Architecture](/guide/package-architecture), and [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT).
+
 **Status:** Accepted
 **Date:** 2026-04-02
 **Authors:** Charles Dusek

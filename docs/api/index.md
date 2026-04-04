@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API reference for cantonjs.
+Complete API reference for the core `cantonjs` runtime plus the currently documented add-on packages.
 
 ## Clients
 
@@ -56,8 +56,8 @@ Complete API reference for cantonjs.
 |---------|-------------|
 | [`cantonjs`](https://github.com/merged-one/cantonjs) | Core library |
 | [`cantonjs-codegen`](/packages/codegen) | DAR-to-TypeScript code generation CLI |
-| [`cantonjs-react`](/packages/react) | React hooks for Canton dApps |
+| [`cantonjs-react`](/packages/react) | Participant-private React hooks for ledger apps |
+| [`cantonjs-splice-interfaces`](https://github.com/merged-one/cantonjs/tree/main/packages/cantonjs-splice-interfaces) | Stable published Splice descriptors and generated types |
 | [`cantonjs-splice-scan`](/guide/scan) | Public Scan client for Splice networks |
-| [`cantonjs-splice-validator`](/guide/validator-ans) | Validator ANS and public Scan Proxy clients |
+| [`cantonjs-splice-validator`](/guide/validator-ans) | Selected stable external Validator support: ANS plus filtered Scan Proxy reads |
 | [`cantonjs-splice-token-standard`](/guide/token-standard) | Ledger-centric Token Standard helpers |
-| [`cantonjs-wallet-adapters`](/guide/wallet-adapters) | Experimental CIP-0103 wallet boundary adapters |

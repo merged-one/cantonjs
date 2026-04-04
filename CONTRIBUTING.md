@@ -121,7 +121,7 @@ cantonjs/
     admin/         # Subpath barrel: cantonjs/admin
   packages/
     cantonjs-codegen/   # CLI: DAR -> TypeScript codegen
-    cantonjs-react/     # React hooks for Canton dApps
+    cantonjs-react/     # Participant-private React hooks for Canton ledger apps
   docs/
     guide/         # VitePress guide pages
     api/           # API reference pages

@@ -5,7 +5,7 @@ It is built first for participant-connected application teams, with public Scan 
 The right tool depends on which boundary you own.
 
 This repo complements the official stack.
-It does not try to replace the canonical tools for Daml build workflows, full-stack onboarding, wallet-connected dApps, or wallet-provider infrastructure.
+It does not try to replace the canonical tools for Daml build workflows, full-stack onboarding, wallet-connected apps, or wallet-provider infrastructure.
 
 If you are still deciding whether your team is a primary, secondary, or non-primary audience for this repo, start with [Target Users](/guide/target-users).
 If you are an existing user trying to understand the repositioning reset, see [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT).
@@ -16,7 +16,7 @@ If you are an existing user trying to understand the repositioning reset, see [M
 | --- | --- | --- |
 | Build, test, and package Daml | DPM | Canonical Daml toolchain |
 | Learn the platform through a full-stack reference flow | CN Quickstart | Official end-to-end onboarding path |
-| Build a wallet-connected dApp | Official dApp SDK / dApp API / Wallet Gateway | Canonical wallet-connected boundary |
+| Build a wallet-connected app | Official dApp SDK / dApp API / Wallet Gateway | Canonical wallet-connected boundary |
 | Build a wallet, validator integration, or exchange integration | Official Wallet SDK | Canonical wallet-provider boundary |
 | Generate a thin client directly from the participant HTTP spec | JSON Ledger API + OpenAPI-generated clients | Closest to the wire |
 | Read public Splice network state | Splice public Scan APIs | Canonical public network-read boundary |
@@ -64,13 +64,13 @@ Use Quickstart when you want the official full-stack learning and reference-app 
 Use the official wallet-connected stack when your app needs wallet discovery, connection, provider semantics, and custody-aware signing flows.
 
 - **What it already does:**
-  The official dApp SDK and dApp API define the wallet-connected dApp boundary, and Wallet Gateway bridges validator-side execution to external signing and custody providers.
+  The official dApp SDK and dApp API define the wallet-connected app boundary, and Wallet Gateway bridges validator-side execution to external signing and custody providers.
   This remains the canonical stack for CIP-0103 wallet-connected flows.
 - **Where it stops:**
   That stack is not the general-purpose app runtime for participant-private backend logic, direct participant service code, or broad Ledger API V2 ergonomics outside wallet-mediated flows.
 - **What cantonjs adds:**
   `cantonjs` gives participant-connected apps direct Ledger API V2 clients and runtime helpers once participant access already exists.
-  At the wallet boundary, `cantonjs-wallet-adapters` stays intentionally narrow and adapter-level so the official stack remains the source of truth for discovery, connection UX, and provider ownership.
+  At the wallet boundary, the hand-off is direct: once official tooling exposes the ledger URL, token, and active party context, app code can construct `createLedgerClient(...)`.
 
 ## Official Wallet SDK
 
@@ -104,10 +104,10 @@ Use the published external Validator APIs when your app needs validator-hosted H
   The external Validator APIs provide deployment-facing HTTP routes such as `ans-external` and validator-hosted proxy access to selected public Scan data.
   They are the canonical boundary for those validator-published workflows.
 - **Where it stops:**
-  They are not a replacement for participant Ledger API access, and they do not make validator-internal or other operator-private routes part of the stable public contract.
+  They are not a replacement for participant Ledger API access, and they do not make private operator routes part of the stable public contract.
   Legacy `wallet-external` flows also remain compatibility surfaces, not the preferred foundation for new token flows.
 - **What cantonjs adds:**
-  `cantonjs-splice-validator` wraps the stable validator-published boundary that fits this repo: GA ANS support, a filtered GA Scan Proxy client limited to external semantics, and clearly named legacy compatibility helpers for older `wallet-external` integrations.
+  `cantonjs-splice-validator` wraps the stable validator-published boundary that fits this repo: GA ANS support and a filtered GA Scan Proxy client limited to external semantics.
 
 ## Published Splice Daml APIs / Token Standard
 

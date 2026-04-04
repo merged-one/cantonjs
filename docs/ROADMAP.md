@@ -1,5 +1,8 @@
 # cantonjs Roadmap
 
+> [!NOTE]
+> Historical roadmap. It may describe package surfaces or messaging that predate the current ownership-pruned product story. For current guidance, start with [Positioning](/positioning), [Package Architecture](/guide/package-architecture), and [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT).
+
 > Development plan for cantonjs as an application-side TypeScript SDK for participant Ledger API V2.
 > Phases are sequenced to deliver value incrementally while building toward full Canton Ledger API V2 coverage.
 

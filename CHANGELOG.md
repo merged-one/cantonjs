@@ -4,24 +4,17 @@ All notable changes to cantonjs are documented in this file.
 
 ## [Unreleased]
 
+### Breaking
+
+- This change set is intended for the next major release. `0.3.1` is the last pre-prune line for the removed wallet and validator-overlap surfaces.
+- Removed the `cantonjs-wallet-adapters` package from the repo, release flow, and active docs.
+- Removed `createLegacyWalletClient()` and the validator experimental subpath from `cantonjs-splice-validator`.
+
 ### Changed
 
-- **Positioning reset:** the repo is now documented explicitly as the application-side TypeScript SDK for direct Canton participant Ledger API V2 work.
-  New docs include named target users, package-boundary guidance, persona-led examples, and CI guards against messaging drift.
-- **Package mental model** is now explicit:
-  `cantonjs` is the core SDK;
-  `cantonjs-react` and `cantonjs-codegen` are optional convenience packages;
-  public/stable Splice surfaces live in focused add-ons;
-  `cantonjs-wallet-adapters` remains experimental edge interop.
-- **Splice add-on scope:** selected stable/public Splice support is now documented as add-on scope only.
-  Internal validator routes, wallet-internal flows, and other private operator surfaces remain outside the main GA story.
-- **Migration notes** for the positioning reset now cover the canonical role of DPM, Quickstart, the official dApp SDK / dApp API / Wallet Gateway, and the official Wallet SDK.
-
-### Unchanged
-
-- No runtime API names changed as part of the positioning reset.
-- Existing package entrypoints remain the same.
-  This milestone changes repo story, package boundaries, examples, and release guidance rather than expanding the runtime surface.
+- The repo is now documented as a participant-runtime-first SDK: core `cantonjs`, optional convenience packages, and selected stable/public Splice add-ons only.
+- Wallet-connected guidance now uses a direct official-wallet hand-off pattern instead of a repo-owned adapter layer.
+- Compatibility and migration docs now point older transfer and wallet flows to the last legacy line or the appropriate official upstream tooling.
 
 ## [0.3.1] - 2026-04-03
 
