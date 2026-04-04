@@ -20,9 +20,6 @@ const COMMAND_SETS = {
     ['npm', ['--prefix', 'packages/cantonjs-splice-token-standard', 'run', 'typecheck']],
     ['npm', ['--prefix', 'packages/cantonjs-splice-token-standard', 'test']],
     ['npm', ['--prefix', 'packages/cantonjs-splice-token-standard', 'run', 'build']],
-    ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'run', 'typecheck']],
-    ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'test']],
-    ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'run', 'build']],
   ],
   coverage: [
     ['npm', ['run', 'build']],
@@ -30,7 +27,6 @@ const COMMAND_SETS = {
     ['npm', ['--prefix', 'packages/cantonjs-splice-scan', 'run', 'test:coverage']],
     ['npm', ['--prefix', 'packages/cantonjs-splice-validator', 'run', 'test:coverage']],
     ['npm', ['--prefix', 'packages/cantonjs-splice-token-standard', 'run', 'test:coverage']],
-    ['npm', ['--prefix', 'packages/cantonjs-wallet-adapters', 'run', 'test:coverage']],
   ],
   'ci-pr': [
     ['npm', ['run', 'typecheck']],

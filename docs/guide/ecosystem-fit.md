@@ -70,7 +70,7 @@ Use the official wallet-connected stack when your app needs wallet discovery, co
   That stack is not the general-purpose app runtime for participant-private backend logic, direct participant service code, or broad Ledger API V2 ergonomics outside wallet-mediated flows.
 - **What cantonjs adds:**
   `cantonjs` gives participant-connected apps direct Ledger API V2 clients and runtime helpers once participant access already exists.
-  At the wallet boundary, `cantonjs-wallet-adapters` stays intentionally narrow and adapter-level so the official stack remains the source of truth for discovery, connection UX, and provider ownership.
+  At the wallet boundary, the hand-off is direct: once official tooling exposes the ledger URL, token, and active party context, app code can construct `createLedgerClient(...)`.
 
 ## Official Wallet SDK
 
@@ -104,10 +104,10 @@ Use the published external Validator APIs when your app needs validator-hosted H
   The external Validator APIs provide deployment-facing HTTP routes such as `ans-external` and validator-hosted proxy access to selected public Scan data.
   They are the canonical boundary for those validator-published workflows.
 - **Where it stops:**
-  They are not a replacement for participant Ledger API access, and they do not make validator-internal or other operator-private routes part of the stable public contract.
+  They are not a replacement for participant Ledger API access, and they do not make private operator routes part of the stable public contract.
   Legacy `wallet-external` flows also remain compatibility surfaces, not the preferred foundation for new token flows.
 - **What cantonjs adds:**
-  `cantonjs-splice-validator` wraps the stable validator-published boundary that fits this repo: GA ANS support, a filtered GA Scan Proxy client limited to external semantics, and clearly named legacy compatibility helpers for older `wallet-external` integrations.
+  `cantonjs-splice-validator` wraps the stable validator-published boundary that fits this repo: GA ANS support and a filtered GA Scan Proxy client limited to external semantics.
 
 ## Published Splice Daml APIs / Token Standard
 

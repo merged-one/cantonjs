@@ -1,5 +1,8 @@
 # ADR 0006: Testing Strategy
 
+> [!NOTE]
+> Historical ADR. It may reference earlier positioning or package scope. For the current product boundary, see [Positioning](/positioning) and [Package Architecture](/guide/package-architecture).
+
 **Status:** Accepted
 **Date:** 2026-04-01
 **Authors:** Charles Dusek

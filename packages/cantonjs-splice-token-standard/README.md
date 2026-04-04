@@ -9,7 +9,7 @@ This package is for app-side ledger integration:
 - parse ledger transactions into stable token-standard history items
 - prepare and execute participant interactive submissions for external-party flows
 
-It intentionally does **not** depend on `validator-internal`, wallet-internal endpoints, or validator-private template names.
+It intentionally does **not** depend on private validator endpoints, wallet-internal endpoints, or validator-private template names.
 
 ## Status
 

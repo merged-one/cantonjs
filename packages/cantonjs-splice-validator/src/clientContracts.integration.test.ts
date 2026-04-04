@@ -3,7 +3,6 @@ import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:
 import type { AddressInfo } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createAnsClient } from './createAnsClient.js'
-import { createLegacyWalletClient } from './createLegacyWalletClient.js'
 import { createScanProxyClient } from './createScanProxyClient.js'
 import { validatorContractFixtures } from '../test/validatorContractFixtures.js'
 
@@ -23,13 +22,9 @@ afterEach(async () => {
 })
 
 describe('validator fixture contracts', () => {
-  it('hits ANS and legacy wallet fixtures over HTTP with bearer auth', async () => {
+  it('hits ANS fixtures over HTTP with bearer auth', async () => {
     const server = await startFixtureServer()
     const ansClient = createAnsClient({
-      url: `${server.url}/api/validator`,
-      token: 'validator-jwt',
-    })
-    const legacyWallet = createLegacyWalletClient({
       url: `${server.url}/api/validator`,
       token: 'validator-jwt',
     })
@@ -40,26 +35,12 @@ describe('validator fixture contracts', () => {
       description: 'Validator app',
     })
     const entries = await ansClient.listAnsEntries()
-    const createdOffer = await legacyWallet.createTransferOffer({
-      receiver_party_id: 'Receiver::validator',
-      amount: '10.0',
-      description: 'Legacy transfer offer',
-      expires_at: 1_780_000_000_000_000,
-      tracking_id: 'offer-123',
-    })
-    const offerStatus = await legacyWallet.getTransferOfferStatus({
-      tracking_id: 'offer-123',
-    })
 
     expect(createdEntry.subscriptionRequestCid).toBe('#subscription')
     expect(entries.entries).toHaveLength(1)
-    expect(createdOffer.offer_contract_id).toBe('#offer')
-    expect(offerStatus.contract_id).toBe('#offer')
     expect(server.requests.map((request) => [request.method, request.url])).toEqual([
       ['POST', '/api/validator/v0/entry/create'],
       ['GET', '/api/validator/v0/entry/all'],
-      ['POST', '/api/validator/v0/wallet/transfer-offers'],
-      ['POST', '/api/validator/v0/wallet/transfer-offers/offer-123/status'],
     ])
     expect(server.requests.every((request) => request.headers.authorization === 'Bearer validator-jwt'))
       .toBe(true)
@@ -170,17 +151,6 @@ async function routeFixtureRequest(
     respondJson(response, validatorContractFixtures.scanProxyAnsEntries)
     return
   }
-
-  if (request.method === 'POST' && request.url === '/api/validator/v0/wallet/transfer-offers') {
-    respondJson(response, validatorContractFixtures.createTransferOfferResponse)
-    return
-  }
-
-  if (request.method === 'POST' && request.url === '/api/validator/v0/wallet/transfer-offers/offer-123/status') {
-    respondJson(response, validatorContractFixtures.transferOfferStatusResponse)
-    return
-  }
-
   respondJson(response, { error: 'not found' }, 404)
 }
 

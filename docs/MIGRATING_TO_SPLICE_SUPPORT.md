@@ -1,38 +1,22 @@
-# Migrating to Splice Support
+# Migrating to the Pruned Splice Package Set
 
-This note is for existing `cantonjs` users aligning to the current package set and the positioning reset that now documents the repo around explicit package boundaries.
+This note is for existing `cantonjs` users moving onto the post-prune package set intended for the next major release.
 
-## Positioning Reset In `0.3.x`
+## Breaking changes for the next major release
 
-This branch is a docs-first positioning reset, not a runtime API expansion.
+`0.3.1` is the last pre-prune legacy line.
 
-- `cantonjs` is now explicitly framed as the application-side TypeScript SDK for direct participant Ledger API V2 work.
-- The package story is now explicit: core SDK, optional convenience packages, add-ons for selected stable/public Splice surfaces, and thin adapters for official wallet interop.
-- Wallet adapters remain experimental.
-- Selected stable/public Splice surfaces are supported; internal validator routes, wallet-internal flows, and other private operator APIs are still outside the main GA story.
-- DPM, Quickstart, the official dApp SDK / dApp API / Wallet Gateway, and the official Wallet SDK remain canonical for their own boundaries.
-- `CIP-0103` is the canonical prose name used throughout the docs.
+The next major release removes repo-owned surfaces that blurred ownership with the official wallet stack or private/legacy validator routes:
 
-## What Did Not Change
+- the `cantonjs-wallet-adapters` package
+- `createLegacyWalletClient()` and its `LegacyWallet*` types from `cantonjs-splice-validator`
+- the `cantonjs-splice-validator/experimental` subpath and its experimental validator clients/types
 
-No runtime API names changed as part of this positioning reset.
+What stays:
 
-If your existing imports still point at the same packages and entrypoints, there is usually no code migration to do. What changed is the repo mental model, package-boundary guidance, examples, and release-note language.
-
-## What Changed
-
-- `cantonjs` stays focused on generic Canton Ledger API V2 concerns: ledger/admin/test clients, transports, chains, streaming, errors, and codegen runtime types.
-- Splice-specific APIs now live in add-on packages instead of the core entrypoint.
-- GA, legacy compatibility, and experimental boundaries are now explicit at the package and subpath level.
-
-## Current Package Tiers
-
-| Tier | Packages | Notes |
-| ---- | -------- | ----- |
-| Core | `cantonjs` | App-side participant Ledger API V2 SDK |
-| Optional convenience | `cantonjs-react`, `cantonjs-codegen` | Participant-private React state and DAR-to-TypeScript convenience |
-| Add-ons | `cantonjs-splice-scan`, `cantonjs-splice-validator`, `cantonjs-splice-interfaces`, `cantonjs-splice-token-standard` | Selected stable/public Splice surfaces only |
-| Adapters | `cantonjs-wallet-adapters` | Experimental edge interop with official wallet/provider flows |
+- `cantonjs` as the participant-runtime core
+- `cantonjs-react` and `cantonjs-codegen` as optional convenience packages
+- `cantonjs-splice-scan`, `cantonjs-splice-validator`, `cantonjs-splice-interfaces`, and `cantonjs-splice-token-standard` as the supported Splice add-ons
 
 ## What Stayed in Core
 
@@ -45,11 +29,11 @@ These imports stay in `cantonjs`:
 - `streamUpdates()`, `streamContracts()`, `streamCompletions()`
 - `localNet`, `devNet`, `testNet`, `mainNet`, `withChainOverrides()`
 - `CantonjsError` and the CJ error hierarchy
-- Codegen runtime helpers such as `TemplateDescriptor`
+- codegen runtime helpers such as `TemplateDescriptor`
 
 `cantonjs-react` also stays focused on participant-private ledger state. Public Scan reads are still better handled with direct query hooks around `cantonjs-splice-scan`.
 
-## New Package Map
+## Current Package Map
 
 | Need | Package | Status |
 | ---- | ------- | ------ |
@@ -57,17 +41,12 @@ These imports stay in `cantonjs`:
 | Validator ANS and GA Scan Proxy reads | `cantonjs-splice-validator` | GA |
 | Stable Splice interface descriptors and generated types | `cantonjs-splice-interfaces` | GA |
 | Token Standard transfer and allocation helpers | `cantonjs-splice-token-standard` | GA |
-| CIP-0103 wallet boundary adapters | `cantonjs-wallet-adapters` | Experimental |
 
-These packages are not intended to make `cantonjs` the umbrella SDK for every validator, wallet, or operator surface. They describe the supported app-side boundary for this repo.
+The removed wallet and validator-overlap surfaces do not move to a replacement package inside this repo.
 
 ## Common Migration Paths
 
-### Ledger-only apps
-
-No change. Keep using `cantonjs` and optionally `cantonjs-react`.
-
-### Apps with custom public Scan fetches
+### Apps With Custom Public Scan Fetches
 
 Replace handwritten Scan HTTP calls with `cantonjs-splice-scan`:
 
@@ -78,43 +57,99 @@ const scan = createScanClient({ url: process.env.SPLICE_SCAN_URL! })
 const info = await scan.getDsoInfo()
 ```
 
-### Apps using validator ANS or public Scan Proxy reads
+### Apps Using Validator ANS Or Public Scan Proxy Reads
 
-Move that code to `cantonjs-splice-validator`:
+Keep that code on `cantonjs-splice-validator`:
 
 ```ts
 import { createAnsClient, createScanProxyClient } from 'cantonjs-splice-validator'
 ```
 
-The GA validator surface is intentionally small: ANS plus the filtered Scan Proxy subset whose backing Scan semantics are public/external on the vendored Splice line.
+The supported validator surface is now intentionally small: ANS plus the filtered Scan Proxy subset whose backing Scan semantics are public/external on the vendored Splice line.
 
-### Apps building new transfer flows
+### Apps Building New Transfer Flows
 
 Use `cantonjs-splice-interfaces` plus `cantonjs-splice-token-standard`.
 
-That keeps new work on the GA token-standard path instead of older wallet transfer-offer APIs:
+That keeps new work on the GA token-standard path instead of older wallet-style transfer-offer APIs:
 
 ```ts
 import { queryHoldingsV1, prepareTransferViaFactoryV1 } from 'cantonjs-splice-token-standard'
 ```
 
-### Apps already using `wallet-external` transfer offers
+### Apps Still On `createLegacyWalletClient()`
 
-Those flows remain available through `createLegacyWalletClient()` in `cantonjs-splice-validator`, but they are legacy compatibility only.
+`createLegacyWalletClient()` is removed from the current package set.
 
-- Keep them only when you need to preserve an existing transfer-offer or buy-traffic integration.
-- Do not start new transfer flows on `wallet-external`.
-- For new work, migrate toward Token Standard helpers in `cantonjs-splice-token-standard`.
+- Stay on `0.3.1` only while you preserve the existing integration.
+- Do not start new work on older wallet-style Validator flows.
+- Migrate new transfer and allocation work toward `cantonjs-splice-token-standard`.
+- If you must preserve older upstream routes during migration, treat them as upstream compatibility work rather than part of the current `cantonjs` contract.
 
-### Apps experimenting with wallet-provider interop
+### Apps That Used `cantonjs-wallet-adapters`
 
-Use `cantonjs-wallet-adapters`, but treat it as experimental:
+`cantonjs-wallet-adapters` is removed from the current package set.
+
+- Use the official dApp SDK / dApp API / Wallet Gateway for wallet discovery and connection UX.
+- Use the official Wallet SDK for wallet-provider, custody, exchange, or other provider-facing integrations.
+- Keep `cantonjs` on the participant-runtime side only, after official tooling has already yielded participant connection details.
+
+## Manual Wallet Hand-Off Pattern
+
+After official wallet tooling has connected the user, obtain the participant URL, token, and active party from the connected provider, then build `createLedgerClient(...)` directly:
 
 ```ts
-import { createCip103Adapter } from 'cantonjs-wallet-adapters'
+import * as dappSDK from '@canton-network/dapp-sdk'
+import { createLedgerClient, jsonApi } from 'cantonjs'
+
+type ConnectedProvider = {
+  request(args: { method: string; params?: unknown }): Promise<unknown>
+}
+
+type WalletNetwork = {
+  readonly ledgerApi?: string
+  readonly accessToken?: string
+}
+
+type WalletAccount = {
+  readonly partyId: string
+}
+
+async function callProvider<T>(
+  provider: ConnectedProvider,
+  method: string,
+  params?: unknown,
+): Promise<T> {
+  const result = await provider.request(
+    params === undefined ? { method } : { method, params },
+  )
+  return result as T
+}
+
+await dappSDK.connect()
+
+const provider = dappSDK.getConnectedProvider()
+if (!provider) {
+  throw new Error('Official dApp SDK did not return a connected provider.')
+}
+
+const network = await callProvider<WalletNetwork>(provider, 'getActiveNetwork')
+const [primary] = await callProvider<readonly WalletAccount[]>(provider, 'listAccounts')
+
+if (!primary || !network.ledgerApi || !network.accessToken) {
+  throw new Error('Connected provider did not expose participant connection details.')
+}
+
+const client = createLedgerClient({
+  actAs: primary.partyId,
+  transport: jsonApi({
+    url: network.ledgerApi,
+    token: network.accessToken,
+  }),
+})
 ```
 
-The adapter package is intentionally outside the GA promise while the CIP-0103 ecosystem continues to settle.
+If your official wallet tooling exposes those same values through a different helper, map them into `createLedgerClient(...)` the same way.
 
 ## Canonical Tool Boundaries Still Matter
 
@@ -122,13 +157,13 @@ The adapter package is intentionally outside the GA promise while the CIP-0103 e
 - Use Quickstart for the official full-stack onboarding and reference-app path.
 - Use the official dApp SDK / dApp API / Wallet Gateway for wallet discovery, connection UX, wallet-backed auth, and wallet-connected responsibilities.
 - Use the official Wallet SDK for wallet-provider, custody, exchange, or other provider-facing integrations.
-- Use `cantonjs` after participant access already exists, or after those official wallet tools have already yielded connected provider output that your app can consume.
+- Use `cantonjs` after participant access already exists, or after those official wallet tools have already yielded the participant connection details your app needs.
 
 ## Compatibility Summary
 
 - GA Canton line: `3.4.x`
 - GA Splice line: `0.5.x`
 - Vendored Splice artifacts in this repo: `0.5.17`
-- Experimental imports may break in minor releases
+- `0.3.1` is the last release line with the removed wallet and validator-overlap surfaces
 
-See [compatibility.md](./compatibility.md) for the support matrix and release-line policy. The repo-root `CHANGELOG.md` carries the release-note summary of the positioning reset.
+See [compatibility.md](./compatibility.md) for the support matrix and release-line policy. The repo-root `CHANGELOG.md` carries the release-note summary of this ownership prune.

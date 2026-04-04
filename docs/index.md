@@ -23,8 +23,8 @@ features:
     details: Generate TypeScript from existing DAR artifacts when app code needs it. DPM remains canonical for Daml build, test, and codegen.
   - title: Focused Add-Ons
     details: Keep public Scan, validator, token-standard, and interface support in separate packages with explicit boundaries.
-  - title: Explicit Wallet Boundaries
-    details: CIP-0103 support lives in experimental edge adapters while the official wallet stack continues to own connection and provider responsibilities.
+  - title: Official Wallet Hand-Off
+    details: Use official wallet tooling for discovery and connection, then build a participant-scoped client once it exposes the ledger URL, token, and active party.
 ---
 
 Start with [Scope & Boundaries](/positioning), [Target Users](/guide/target-users), [Package Architecture](/guide/package-architecture), and [Ecosystem Fit](/guide/ecosystem-fit).

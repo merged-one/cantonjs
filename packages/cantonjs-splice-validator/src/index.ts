@@ -30,25 +30,6 @@ export {
 } from './createScanProxyClient.js'
 
 export {
-  createLegacyWalletClient,
-  type LegacyWalletClient,
-  type LegacyWalletClientConfig,
-  type LegacyWalletRequestOptions,
-  type LegacyWalletTransferOffer,
-  type LegacyWalletCreateTransferOfferRequest,
-  type LegacyWalletCreateTransferOfferResponse,
-  type LegacyWalletListTransferOffersResponse,
-  type LegacyWalletGetTransferOfferStatusRequest,
-  type LegacyWalletTransferOfferStatusResponse,
-  type LegacyWalletTransferOfferStatus,
-  type LegacyWalletCreateBuyTrafficRequest,
-  type LegacyWalletCreateBuyTrafficRequestResponse,
-  type LegacyWalletGetBuyTrafficRequestStatusRequest,
-  type LegacyWalletBuyTrafficRequestStatusResponse,
-  type LegacyWalletBuyTrafficRequestStatus,
-} from './createLegacyWalletClient.js'
-
-export {
   CantonjsError,
   AuthProviderError,
   ConnectionError,

@@ -1,5 +1,8 @@
 # Splice Internal APIs
 
+> [!NOTE]
+> Historical experimental note. It describes surfaces that are no longer part of the current package set. Keep it only as provenance for the pre-prune line; use [Migration notes](/MIGRATING_TO_SPLICE_SUPPORT) and [Package Architecture](/guide/package-architecture) for current guidance.
+
 > [!WARNING]
 > Experimental Splice wrappers in this repo are pinned to `vendor/splice/0.5.17`.
 > They may break on any upstream release. They must remain isolated behind explicit experimental subpaths.

@@ -144,7 +144,6 @@ npm --prefix packages/cantonjs-splice-interfaces ci
 npm --prefix packages/cantonjs-splice-scan ci
 npm --prefix packages/cantonjs-splice-validator ci
 npm --prefix packages/cantonjs-splice-token-standard ci
-npm --prefix packages/cantonjs-wallet-adapters ci
 ```
 
 Then run the same default-safe checks used in CI:

@@ -19,11 +19,44 @@ const REQUIRED_HOME_LINKS = [
   '/guide/package-architecture',
 ]
 
+const ACTIVE_PRODUCT_DOC_FILES = new Set([
+  'README.md',
+  'docs/index.md',
+  'docs/positioning.md',
+  'docs/compatibility.md',
+  'docs/api/index.md',
+])
+
+const ACTIVE_PRODUCT_DOC_DIRECTORIES = [
+  'docs/guide',
+  'docs/examples',
+  'docs/packages',
+]
+
+const ACTIVE_PRODUCT_DOC_PACKAGE_READMES = new Set([
+  'packages/cantonjs-codegen/README.md',
+  'packages/cantonjs-react/README.md',
+  'packages/cantonjs-splice-interfaces/README.md',
+  'packages/cantonjs-splice-scan/README.md',
+  'packages/cantonjs-splice-token-standard/README.md',
+  'packages/cantonjs-splice-validator/README.md',
+])
+
 const BANNED_PHRASES = [
   { label: 'legacy tagline', pattern: /\bviem for Canton\b/i },
   { label: 'old umbrella description', pattern: /\bTypeScript interface for the Canton Network\b/i },
   { label: 'old CLI comparison', pattern: /\bHardhat for Canton\b/i },
   { label: 'older CIP spelling', pattern: /\bCIP-103\b/ },
+]
+
+const BANNED_ACTIVE_PRODUCT_DOC_PHRASES = [
+  { label: 'removed wallet adapter package', pattern: /\bcantonjs-wallet-adapters\b/ },
+  { label: 'removed legacy wallet helper', pattern: /\bcreateLegacyWalletClient\b/ },
+  { label: 'removed validator experimental subpath', pattern: /\bcantonjs-splice-validator\/experimental\b/ },
+  { label: 'removed experimental validator scan proxy helper', pattern: /\bcreateExperimentalScanProxyClient\b/ },
+  { label: 'removed experimental validator internal helper', pattern: /\bcreateExperimentalValidatorInternalClient\b/ },
+  { label: 'validator internal ownership', pattern: /\bvalidator-internal\b/i },
+  { label: 'react dapps wording', pattern: /\bReact hooks for Canton(?: Network)? dApps\b/i },
 ]
 
 const ALLOWED_BANNED_MATCHES = new Map([
@@ -41,7 +74,6 @@ const EXPECTED_PACKAGE_DESCRIPTIONS = new Map([
   ['packages/cantonjs-splice-scan/package.json', 'Public Scan reads for Splice networks'],
   ['packages/cantonjs-splice-token-standard/package.json', 'Participant-first CIP-0056 helpers for cantonjs applications'],
   ['packages/cantonjs-splice-validator/package.json', 'Selected stable external validator clients for ANS and filtered Scan Proxy reads'],
-  ['packages/cantonjs-wallet-adapters/package.json', 'Experimental CIP-0103 edge adapters for official wallet-stack interop'],
 ])
 
 function readText(relativePath) {
@@ -65,6 +97,18 @@ function collectMarkdownFiles(directory) {
   }
 
   return files
+}
+
+function isActiveProductDoc(relativePath) {
+  if (ACTIVE_PRODUCT_DOC_FILES.has(relativePath)) {
+    return true
+  }
+
+  if (ACTIVE_PRODUCT_DOC_PACKAGE_READMES.has(relativePath)) {
+    return true
+  }
+
+  return ACTIVE_PRODUCT_DOC_DIRECTORIES.some((directory) => relativePath.startsWith(`${directory}/`))
 }
 
 function findMatchingLines(content, pattern) {
@@ -124,6 +168,27 @@ function main() {
     }
   }
 
+  const activeProductDocs = [
+    ...markdownFiles.filter((relativePath) => isActiveProductDoc(relativePath)),
+    ...Array.from(ACTIVE_PRODUCT_DOC_PACKAGE_READMES).filter((relativePath) =>
+      existsSync(path.join(repoRoot, relativePath))),
+  ]
+
+  for (const relativePath of activeProductDocs) {
+    const content = readText(relativePath)
+
+    for (const phrase of BANNED_ACTIVE_PRODUCT_DOC_PHRASES) {
+      if (!phrase.pattern.test(content)) {
+        continue
+      }
+
+      const lines = findMatchingLines(content, phrase.pattern).join(', ')
+      errors.push(
+        `Active product docs reintroduced ${phrase.label} in ${relativePath}${lines ? ` (lines ${lines})` : ''}`,
+      )
+    }
+  }
+
   const discoveredPackageJsons = [
     'package.json',
     ...readdirSync(path.join(repoRoot, 'packages'), { withFileTypes: true })
@@ -135,6 +200,10 @@ function main() {
     if (!EXPECTED_PACKAGE_DESCRIPTIONS.has(relativePath)) {
       errors.push(`No explicit positioning expectation configured for ${relativePath}`)
     }
+  }
+
+  if (existsSync(path.join(repoRoot, 'packages/cantonjs-wallet-adapters/package.json'))) {
+    errors.push('Removed package must stay removed: packages/cantonjs-wallet-adapters/package.json')
   }
 
   for (const [relativePath, expectedDescription] of EXPECTED_PACKAGE_DESCRIPTIONS.entries()) {
@@ -149,11 +218,6 @@ function main() {
         `${relativePath} description drifted. Expected "${expectedDescription}" but found "${String(packageJson.description)}"`,
       )
     }
-  }
-
-  const walletAdapters = JSON.parse(readText('packages/cantonjs-wallet-adapters/package.json'))
-  if (!/experimental/iu.test(String(walletAdapters.description))) {
-    errors.push('packages/cantonjs-wallet-adapters/package.json must keep wallet adapters marked experimental')
   }
 
   if (errors.length > 0) {

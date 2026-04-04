@@ -1,6 +1,6 @@
 # cantonjs-react
 
-React hooks for Canton Network dApps, powered by TanStack Query.
+Participant-private React hooks for Canton ledger applications, powered by TanStack Query.
 
 ## Installation
 

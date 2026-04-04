@@ -29,7 +29,6 @@ jobs:
             packages/cantonjs-splice-scan/package-lock.json
             packages/cantonjs-splice-token-standard/package-lock.json
             packages/cantonjs-splice-validator/package-lock.json
-            packages/cantonjs-wallet-adapters/package-lock.json
 
       - name: Install root dependencies
         run: npm ci
@@ -40,7 +39,6 @@ jobs:
           npm --prefix packages/cantonjs-splice-scan ci
           npm --prefix packages/cantonjs-splice-validator ci
           npm --prefix packages/cantonjs-splice-token-standard ci
-          npm --prefix packages/cantonjs-wallet-adapters ci
 
       - name: Verify vendored Splice artifacts
         run: npm run verify:splice-artifacts
@@ -87,7 +85,6 @@ jobs:
             packages/cantonjs-splice-scan/package-lock.json
             packages/cantonjs-splice-token-standard/package-lock.json
             packages/cantonjs-splice-validator/package-lock.json
-            packages/cantonjs-wallet-adapters/package-lock.json
 
       - name: Install root dependencies
         run: npm ci
@@ -100,7 +97,6 @@ jobs:
           npm --prefix packages/cantonjs-splice-scan ci
           npm --prefix packages/cantonjs-splice-validator ci
           npm --prefix packages/cantonjs-splice-token-standard ci
-          npm --prefix packages/cantonjs-wallet-adapters ci
 
       - name: Typecheck package runtimes
         run: |
@@ -160,7 +156,6 @@ jobs:
             packages/cantonjs-splice-scan/package-lock.json
             packages/cantonjs-splice-token-standard/package-lock.json
             packages/cantonjs-splice-validator/package-lock.json
-            packages/cantonjs-wallet-adapters/package-lock.json
           registry-url: https://registry.npmjs.org
 
       - name: Install root dependencies
@@ -172,7 +167,6 @@ jobs:
           npm --prefix packages/cantonjs-splice-scan ci
           npm --prefix packages/cantonjs-splice-validator ci
           npm --prefix packages/cantonjs-splice-token-standard ci
-          npm --prefix packages/cantonjs-wallet-adapters ci
 
       - name: Build shared local dependencies
         run: |
@@ -201,18 +195,6 @@ jobs:
           )
           (
             cd packages/cantonjs-splice-token-standard
-            npm publish --access public --provenance
-          )
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Build experimental wallet adapters
-        run: npm --prefix packages/cantonjs-wallet-adapters run build
-
-      - name: Publish experimental wallet adapters
-        run: |
-          (
-            cd packages/cantonjs-wallet-adapters
             npm publish --access public --provenance
           )
         env:

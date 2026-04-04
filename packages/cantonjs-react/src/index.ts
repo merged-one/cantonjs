@@ -1,5 +1,5 @@
 /**
- * cantonjs-react — React hooks for Canton Network dApps.
+ * cantonjs-react — participant-private React hooks for Canton ledger apps.
  *
  * @packageDocumentation
  */

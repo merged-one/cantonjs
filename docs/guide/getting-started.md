@@ -4,7 +4,7 @@ cantonjs is the application-side TypeScript SDK for teams building directly agai
 
 Use it when your app or service already has participant access and you want typed Ledger, Admin, and Test clients; injected transports; streaming; and optional React or codegen support. For the canonical scope note, see [Positioning](/positioning). For the tool-by-tool boundary guide, see [Ecosystem Fit](/guide/ecosystem-fit).
 
-DPM remains canonical for Daml build, test, and codegen workflows. Quickstart remains the official full-stack path. The official wallet stack remains the right place for wallet-connected UX and provider responsibilities.
+For Daml lifecycle, full-stack onboarding, and wallet connection, use the official upstream tools. `cantonjs` starts once your app has participant access or official wallet tooling has already exposed participant connection details.
 
 ## Installation
 
@@ -102,7 +102,7 @@ For Splice-specific work, combine the core package with the focused add-on packa
 - [Public Scan](/guide/scan) for public network reads
 - [Validator ANS](/guide/validator-ans) for validator-facing ANS and filtered Scan Proxy routes
 - [Token Standard](/guide/token-standard) for stable CIP-0056 ledger helpers
-- [Wallet Adapters](/guide/wallet-adapters) for experimental CIP-0103 wallet interop
+- [Official Wallet Hand-Off](/examples/wallet-interop-with-dapp-sdk) when official wallet tooling has already exposed participant connection details
 
 ## What's Next?
 

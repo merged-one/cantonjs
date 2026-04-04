@@ -23,7 +23,7 @@ The core story for this repo is participant-connected application development:
 - React applications that need participant-private ledger queries and writes
 - teams that want generated TypeScript types from DAR artifacts they already produce in their Daml workflow
 
-That is the center of gravity for `cantonjs`. Everything else in the repo should either support that story directly or be framed as an optional add-on or adapter.
+That is the center of gravity for `cantonjs`. Everything else in the repo should either support that story directly or be framed as an optional add-on around that core.
 
 ## Official Ecosystem Boundaries We Defer To
 
@@ -39,7 +39,7 @@ Quickstart remains the official full-stack and reference-app path. `cantonjs` sh
 
 The official dApp SDK, dApp API, Wallet Gateway, and Wallet SDK own wallet-connected and wallet-provider responsibilities. That includes wallet discovery, connection UX, custody-facing flows, provider semantics, wallet-backed auth issuance, and wallet-provider integration contracts.
 
-`cantonjs` may integrate with that stack at the boundary, but it does not replace it. `cantonjs-wallet-adapters` stays explicitly adapter-level and experimental.
+`cantonjs` may integrate with that stack at the boundary, but it does not replace it. The hand-off point is explicit: once official tooling has yielded the ledger URL, token, and active party context, application code can construct `createLedgerClient(...)`.
 
 ## Users And Non-Goals
 
@@ -57,7 +57,7 @@ This repo should not market itself as the answer for every Canton buyer. The tar
 - teams adding public Splice reads through focused add-on packages
 - teams using selected stable external Validator or published Splice interfaces around participant-connected app code
 - teams using stable Splice token-standard helpers on top of participant ledger access
-- integrators who need narrow boundary adapters to bridge official wallet tooling into `cantonjs`
+- teams that already rely on official wallet tooling and need participant-runtime app code after connection is complete
 
 ### Non-Goals
 
@@ -89,17 +89,11 @@ This repo should not market itself as the answer for every Canton buyer. The tar
 | Package | Role |
 | --- | --- |
 | `cantonjs-splice-scan` | Public Splice Scan reads |
-| `cantonjs-splice-validator` | Selected stable external Validator support: ANS, filtered public Scan Proxy reads, plus legacy compatibility flows kept clearly separate from the GA surface |
+| `cantonjs-splice-validator` | Selected stable external Validator support: ANS and filtered public Scan Proxy reads |
 | `cantonjs-splice-interfaces` | Stable published Splice descriptors and generated types |
 | `cantonjs-splice-token-standard` | Participant-first token-standard helpers built on stable published interfaces |
 
-### Adapters
-
-| Package | Role |
-| --- | --- |
-| `cantonjs-wallet-adapters` | Experimental CIP-0103 boundary adapters for interop with the official wallet stack |
-
-Core packages define the main product story. Optional convenience packages make that participant-connected core easier to use in React apps or with already-built DAR artifacts. Add-ons extend the core for public/stable Splice surfaces only. Adapters exist only to help applications interoperate with official wallet surfaces without redefining ownership boundaries.
+Core packages define the main product story. Optional convenience packages make that participant-connected core easier to use in React apps or with already-built DAR artifacts. Add-ons extend the core for public/stable Splice surfaces only.
 
 ## Messaging Rules For Follow-On Edits
 

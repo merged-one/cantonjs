@@ -134,18 +134,6 @@ async function main() {
       )
     })
 
-    const walletOutput = path.join(tempRoot, 'walletExternal.types.ts')
-    await generateOpenApi(
-      'packages/cantonjs-splice-validator',
-      path.join(vendoredOpenApiRoot, 'wallet-external.yaml'),
-      walletOutput,
-    )
-    await compareFile(
-      'Validator wallet generated types',
-      walletOutput,
-      path.join(repoRoot, 'packages', 'cantonjs-splice-validator', 'src', 'generated', 'walletExternal.types.ts'),
-    )
-
     await run('node', [
       'scripts/import-splice-dars.mjs',
       '--source',

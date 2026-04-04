@@ -110,21 +110,6 @@ Rules:
       "reason": "Generated Validator OpenAPI bindings are governed by spec verification and route-contract tests instead of line-level coverage gates."
     },
     {
-      "scope": "packages/cantonjs-wallet-adapters/vitest.config.ts",
-      "target": "src/**/*.test.ts",
-      "reason": "Vitest test files are not part of the shipped runtime surface."
-    },
-    {
-      "scope": "packages/cantonjs-wallet-adapters/vitest.config.ts",
-      "target": "src/**/index.ts",
-      "reason": "Barrel re-exports do not add runtime behavior beyond the covered modules they re-export."
-    },
-    {
-      "scope": "packages/cantonjs-wallet-adapters/vitest.config.ts",
-      "target": "src/providerTypes.ts",
-      "reason": "Wallet provider contract types are compile-time only."
-    },
-    {
       "scope": "vitest.config.ts",
       "target": "src/**/*.test.ts",
       "reason": "Vitest test files are not part of the shipped runtime surface."

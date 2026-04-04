@@ -125,7 +125,7 @@ await client.exerciseChoice(
 ## Related
 
 - [cantonjs](https://github.com/merged-one/cantonjs) &mdash; Core TypeScript library for Canton
-- [cantonjs-react](https://github.com/merged-one/cantonjs/tree/main/packages/cantonjs-react) &mdash; React hooks for Canton dApps
+- [cantonjs-react](https://github.com/merged-one/cantonjs/tree/main/packages/cantonjs-react) &mdash; participant-private React hooks for Canton ledger apps
 
 ## License
 
