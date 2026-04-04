@@ -4,10 +4,10 @@ These examples are organized by target user and boundary, not by feature checkli
 
 They show `cantonjs` as an application-side Ledger API V2 SDK:
 
-- participant-connected services and workers use `cantonjs`
-- participant-private React apps use `cantonjs-react`
-- public network dashboards use `cantonjs-splice-scan`
-- wallet-connected examples start with the official dApp SDK, then hand provider output into `cantonjs`
+- Participant-connected services and workers use `cantonjs`
+- Participant-private React apps use `cantonjs-react`
+- Public network dashboards use `cantonjs-splice-scan`
+- Wallet-connected examples start with the official dApp SDK, then hand provider output into `cantonjs`
 
 They do not replace Quickstart, and they do not turn `cantonjs` into the official wallet/dApp stack.
 
@@ -16,16 +16,17 @@ They do not replace Quickstart, and they do not turn `cantonjs` into the officia
 | Example | Audience | Data scope | Depends on |
 | --- | --- | --- | --- |
 | [Participant Service](/examples/basic) | Backend and full-stack participant services | Participant-private | Participant Ledger API V2 |
-| [Participant Stream Worker](/examples/streaming) | Integration and data teams with participant access | Participant-private | Participant Ledger API V2 streams |
+| [Participant Stream Worker](/examples/streaming) | Integration and data teams | Participant-private | Participant Ledger API V2 streams |
 | [Participant-Private React App](/examples/react) | Participant-private React apps | Participant-private | Participant Ledger API V2 |
-| [Public Scan Dashboard](/examples/public-scan-dashboard) | Public Scan consumers and dashboard teams | Public | Public Scan |
-| [Wallet Interop With dApp SDK](/examples/wallet-interop-with-dapp-sdk) | Wallet-connected app teams that already use official wallet tooling | Participant-private after connection | Official dApp SDK plus connected provider output |
+| [Public Scan Dashboard](/examples/public-scan-dashboard) | Public Scan consumers | Public | Public Scan |
+| [Wallet Interop With dApp SDK](/examples/wallet-interop-with-dapp-sdk) | Wallet-connected app teams using official tooling | Participant-private after connection | Official dApp SDK + provider output |
 
 ## Prerequisites
 
-- Participant examples (`/examples/basic`, `/examples/streaming`, `/examples/react`) assume you already have a participant URL plus auth for the acting party.
-- The public Scan example assumes a public Scan URL. It does not require a participant client.
-- The wallet interop example assumes the official dApp SDK handles discovery and connection first.
+- **Participant examples** (`/examples/basic`, `/examples/streaming`, `/examples/react`) assume you already have a participant URL plus auth for the acting party.
+- **Public Scan example** assumes a public Scan URL.
+  It does not require a participant client.
+- **Wallet interop example** assumes the official dApp SDK handles discovery and connection first.
 
 For local participant work, a sandbox is enough:
 
